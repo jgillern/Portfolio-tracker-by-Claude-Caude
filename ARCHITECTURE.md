@@ -209,13 +209,13 @@ RootLayout
     │   ├── PerformanceChart
     │   │   └── TimePeriodSelector
     │   ├── InstrumentsTable
-    │   │   ├── Custom weights toggle
-    │   │   └── InstrumentRow × N
+    │   │   └── InstrumentRow × N (logo + váha + ceny)
     │   ├── AllocationTable
     │   │   ├── Stacked bar
     │   │   └── Legend
     │   ├── AddInstrumentModal
-    │   │   └── InstrumentSearch
+    │   │   ├── InstrumentSearch (krok 1)
+    │   │   └── Weight input + potvrzení (krok 2)
     │   └── Delete confirmation dialog
     │
     └── NewsPage (/news)
@@ -273,10 +273,10 @@ RootLayout
 **Proti:** Nesdílí se mezi instancemi, neprežije restart
 **Mitigace:** Cache je optimalizace, ne nutnost — bez ní aplikace funguje (jen pomaleji)
 
-### 5. Rovné váhy jako výchozí
+### 5. Auto-detekce vlastních vah
 
-**Pro:** Uživatel nemusí nastavovat nic — rovné zastoupení je rozumný default
-**Realizace:** `useCustomWeights: false` na `Portfolio`, `getInstrumentWeights()` vrací rovné váhy, pokud custom nejsou zapnuté
+**Pro:** Uživatel nemusí přepínat žádný toggle — systém automaticky detekuje, zda jsou váhy nastaveny
+**Realizace:** `hasCustomWeights(portfolio)` kontroluje, zda alespoň jeden instrument má weight > 0. Pokud ano, použijí se custom váhy; jinak rovné zastoupení. Váha se zadává přímo při přidávání instrumentu.
 
 ---
 
