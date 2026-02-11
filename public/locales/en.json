@@ -1,0 +1,81 @@
+{
+  "app": {
+    "title": "Portfolio Tracker"
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "news": "News",
+    "createPortfolio": "New Portfolio",
+    "language": "CZ",
+    "theme": "Theme"
+  },
+  "dashboard": {
+    "performance": "Portfolio Performance",
+    "instruments": "Instruments",
+    "allocation": "Sector Allocation",
+    "name": "Name",
+    "type": "Type",
+    "weight": "Weight",
+    "price": "Price",
+    "change24h": "24h",
+    "change1w": "1W",
+    "change1m": "1M",
+    "change1y": "1Y",
+    "changeYtd": "YTD",
+    "actions": "Actions",
+    "noInstruments": "No instruments in this portfolio yet.",
+    "addSome": "Add some to get started!",
+    "noPortfolio": "No portfolio selected.",
+    "createFirst": "Create your first portfolio to get started.",
+    "sector": "Sector",
+    "percentage": "Share",
+    "customWeights": "Custom weights",
+    "equalWeights": "Equal weights",
+    "weightsTotal": "Total",
+    "weightsWarning": "Weights must sum to 100%",
+    "remove": "Remove"
+  },
+  "portfolio": {
+    "create": "Create",
+    "cancel": "Cancel",
+    "name": "Portfolio Name",
+    "namePlaceholder": "e.g. Tech Stocks",
+    "delete": "Delete Portfolio",
+    "confirmDelete": "Are you sure you want to delete this portfolio?",
+    "switchPortfolio": "Switch Portfolio",
+    "addInstrument": "Add Instrument",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "search": {
+    "placeholder": "Search by name or ticker...",
+    "noResults": "No results found.",
+    "add": "Add",
+    "searching": "Searching..."
+  },
+  "news": {
+    "title": "Financial News",
+    "readMore": "Read more",
+    "noNews": "No news available for your portfolio instruments.",
+    "source": "Source"
+  },
+  "periods": {
+    "1d": "1D",
+    "1w": "1W",
+    "1mo": "1M",
+    "1y": "1Y",
+    "5y": "5Y",
+    "ytd": "YTD"
+  },
+  "types": {
+    "stock": "Stock",
+    "etf": "ETF",
+    "crypto": "Crypto",
+    "bond": "Bond",
+    "commodity": "Commodity"
+  },
+  "errors": {
+    "fetchFailed": "Failed to load data. Please try again.",
+    "networkError": "Network error. Check your connection."
+  }
+}
