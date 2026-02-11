@@ -1,0 +1,81 @@
+{
+  "app": {
+    "title": "Portfolio Tracker"
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "news": "Zprávy",
+    "createPortfolio": "Nové portfolio",
+    "language": "EN",
+    "theme": "Režim"
+  },
+  "dashboard": {
+    "performance": "Výkonnost portfolia",
+    "instruments": "Instrumenty",
+    "allocation": "Rozdělení dle sektorů",
+    "name": "Název",
+    "type": "Typ",
+    "weight": "Váha",
+    "price": "Cena",
+    "change24h": "24h",
+    "change1w": "1T",
+    "change1m": "1M",
+    "change1y": "1R",
+    "changeYtd": "YTD",
+    "actions": "Akce",
+    "noInstruments": "V tomto portfoliu zatím nejsou žádné instrumenty.",
+    "addSome": "Přidejte nějaké pro začátek!",
+    "noPortfolio": "Žádné portfolio není vybráno.",
+    "createFirst": "Vytvořte své první portfolio.",
+    "sector": "Sektor",
+    "percentage": "Podíl",
+    "customWeights": "Vlastní váhy",
+    "equalWeights": "Rovné zastoupení",
+    "weightsTotal": "Celkem",
+    "weightsWarning": "Váhy musí dohromady dávat 100 %",
+    "remove": "Odebrat"
+  },
+  "portfolio": {
+    "create": "Vytvořit",
+    "cancel": "Zrušit",
+    "name": "Název portfolia",
+    "namePlaceholder": "např. Technologické akcie",
+    "delete": "Smazat portfolio",
+    "confirmDelete": "Opravdu chcete smazat toto portfolio?",
+    "switchPortfolio": "Přepnout portfolio",
+    "addInstrument": "Přidat instrument",
+    "yes": "Ano",
+    "no": "Ne"
+  },
+  "search": {
+    "placeholder": "Hledat podle názvu nebo tickeru...",
+    "noResults": "Nic nenalezeno.",
+    "add": "Přidat",
+    "searching": "Vyhledávám..."
+  },
+  "news": {
+    "title": "Finanční zprávy",
+    "readMore": "Číst více",
+    "noNews": "Pro instrumenty ve vašem portfoliu nejsou k dispozici žádné zprávy.",
+    "source": "Zdroj"
+  },
+  "periods": {
+    "1d": "1D",
+    "1w": "1T",
+    "1mo": "1M",
+    "1y": "1R",
+    "5y": "5L",
+    "ytd": "YTD"
+  },
+  "types": {
+    "stock": "Akcie",
+    "etf": "ETF",
+    "crypto": "Krypto",
+    "bond": "Dluhopis",
+    "commodity": "Komodita"
+  },
+  "errors": {
+    "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",
+    "networkError": "Chyba sítě. Zkontrolujte připojení."
+  }
+}
