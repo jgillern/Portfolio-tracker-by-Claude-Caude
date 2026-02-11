@@ -45,7 +45,13 @@
     "switchPortfolio": "Přepnout portfolio",
     "addInstrument": "Přidat instrument",
     "yes": "Ano",
-    "no": "Ne"
+    "no": "Ne",
+    "changeInstrument": "Změnit",
+    "weightLabel": "Zastoupení v portfoliu",
+    "weightPlaceholder": "např. 25",
+    "weightRequired": "Ostatní instrumenty mají nastavené váhy — toto pole je povinné.",
+    "weightHint": "Nepovinné. Pokud je vyplněno u jednoho instrumentu, stává se povinným pro všechny.",
+    "back": "Zpět"
   },
   "search": {
     "placeholder": "Hledat podle názvu nebo tickeru...",

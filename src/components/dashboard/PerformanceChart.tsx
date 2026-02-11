@@ -16,7 +16,7 @@ import { useChart } from '@/hooks/useChart';
 import { TimePeriod } from '@/types/market';
 import { TimePeriodSelector } from './TimePeriodSelector';
 import { Spinner } from '@/components/ui/Spinner';
-import { getInstrumentWeights } from '@/lib/utils';
+import { getPortfolioWeights } from '@/lib/utils';
 
 export function PerformanceChart() {
   const { t, locale } = useLanguage();
@@ -25,7 +25,7 @@ export function PerformanceChart() {
 
   const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
   const weights = activePortfolio
-    ? getInstrumentWeights(activePortfolio.instruments, activePortfolio.useCustomWeights)
+    ? getPortfolioWeights(activePortfolio)
     : [];
 
   const { data, isLoading } = useChart(symbols, period, weights);

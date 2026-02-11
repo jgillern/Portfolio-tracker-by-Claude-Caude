@@ -4,7 +4,7 @@ import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { DEFAULT_SECTORS, SECTOR_LABELS } from '@/config/sectors';
-import { getInstrumentWeights } from '@/lib/utils';
+import { getPortfolioWeights } from '@/lib/utils';
 
 export function AllocationTable() {
   const { t, locale } = useLanguage();
@@ -12,8 +12,8 @@ export function AllocationTable() {
 
   if (!activePortfolio || activePortfolio.instruments.length === 0) return null;
 
-  const { instruments, useCustomWeights } = activePortfolio;
-  const weights = getInstrumentWeights(instruments, useCustomWeights);
+  const { instruments } = activePortfolio;
+  const weights = getPortfolioWeights(activePortfolio);
 
   // Group by sector with weighted percentages
   const sectorMap = new Map<string, number>();

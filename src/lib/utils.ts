@@ -1,4 +1,5 @@
 import clsx, { ClassValue } from 'clsx';
+import { hasCustomWeights, Portfolio } from '@/types/portfolio';
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
@@ -33,12 +34,11 @@ export function getEqualWeights(count: number): number[] {
   return Array(count).fill(weight);
 }
 
-export function getInstrumentWeights(
-  instruments: { weight?: number }[],
-  useCustomWeights: boolean
-): number[] {
-  if (!useCustomWeights || instruments.length === 0) {
+export function getPortfolioWeights(portfolio: Portfolio): number[] {
+  const { instruments } = portfolio;
+  if (instruments.length === 0) return [];
+  if (!hasCustomWeights(portfolio)) {
     return getEqualWeights(instruments.length);
   }
-  return instruments.map((i) => i.weight ?? 100 / instruments.length);
+  return instruments.map((i) => i.weight ?? 0);
 }
