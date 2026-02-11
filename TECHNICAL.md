@@ -33,6 +33,7 @@ interface Instrument {
   type: InstrumentType;    // Typ instrumentu
   sector?: string;         // Sektor (Technology, Finance...), volitelný
   weight?: number;         // Vlastní váha v % (0-100), volitelný
+  logoUrl?: string;        // URL loga instrumentu, volitelný
   addedAt: string;         // ISO datum přidání
 }
 
@@ -40,10 +41,12 @@ interface Portfolio {
   id: string;              // UUID generované přes crypto.randomUUID()
   name: string;            // Uživatelský název portfolia
   instruments: Instrument[];
-  useCustomWeights: boolean; // false = rovné zastoupení, true = vlastní váhy
   createdAt: string;       // ISO datum vytvoření
   updatedAt: string;       // ISO datum poslední úpravy
 }
+
+// Helper: auto-detekce vlastních vah (true pokud alespoň 1 instrument má weight)
+function hasCustomWeights(portfolio: Portfolio): boolean;
 
 interface PortfolioState {
   portfolios: Portfolio[];         // Všechna portfolia
@@ -138,7 +141,7 @@ interface ApiError {
 | `formatCurrency` | `(value: number, currency?: string) => string` | Formátování ceny přes `Intl.NumberFormat` |
 | `formatDate` | `(date: Date \| string, locale?: string) => string` | Lokalizované formátování data (cs-CZ / en-US) |
 | `getEqualWeights` | `(count: number) => number[]` | Vrací pole rovných vah pro `count` instrumentů |
-| `getInstrumentWeights` | `(instruments, useCustomWeights) => number[]` | Vrací pole vah — vlastní nebo rovné |
+| `getPortfolioWeights` | `(portfolio: Portfolio) => number[]` | Vrací pole vah — auto-detekce přes `hasCustomWeights()` |
 
 ### `src/lib/localStorage.ts`
 
@@ -179,7 +182,7 @@ Server-side wrapper nad knihovnou `yahoo-finance2` (v3). Instance `new YahooFina
 
 ### `src/context/PortfolioContext.tsx`
 
-Centrální state management pro portfolia. Používá `useReducer` s 8 akcemi.
+Centrální state management pro portfolia. Používá `useReducer` se 7 akcemi.
 
 **Hook:** `usePortfolio()`
 
@@ -191,12 +194,11 @@ Centrální state management pro portfolia. Používá `useReducer` s 8 akcemi.
 | `deletePortfolio(id)` | `(string) => void` | Smaže portfolio, přepne na první zbývající |
 | `renamePortfolio(id, name)` | `(string, string) => void` | Přejmenuje portfolio |
 | `setActivePortfolio(id)` | `(string \| null) => void` | Nastaví aktivní portfolio |
-| `addInstrument(portfolioId, instrument)` | `(string, Instrument) => void` | Přidá instrument do portfolia |
+| `addInstrument(portfolioId, instrument)` | `(string, Instrument) => void` | Přidá instrument do portfolia (s volitelnou váhou) |
 | `removeInstrument(portfolioId, symbol)` | `(string, string) => void` | Odebere instrument z portfolia |
-| `updateInstrumentWeight(portfolioId, symbol, weight)` | `(string, string, number) => void` | Aktualizuje váhu instrumentu |
-| `toggleCustomWeights(portfolioId)` | `(string) => void` | Přepne režim vlastních vah |
+| `updateInstrumentWeight(portfolioId, symbol, weight)` | `(string, string, number \| undefined) => void` | Aktualizuje váhu instrumentu |
 
-**Reducer akce:** `SET_STATE`, `CREATE_PORTFOLIO`, `DELETE_PORTFOLIO`, `RENAME_PORTFOLIO`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`, `TOGGLE_CUSTOM_WEIGHTS`
+**Reducer akce:** `SET_STATE`, `CREATE_PORTFOLIO`, `DELETE_PORTFOLIO`, `RENAME_PORTFOLIO`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`
 
 **Persistence:** Při mountu načte stav z `localStorage["portfolio-tracker-state"]`. Při každé změně stav synchronizuje zpět.
 
@@ -286,6 +288,7 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 | `Modal` | `isOpen`, `onClose`, `title`, `children`, `className?` | Modální dialog s overlay, ESC zavření, click-outside |
 | `Spinner` | `className?` | Animovaný loading indikátor |
 | `Badge` | `type: InstrumentType`, `label`, `className?` | Barevný badge podle typu instrumentu |
+| `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu — zobrazí obrázek (pokud logoUrl) nebo barevnou iniciálu dle typu |
 | `LanguageToggle` | — | Tlačítko pro přepnutí jazyka |
 | `ThemeToggle` | — | Tlačítko pro přepnutí tématu (ikona slunce/měsíc) |
 
@@ -302,7 +305,7 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 | `PortfolioSwitcher` | — | Dropdown pro přepínání mezi portfolii. Zobrazuje název + počet instrumentů. Click-outside zavření. |
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
-| `AddInstrumentModal` | `isOpen`, `onClose` | Modal obalující `InstrumentSearch`. Při výběru vytvoří `Instrument` a přidá do aktivního portfolia. |
+| `AddInstrumentModal` | `isOpen`, `onClose` | Dvou-krokový modal: 1) vyhledání instrumentu, 2) potvrzení s volitelným zadáním váhy (%). Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
 
 ### Dashboard (`src/components/dashboard/`)
 
@@ -310,8 +313,8 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 |---|---|---|
 | `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
 | `PerformanceChart` | — | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
-| `InstrumentsTable` | — | Tabulka instrumentů s cenami a změnami. Toggle pro vlastní váhy s inline editací. Validace vah (součet = 100%). Responsive — skrývá sloupce na menších obrazovkách. |
-| `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Respektuje vlastní váhy. Bilingvální názvy sektorů. 10 barev pro sektory. |
+| `InstrumentsTable` | — | Tabulka instrumentů s logy, cenami, váhami a změnami. Sloupec Zastoupení vždy viditelný (zobrazuje % nebo —). Responsive — skrývá sloupce na menších obrazovkách. |
+| `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
 
 ### News (`src/components/news/`)
 

@@ -13,8 +13,7 @@ type Action =
   | { type: 'SET_ACTIVE'; payload: { id: string | null } }
   | { type: 'ADD_INSTRUMENT'; payload: { portfolioId: string; instrument: Instrument } }
   | { type: 'REMOVE_INSTRUMENT'; payload: { portfolioId: string; symbol: string } }
-  | { type: 'UPDATE_INSTRUMENT_WEIGHT'; payload: { portfolioId: string; symbol: string; weight: number } }
-  | { type: 'TOGGLE_CUSTOM_WEIGHTS'; payload: { portfolioId: string } };
+  | { type: 'UPDATE_INSTRUMENT_WEIGHT'; payload: { portfolioId: string; symbol: string; weight: number | undefined } };
 
 const initialState: PortfolioState = {
   portfolios: [],
@@ -33,7 +32,6 @@ function reducer(state: PortfolioState, action: Action): PortfolioState {
         id: crypto.randomUUID(),
         name: action.payload.name,
         instruments: [],
-        useCustomWeights: false,
         createdAt: now,
         updatedAt: now,
       };
@@ -112,16 +110,6 @@ function reducer(state: PortfolioState, action: Action): PortfolioState {
         ),
       };
 
-    case 'TOGGLE_CUSTOM_WEIGHTS':
-      return {
-        ...state,
-        portfolios: state.portfolios.map((p) =>
-          p.id === action.payload.portfolioId
-            ? { ...p, useCustomWeights: !p.useCustomWeights, updatedAt: now }
-            : p
-        ),
-      };
-
     default:
       return state;
   }
@@ -136,8 +124,7 @@ interface PortfolioContextValue {
   setActivePortfolio: (id: string | null) => void;
   addInstrument: (portfolioId: string, instrument: Instrument) => void;
   removeInstrument: (portfolioId: string, symbol: string) => void;
-  updateInstrumentWeight: (portfolioId: string, symbol: string, weight: number) => void;
-  toggleCustomWeights: (portfolioId: string) => void;
+  updateInstrumentWeight: (portfolioId: string, symbol: string, weight: number | undefined) => void;
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
@@ -175,8 +162,6 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'REMOVE_INSTRUMENT', payload: { portfolioId, symbol } }),
     updateInstrumentWeight: (portfolioId, symbol, weight) =>
       dispatch({ type: 'UPDATE_INSTRUMENT_WEIGHT', payload: { portfolioId, symbol, weight } }),
-    toggleCustomWeights: (portfolioId) =>
-      dispatch({ type: 'TOGGLE_CUSTOM_WEIGHTS', payload: { portfolioId } }),
   };
 
   return (

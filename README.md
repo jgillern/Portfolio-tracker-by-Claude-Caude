@@ -18,7 +18,9 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Časová období: 1D, 1T, 1M, 1R, 5L, YTD
   - Zelená/červená barva podle celkového vývoje
 - **Tabulka instrumentů** — přehled všech instrumentů v portfoliu:
+  - Logo instrumentu (barevná iniciála dle typu, nebo vlastní logo)
   - Název, symbol, typ (barevný badge)
+  - Sloupec Zastoupení (% váha, pokud je vyplněna)
   - Aktuální cena
   - Změna za: 24h, 1 týden, 1 měsíc, 1 rok, YTD (v %)
   - Barevné kódování: zelená (kladná) / červená (záporná)
@@ -28,9 +30,9 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Legenda s procentuálním podílem
 
 ### Vlastní váhy
-- Přepínač rovné / vlastní zastoupení instrumentů
-- Při zapnutí vlastních vah: editovatelné pole váhy (%) u každého instrumentu
-- Validace: součet vah musí být 100 %
+- Při přidávání instrumentu je možné zadat procentuální zastoupení v portfoliu
+- Automatická detekce: pokud má alespoň jeden instrument vyplněnou váhu, stává se povinnou pro všechny
+- Pokud žádný instrument nemá váhu, použije se rovné zastoupení
 - Váhy ovlivňují graf výkonnosti i sektorovou alokaci
 
 ### Zprávy
@@ -120,7 +122,7 @@ src/
 │       ├── chart/route.ts        # GET /api/chart?symbols=...&range=...
 │       └── news/route.ts         # GET /api/news?symbols=...
 ├── components/
-│   ├── ui/                       # Znovupoužitelné UI primitiva
+│   ├── ui/                       # Znovupoužitelné UI primitiva (Button, Modal, Badge, InstrumentLogo...)
 │   ├── layout/                   # Header, navigace
 │   ├── portfolio/                # Správa portfolií
 │   ├── dashboard/                # Graf, tabulky, alokace

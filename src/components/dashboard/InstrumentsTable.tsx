@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatPercent, formatCurrency, cn } from '@/lib/utils';
+import { hasCustomWeights } from '@/types/portfolio';
+import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
 
 function ChangeCell({ value }: { value: number }) {
   return (
@@ -24,14 +26,13 @@ function ChangeCell({ value }: { value: number }) {
 
 export function InstrumentsTable() {
   const { t } = useLanguage();
-  const { activePortfolio, removeInstrument, updateInstrumentWeight, toggleCustomWeights } =
-    usePortfolio();
+  const { activePortfolio, removeInstrument } = usePortfolio();
 
   const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
   const { quotes, isLoading } = useMarketData(symbols);
 
   if (!activePortfolio) return null;
-  const { instruments, useCustomWeights } = activePortfolio;
+  const { instruments } = activePortfolio;
 
   if (instruments.length === 0) {
     return (
@@ -42,39 +43,14 @@ export function InstrumentsTable() {
     );
   }
 
-  const weightsTotal = instruments.reduce((sum, i) => sum + (i.weight ?? 0), 0);
-  const weightsValid = !useCustomWeights || Math.abs(weightsTotal - 100) < 0.01;
+  const showWeights = hasCustomWeights(activePortfolio);
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('dashboard.instruments')}
         </h2>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleCustomWeights(activePortfolio.id)}
-            className={cn(
-              'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
-              useCustomWeights ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-            )}
-          >
-            <span
-              className={cn(
-                'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform',
-                useCustomWeights ? 'translate-x-5' : 'translate-x-0'
-              )}
-            />
-          </button>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {useCustomWeights ? t('dashboard.customWeights') : t('dashboard.equalWeights')}
-          </span>
-          {useCustomWeights && !weightsValid && (
-            <span className="text-xs text-red-500">
-              {t('dashboard.weightsWarning')} ({weightsTotal.toFixed(1)}%)
-            </span>
-          )}
-        </div>
       </div>
 
       {isLoading && symbols.length > 0 ? (
@@ -88,7 +64,7 @@ export function InstrumentsTable() {
               <tr className="border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 <th className="text-left px-4 sm:px-6 py-3">{t('dashboard.name')}</th>
                 <th className="text-left px-2 py-3">{t('dashboard.type')}</th>
-                {useCustomWeights && <th className="text-right px-2 py-3">{t('dashboard.weight')}</th>}
+                <th className="text-right px-2 py-3">{t('dashboard.weight')}</th>
                 <th className="text-right px-2 py-3">{t('dashboard.price')}</th>
                 <th className="text-right px-2 py-3">{t('dashboard.change24h')}</th>
                 <th className="text-right px-2 py-3 hidden sm:table-cell">{t('dashboard.change1w')}</th>
@@ -107,37 +83,31 @@ export function InstrumentsTable() {
                     className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
                   >
                     <td className="px-4 sm:px-6 py-3">
-                      <div className="font-medium text-sm text-gray-900 dark:text-white">
-                        {instrument.symbol}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                        {instrument.name}
+                      <div className="flex items-center gap-2.5">
+                        <InstrumentLogo
+                          symbol={instrument.symbol}
+                          name={instrument.name}
+                          type={instrument.type}
+                          logoUrl={instrument.logoUrl}
+                        />
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            {instrument.symbol}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                            {instrument.name}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-2 py-3">
                       <Badge type={instrument.type} label={t(`types.${instrument.type}`)} />
                     </td>
-                    {useCustomWeights && (
-                      <td className="px-2 py-3 text-right">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          value={instrument.weight ?? ''}
-                          onChange={(e) =>
-                            updateInstrumentWeight(
-                              activePortfolio.id,
-                              instrument.symbol,
-                              parseFloat(e.target.value) || 0
-                            )
-                          }
-                          className="w-16 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-1.5 py-1 text-xs text-right text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"
-                          placeholder="—"
-                        />
-                        <span className="text-xs text-gray-400 ml-0.5">%</span>
-                      </td>
-                    )}
+                    <td className="px-2 py-3 text-right text-sm text-gray-900 dark:text-white">
+                      {showWeights && instrument.weight != null
+                        ? `${instrument.weight.toFixed(1)}%`
+                        : '—'}
+                    </td>
                     <td className="px-2 py-3 text-right text-sm text-gray-900 dark:text-white">
                       {quote ? formatCurrency(quote.price, quote.currency) : '—'}
                     </td>

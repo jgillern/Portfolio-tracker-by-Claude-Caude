@@ -45,7 +45,13 @@
     "switchPortfolio": "Switch Portfolio",
     "addInstrument": "Add Instrument",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "changeInstrument": "Change",
+    "weightLabel": "Portfolio weight",
+    "weightPlaceholder": "e.g. 25",
+    "weightRequired": "Other instruments have weights set — this field is required.",
+    "weightHint": "Optional. If set for one instrument, it becomes required for all.",
+    "back": "Back"
   },
   "search": {
     "placeholder": "Search by name or ticker...",
