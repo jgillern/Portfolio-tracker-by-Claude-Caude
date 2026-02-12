@@ -180,7 +180,8 @@
     "authError": "Authentication failed. Please check your credentials.",
     "emailExists": "An account with this email already exists.",
     "weakPassword": "Password must be at least 6 characters.",
-    "invalidEmail": "Please enter a valid email address."
+    "invalidEmail": "Please enter a valid email address.",
+    "dbError": "Database setup error. Please verify the SQL schema was run in Supabase."
   },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",

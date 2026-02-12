@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getProfile } from '@/lib/supabase/database';
+import { getProfile, ensureProfile, ensurePreferences } from '@/lib/supabase/database';
 import { migrateLocalStorageToSupabase } from '@/lib/supabase/migration';
 import type { User } from '@supabase/supabase-js';
 import type { UserProfile, SignUpData, SignInData } from '@/types/auth';
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = useCallback(async (data: SignUpData) => {
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data: result, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -78,6 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) return { error: error.message };
+
+    // Safety net: ensure profile & preferences exist even if DB trigger didn't fire
+    if (result.user) {
+      try {
+        await ensureProfile(result.user.id, data.firstName, data.lastName, data.email);
+        await ensurePreferences(result.user.id);
+      } catch {
+        // Non-fatal — trigger may have already created them
+      }
+    }
+
     return { error: null };
   }, []);
 

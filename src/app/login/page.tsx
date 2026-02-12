@@ -68,6 +68,8 @@ export default function LoginPage() {
     if (err) {
       if (err.message.includes('already')) {
         setError(t('auth.emailExists'));
+      } else if (err.message.includes('Database error')) {
+        setError(t('auth.dbError'));
       } else {
         setError(err.message);
       }
