@@ -51,6 +51,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │  │           API Routes                      │    │
 │  │  /api/search  /api/quote                 │    │
 │  │  /api/chart   /api/news                  │    │
+│  │  /api/calendar                           │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
@@ -60,7 +61,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
 │  │         In-memory cache (Map)             │    │
-│  │     (TTL: 60s - 15min dle endpointu)     │    │
+│  │     (TTL: 60s - 30min dle endpointu)     │    │
 │  └──────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────┘
                         │
@@ -198,17 +199,17 @@ Pro každý symbol:
 RootLayout
 └── Providers
     ├── Header
-    │   ├── Logo + navigační linky (Dashboard, Zprávy)
-    │   ├── PortfolioSwitcher (dropdown)
-    │   ├── Button "Nové portfolio" → CreatePortfolioModal
+    │   ├── Logo + navigační linky (Dashboard, Zprávy, Kalendář)
+    │   ├── PortfolioSwitcher (dropdown + "Přidat nové portfolio")
     │   ├── LanguageToggle
     │   └── ThemeToggle
     │
     ├── DashboardPage (/)
-    │   ├── Portfolio heading + akce
+    │   ├── Portfolio heading + akce (přidat, upravit, smazat)
     │   ├── PerformanceChart
     │   │   └── TimePeriodSelector
     │   ├── InstrumentsTable
+    │   │   ├── RefreshControl (odpočítávání + manuální refresh)
     │   │   └── InstrumentRow × N (logo + váha + ceny)
     │   ├── AllocationTable
     │   │   ├── Stacked bar
@@ -216,11 +217,18 @@ RootLayout
     │   ├── AddInstrumentModal
     │   │   ├── InstrumentSearch (krok 1)
     │   │   └── Weight input + potvrzení (krok 2)
+    │   ├── EditPortfolioModal
+    │   │   └── InstrumentRow × N (logo + editace váhy + odebrání)
+    │   ├── Empty state + CreatePortfolioModal (pokud žádné portfolio)
     │   └── Delete confirmation dialog
     │
-    └── NewsPage (/news)
-        └── NewsFeed
-            └── NewsCard × N
+    ├── NewsPage (/news)
+    │   └── NewsFeed
+    │       └── NewsCard × N
+    │
+    └── CalendarPage (/calendar)
+        └── CalendarFeed
+            └── EventCard × N (earnings, dividendy)
 ```
 
 ---
@@ -235,6 +243,7 @@ RootLayout
 | `/api/quote` | 60 s | `quote:{symbol}` |
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
+| `/api/calendar` | 30 min | `calendar:{symbols}` |
 
 **Poznámky:**
 - Cache žije pouze po dobu běhu serveru (restart = vyčištění)
@@ -243,7 +252,7 @@ RootLayout
 
 ### Client-side polling
 
-- `useMarketData`: auto-refresh každých 60 s
+- `useMarketData`: auto-refresh každých 10 minut (s odpočítáváním a manuálním refreshem)
 - Ostatní hooky: jednorázový fetch při mountu nebo změně parametrů
 
 ---

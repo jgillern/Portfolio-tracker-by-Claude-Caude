@@ -1,6 +1,6 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 4 interní API endpointy, které slouží jako server-side proxy pro Yahoo Finance. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 5 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
 
 ---
 
@@ -11,8 +11,9 @@ Portfolio Tracker poskytuje 4 interní API endpointy, které slouží jako serve
 3. [GET /api/quote](#get-apiquote)
 4. [GET /api/chart](#get-apichart)
 5. [GET /api/news](#get-apinews)
-6. [Cachování](#cachování)
-7. [Chybové odpovědi](#chybové-odpovědi)
+6. [GET /api/calendar](#get-apicalendar)
+7. [Cachování](#cachování)
+8. [Chybové odpovědi](#chybové-odpovědi)
 
 ---
 
@@ -24,6 +25,7 @@ Portfolio Tracker poskytuje 4 interní API endpointy, které slouží jako serve
 | `GET /api/quote` | Aktuální ceny + změny | 60 s |
 | `GET /api/chart` | Historická data pro graf | 5 min |
 | `GET /api/news` | Finanční zprávy | 15 min |
+| `GET /api/calendar` | Kalendářní události (earnings, dividendy) | 30 min |
 
 ---
 
@@ -253,6 +255,62 @@ GET /api/news?symbols={symbol1},{symbol2},...
 
 ---
 
+## GET /api/calendar
+
+Vrátí nadcházející klíčové události (earnings, dividendy) pro zadané symboly.
+
+### Request
+
+```
+GET /api/calendar?symbols={symbol1},{symbol2},...
+```
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `symbols` | string | Ano | Čárkou oddělené ticker symboly |
+
+### Response — 200 OK
+
+```json
+[
+  {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "type": "earnings",
+    "date": "2026-04-24T00:00:00.000Z",
+    "title": "AAPL Earnings",
+    "detail": "EPS est. 1.62 (1.55 - 1.70)"
+  },
+  {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "type": "dividend",
+    "date": "2026-03-15T00:00:00.000Z",
+    "title": "MSFT Ex-Dividend",
+    "detail": "Pay date: 4/10/2026"
+  }
+]
+```
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `symbol` | string | Ticker symbol |
+| `name` | string | Název instrumentu |
+| `type` | `'earnings' \| 'dividend' \| 'split' \| 'other'` | Typ události |
+| `date` | string | ISO 8601 datum události |
+| `title` | string | Nadpis události |
+| `detail` | string? | Doplňující informace (EPS odhad, datum výplaty dividendy...) |
+
+### Poznámky
+
+- Zpracovává max 15 symbolů
+- Načítá data přes `yf.quoteSummary()` s modulem `calendarEvents`
+- Události jsou seřazeny chronologicky
+- Earnings: zahrnuje odhad EPS a rozsah (pokud dostupné z Yahoo Finance)
+- Dividendy: zahrnuje ex-dividend datum a pay date
+
+---
+
 ## Cachování
 
 Všechny endpointy využívají server-side in-memory cache.
@@ -269,6 +327,7 @@ Request → Cache hit?
 | `/api/quote` | 60 s | `quote:{symbol}` (per symbol) |
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
+| `/api/calendar` | 30 min | `calendar:{symbols}` |
 
 **Omezení cache:**
 - In-memory — neprežije restart serveru
