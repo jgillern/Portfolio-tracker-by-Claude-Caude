@@ -249,7 +249,11 @@ CREATE POLICY "Users can delete own instruments" ON instruments FOR DELETE
 
 -- Trigger: automatické vytvoření profilu a preferencí při registraci
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, first_name, last_name, email)
   VALUES (
@@ -261,7 +265,7 @@ BEGIN
   INSERT INTO user_preferences (id) VALUES (NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -376,6 +380,9 @@ Browser-side Supabase klient (`createBrowserClient` z `@supabase/ssr`). Použív
 ### `src/lib/supabase/server.ts`
 Server-side Supabase klient pro Server Components a API Routes. Čte cookies přes Next.js `cookies()`.
 
+### `src/app/api/auth/signout/route.ts`
+Server-side API route pro odhlášení. Volá `supabase.auth.signOut()` přes server-side klient, čímž správně vyčistí httpOnly auth cookies. Voláno z `AuthContext.signOut()` před redirectem na `/login`.
+
 ### `src/lib/supabase/middleware.ts`
 Middleware helper — refreshuje session tokeny a vynucuje autentizaci. Nepřihlášení uživatelé jsou přesměrováni na `/login`, přihlášení na `/login` jsou přesměrováni na `/`.
 
@@ -426,8 +433,8 @@ Autentizační kontext — spravuje přihlášení, registraci a odhlášení p�
 
 **Chování:**
 - Při mountu: načte session přes `getUser()`, načte profil, spustí migraci z localStorage
-- Naslouchá `onAuthStateChange` pro aktualizace session
-- Při odhlášení vymaže state a přesměruje
+- Naslouchá `onAuthStateChange` — reaguje pouze na `SIGNED_OUT` (vymaže user state), `SIGNED_IN` a `USER_UPDATED` (načte/aktualizuje profil). Token refresh události jsou ignorovány, aby nedocházelo ke zbytečným re-renderům a ztrátě stavu.
+- Při odhlášení: klientský signOut + server-side `POST /api/auth/signout` (vyčistí cookies) + redirect na `/login`
 
 ### `src/context/PortfolioContext.tsx`
 
@@ -449,7 +456,7 @@ Centrální state management pro portfolia. Používá `useReducer` s Supabase j
 
 **Reducer akce:** `SET_STATE`, `SET_PORTFOLIOS`, `ADD_PORTFOLIO`, `REMOVE_PORTFOLIO`, `UPDATE_PORTFOLIO_NAME`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`
 
-**Persistence:** Při mountu načte data z Supabase (portfolia + instrumenty). Každá akce (CRUD) volá příslušnou funkci z `database.ts` a současně aktualizuje lokální reducer state. Závisí na `AuthContext` — vyžaduje přihlášeného uživatele.
+**Persistence:** Při mountu načte data z Supabase (portfolia + instrumenty). Každá akce (CRUD) volá příslušnou funkci z `database.ts` a současně aktualizuje lokální reducer state. Závisí na `user?.id` z `AuthContext` — reload z DB se spustí pouze při skutečné změně uživatele (login/logout), nikoliv při token refresh.
 
 ### `src/context/LanguageContext.tsx`
 

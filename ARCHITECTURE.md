@@ -53,6 +53,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                                                  │
 │  ┌──────────────────────────────────────────┐    │
 │  │           API Routes                      │    │
+│  │  /api/auth/signout (session cleanup)     │    │
 │  │  /api/search    /api/quote               │    │
 │  │  /api/chart     /api/news                │    │
 │  │  /api/calendar  /api/logo (image proxy)  │    │
@@ -90,6 +91,16 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 4. Redirect na / → middleware potvrdí session → propustí
 5. AuthContext načte user profil, spustí migraci z localStorage (jednorázově)
 6. PortfolioContext načte portfolia z Supabase
+```
+
+### Odhlášení uživatele
+
+```
+1. Uživatel klikne "Odhlásit se" v user menu
+2. signOut() → supabase.auth.signOut() (klient) — vymaže klientský session state
+3. POST /api/auth/signout → server-side Supabase signOut() — správně vyčistí httpOnly cookies
+4. Redirect na /login přes window.location.href (full page reload)
+5. Middleware detekuje nepřihlášeného → propustí na /login
 ```
 
 ### Načtení dashboardu
@@ -186,7 +197,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 |---|---|---|
 | **Supabase DB** | Portfolia, instrumenty, preference | Trvalé úložiště, cross-device |
 | **Supabase Auth** | Session, user metadata | Autentizace (cookie-based) |
-| **localStorage** | Jazyk, téma, pořadí sekcí | Cache pro okamžitý start (fallback) |
+| **localStorage** | Jazyk, téma, pořadí sekcí | Cache pro okamžitý start |
 
 ### localStorage klíče (cache)
 
@@ -195,6 +206,8 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 | `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` | Při přepnutí jazyka |
 | `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
 | `portfolio-tracker-dashboard-order` | `string[]` (JSON) — pořadí sekcí dashboardu | Při přeřazení sekcí drag-and-drop |
+
+**Poznámka:** Klíč `portfolio-tracker-state` (dříve používaný pro portfolia) se čte pouze při jednorázové migraci do Supabase — po migraci se odstraní. Nová data portfolií se ukládají výhradně do Supabase DB.
 
 ---
 

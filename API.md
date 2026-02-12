@@ -1,22 +1,23 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 8 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance, finanční metriky a loga instrumentů. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-side proxy pro Yahoo Finance, finanční metriky a loga) a 1 autentizační. Běží na straně serveru (Next.js API Routes).
 
 ---
 
 ## Obsah
 
 1. [Přehled endpointů](#přehled-endpointů)
-2. [GET /api/search](#get-apisearch)
-3. [GET /api/quote](#get-apiquote)
-4. [GET /api/chart](#get-apichart)
-5. [GET /api/news](#get-apinews)
-6. [GET /api/calendar](#get-apicalendar)
-7. [GET /api/logo](#get-apilogo)
-8. [GET /api/countries](#get-apicountries)
-9. [GET /api/metrics](#get-apimetrics)
-10. [Cachování](#cachování)
-11. [Chybové odpovědi](#chybové-odpovědi)
+2. [POST /api/auth/signout](#post-apiauthsignout)
+3. [GET /api/search](#get-apisearch)
+4. [GET /api/quote](#get-apiquote)
+5. [GET /api/chart](#get-apichart)
+6. [GET /api/news](#get-apinews)
+7. [GET /api/calendar](#get-apicalendar)
+8. [GET /api/logo](#get-apilogo)
+9. [GET /api/countries](#get-apicountries)
+10. [GET /api/metrics](#get-apimetrics)
+11. [Cachování](#cachování)
+12. [Chybové odpovědi](#chybové-odpovědi)
 
 ---
 
@@ -24,6 +25,7 @@ Portfolio Tracker poskytuje 8 interních API endpointů, které slouží jako se
 
 | Endpoint | Účel | Cache TTL |
 |---|---|---|
+| `POST /api/auth/signout` | Server-side odhlášení (vyčištění cookies) | — |
 | `GET /api/search` | Vyhledávání instrumentů | 10 min |
 | `GET /api/quote` | Aktuální ceny + změny | 60 s |
 | `GET /api/chart` | Historická data pro graf | 5 min |
@@ -32,6 +34,32 @@ Portfolio Tracker poskytuje 8 interních API endpointů, které slouží jako se
 | `GET /api/logo` | Logo instrumentu (server-side image proxy) | 7 dní |
 | `GET /api/countries` | Země původu instrumentů | 24 h |
 | `GET /api/metrics` | Finanční metriky portfolia (Sharpe, Beta, Calmar...) | 10 min |
+
+---
+
+## POST /api/auth/signout
+
+Server-side odhlášení — vyčistí auth cookies přes Supabase server klient.
+
+### Request
+
+```
+POST /api/auth/signout
+```
+
+Bez parametrů. Používá cookies z requestu pro identifikaci session.
+
+### Response — 200 OK
+
+```json
+{ "ok": true }
+```
+
+### Poznámky
+
+- Voláno z `AuthContext.signOut()` po klientském `supabase.auth.signOut()`
+- Zajišťuje správné vyčištění httpOnly cookies, které klientský signOut nemusí odstranit
+- Middleware matcher vylučuje `/api/` routes, takže tento endpoint není chráněn autentizací (což je správně — musí fungovat i s expirovaným tokenem)
 
 ---
 

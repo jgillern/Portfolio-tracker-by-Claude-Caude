@@ -99,7 +99,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 ### Persistence dat
 - Všechna data (portfolia, instrumenty, preference) se ukládají v Supabase PostgreSQL databázi
 - Data dostupná napříč zařízeními a prohlížeči po přihlášení
-- Dual-write: localStorage slouží jako cache pro okamžitý start, Supabase jako trvalé úložiště
+- localStorage slouží jako cache pro téma, jazyk a pořadí sekcí dashboardu (pro okamžitý start)
 - Row Level Security (RLS) — každý uživatel vidí pouze svá data
 
 ---
@@ -170,6 +170,7 @@ src/
 │   │   ├── news/page.tsx         # Stránka se zprávami
 │   │   └── calendar/page.tsx     # Stránka s kalendářem událostí
 │   └── api/                      # Serverové API routes
+│       ├── auth/signout/route.ts # POST /api/auth/signout (server-side session cleanup)
 │       ├── search/route.ts       # GET /api/search?q=...
 │       ├── quote/route.ts        # GET /api/quote?symbols=...
 │       ├── chart/route.ts        # GET /api/chart?symbols=...&range=...
