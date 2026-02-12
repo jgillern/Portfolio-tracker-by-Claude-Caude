@@ -17,9 +17,18 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Smazání celého portfolia s potvrzovacím dialogem
 
 ### Dashboard
+- **Hlavní statistiky** — rychlý přehled výkonnosti portfolia za klíčová období
+  - Zobrazuje 5 hodnot: 5 let, 1 rok, YTD, Měsíc, Týden
+  - Všechny hodnoty vedle sebe pro okamžitý přehled
+  - Zelená/červená barva podle zhodnocení
 - **Graf výkonnosti** — interaktivní čárový graf (Recharts) zobrazující vážený vývoj portfolia
   - Časová období: 1D, 1T, 1M, 1R, 5L, YTD
   - Zelená/červená barva podle celkového vývoje
+  - **Porovnání s jinými instrumenty** — možnost přidat až 5 srovnávacích instrumentů
+    - Tlačítko "+ Porovnat" pro vyhledání a přidání instrumentu
+    - Každý instrument má vlastní barevně odlišenou čáru
+    - Procentuální zhodnocení zobrazené na konci každé čáry
+    - Odebrání křížkem, data se neukládají (pouze dočasné srovnání)
 - **Tabulka instrumentů** — přehled všech instrumentů v portfoliu:
   - Logo instrumentu — automaticky načtené přes server-side image proxy (apple-touch-icon z webu firmy, Google favicon jako fallback) nebo cryptocurrency-icons CDN (krypto); barevná iniciála jako fallback
   - Název, symbol, typ (barevný badge)
@@ -28,6 +37,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Změna za: 24h, 1 týden, 1 měsíc, 1 rok, YTD (v %)
   - Barevné kódování: zelená (kladná) / červená (záporná)
   - Tlačítko pro manuální refresh vedle názvu portfolia (obnoví kotace i graf současně)
+  - **Automatické řazení** — instrumenty seřazeny podle procentuálního zastoupení v portfoliu (od největšího po nejmenší)
 - **Sektorová alokace** — vizuální rozdělení portfolia dle sektorů (technologie, finance, krypto...)
   - Horizontální stacked bar chart
   - Legenda s procentuálním podílem

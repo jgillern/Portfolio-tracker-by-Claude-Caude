@@ -270,10 +270,14 @@ RootLayout (ThemeProvider → LanguageProvider)
     ├── DashboardPage (/)
     │   ├── Portfolio heading + RefreshControl + akce (přidat, import CSV, upravit, smazat)
     │   ├── Varovný banner (pokud váhy < 100%)
-    │   ├── DraggableSection × 6 (pořadí řízeno useDashboardOrder)
+    │   ├── DraggableSection × 7 (pořadí řízeno useDashboardOrder)
+    │   │   ├── KeyStats (5 klíčových statistik: 5Y, 1Y, YTD, 1M, 1W)
     │   │   ├── PerformanceChart (refreshSignal prop)
-    │   │   │   └── TimePeriodSelector
-    │   │   ├── InstrumentsTable (quotes + isLoading props)
+    │   │   │   ├── TimePeriodSelector
+    │   │   │   ├── Comparison badges (portfolio + až 5 srovnávacích instrumentů)
+    │   │   │   ├── "+ Porovnat" tlačítko → InstrumentSearch
+    │   │   │   └── Graf s procentuálním zhodnocením na konci čar
+    │   │   ├── InstrumentsTable (quotes + isLoading props, řazeno podle váhy)
     │   │   │   └── InstrumentRow × N (logo + váha + ceny)
     │   │   ├── AllocationTable (sektorová alokace)
     │   │   │   ├── Stacked bar
