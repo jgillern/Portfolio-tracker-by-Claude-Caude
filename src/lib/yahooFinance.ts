@@ -458,17 +458,18 @@ export async function getPortfolioMetrics(
   symbols: string[],
   weights: number[]
 ): Promise<{
-  peRatio: number | null;
   sharpeRatio: number | null;
   beta: number | null;
   alpha: number | null;
   sortinoRatio: number | null;
   treynorRatio: number | null;
+  calmarRatio: number | null;
 }> {
   const cacheKey = `metrics:${symbols.join(',')}:${weights.join(',')}`;
   const cached = getCached<{
-    peRatio: number | null; sharpeRatio: number | null; beta: number | null;
+    sharpeRatio: number | null; beta: number | null;
     alpha: number | null; sortinoRatio: number | null; treynorRatio: number | null;
+    calmarRatio: number | null;
   }>(cacheKey);
   if (cached) return cached;
 
@@ -479,18 +480,16 @@ export async function getPortfolioMetrics(
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   const normWeights = weights.map((w) => (totalWeight > 0 ? w / totalWeight : 1 / symbols.length));
 
-  const symbolData: { pe: number | null; beta: number | null; dailyReturns: number[] }[] = [];
+  const symbolData: { beta: number | null; dailyReturns: number[] }[] = [];
 
   await Promise.allSettled(
     symbols.map(async (symbol) => {
       try {
-        const [quote, summary, chart] = await Promise.all([
-          yf.quote(symbol),
+        const [summary, chart] = await Promise.all([
           yf.quoteSummary(symbol, { modules: ['defaultKeyStatistics'] }).catch(() => null),
           yf.chart(symbol, { period1: oneYearAgo, period2: now, interval: '1d' }).catch(() => null),
         ]);
 
-        const pe = quote.trailingPE ?? null;
         const beta = summary?.defaultKeyStatistics?.beta ?? null;
 
         const dailyReturns: number[] = [];
@@ -503,23 +502,13 @@ export async function getPortfolioMetrics(
           }
         }
 
-        symbolData.push({ pe, beta, dailyReturns });
+        symbolData.push({ beta, dailyReturns });
       } catch (error) {
         console.error(`Metrics error for ${symbol}:`, error);
-        symbolData.push({ pe: null, beta: null, dailyReturns: [] });
+        symbolData.push({ beta: null, dailyReturns: [] });
       }
     })
   );
-
-  // Weighted P/E
-  let peRatio: number | null = null;
-  {
-    let weightedPe = 0, peWeight = 0;
-    symbolData.forEach((d, i) => {
-      if (d.pe != null && d.pe > 0) { weightedPe += d.pe * normWeights[i]; peWeight += normWeights[i]; }
-    });
-    if (peWeight > 0) peRatio = weightedPe / peWeight;
-  }
 
   // Weighted Beta
   let portfolioBeta: number | null = null;
@@ -537,6 +526,7 @@ export async function getPortfolioMetrics(
   let alpha: number | null = null;
   let sortinoRatio: number | null = null;
   let treynorRatio: number | null = null;
+  let calmarRatio: number | null = null;
 
   if (maxLen > 20) {
     const portfolioReturns: number[] = [];
@@ -576,6 +566,22 @@ export async function getPortfolioMetrics(
       treynorRatio = (annualizedReturn - RISK_FREE_RATE) / portfolioBeta;
     }
 
+    // Calmar Ratio = Annualized Return / Maximum Drawdown
+    {
+      let cumReturn = 1;
+      let peak = 1;
+      let maxDrawdown = 0;
+      for (const r of portfolioReturns) {
+        cumReturn *= (1 + r);
+        if (cumReturn > peak) peak = cumReturn;
+        const drawdown = (peak - cumReturn) / peak;
+        if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+      }
+      if (maxDrawdown > 0) {
+        calmarRatio = annualizedReturn / maxDrawdown;
+      }
+    }
+
     try {
       const spyChart = await yf.chart('^GSPC', { period1: oneYearAgo, period2: now, interval: '1d' });
       const spyQuotes = spyChart.quotes || [];
@@ -591,12 +597,12 @@ export async function getPortfolioMetrics(
   }
 
   const result = {
-    peRatio: peRatio != null ? Math.round(peRatio * 100) / 100 : null,
     sharpeRatio: sharpeRatio != null ? Math.round(sharpeRatio * 100) / 100 : null,
     beta: portfolioBeta != null ? Math.round(portfolioBeta * 100) / 100 : null,
     alpha: alpha != null ? Math.round(alpha * 10000) / 100 : null,
     sortinoRatio: sortinoRatio != null ? Math.round(sortinoRatio * 100) / 100 : null,
     treynorRatio: treynorRatio != null ? Math.round(treynorRatio * 100) / 100 : null,
+    calmarRatio: calmarRatio != null ? Math.round(calmarRatio * 100) / 100 : null,
   };
 
   setCache(cacheKey, result, 10 * 60 * 1000);

@@ -9,10 +9,9 @@ interface MetricGaugeProps {
   min: number;
   max: number;
   format?: (v: number) => string;
-  invertScale?: boolean;
 }
 
-export function MetricGauge({ name, value, tooltip, min, max, format, invertScale }: MetricGaugeProps) {
+export function MetricGauge({ name, value, tooltip, min, max, format }: MetricGaugeProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const displayValue = value != null ? (format ? format(value) : value.toFixed(2)) : '—';
@@ -21,7 +20,6 @@ export function MetricGauge({ name, value, tooltip, min, max, format, invertScal
   let position = 50;
   if (value != null) {
     position = ((value - min) / (max - min)) * 100;
-    if (invertScale) position = 100 - position;
     position = Math.max(2, Math.min(98, position));
   }
 
@@ -60,9 +58,7 @@ export function MetricGauge({ name, value, tooltip, min, max, format, invertScal
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: invertScale
-              ? 'linear-gradient(to right, #22c55e, #eab308, #ef4444)'
-              : 'linear-gradient(to right, #ef4444, #eab308, #22c55e)',
+            background: 'linear-gradient(to right, #ef4444, #eab308, #22c55e)',
           }}
         />
         {/* Marker */}

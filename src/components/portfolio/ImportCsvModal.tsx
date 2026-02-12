@@ -69,7 +69,7 @@ export function ImportCsvModal({ isOpen, onClose }: Props) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        const parts = line.split(',').map((p) => p.trim());
+        const parts = line.split(';').map((p) => p.trim());
         const ticker = parts[0]?.toUpperCase();
 
         if (!ticker) {
@@ -198,10 +198,10 @@ export function ImportCsvModal({ isOpen, onClose }: Props) {
             <li>{t('import.instructionExample')}</li>
           </ul>
           <div className="mt-2 rounded bg-blue-100 dark:bg-blue-900/40 px-2 py-1.5 font-mono text-xs text-blue-800 dark:text-blue-300">
-            AAPL,25<br />
-            MSFT,25<br />
-            BTC-USD,30<br />
-            GLD,20
+            AAPL;25<br />
+            MSFT;25<br />
+            BTC-USD;30<br />
+            GLD;20
           </div>
         </div>
 

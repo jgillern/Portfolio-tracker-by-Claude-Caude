@@ -31,7 +31,7 @@ Portfolio Tracker poskytuje 8 interních API endpointů, které slouží jako se
 | `GET /api/calendar` | Kalendářní události (earnings, dividendy) | 30 min |
 | `GET /api/logo` | Logo instrumentu (server-side image proxy) | 7 dní |
 | `GET /api/countries` | Země původu instrumentů | 24 h |
-| `GET /api/metrics` | Finanční metriky portfolia (P/E, Sharpe, Beta...) | 10 min |
+| `GET /api/metrics` | Finanční metriky portfolia (Sharpe, Beta, Calmar...) | 10 min |
 
 ---
 
@@ -425,34 +425,34 @@ GET /api/metrics?symbols={symbol1},{symbol2}&weights={w1},{w2}
 
 ```json
 {
-  "peRatio": 25.4,
   "sharpeRatio": 1.23,
   "beta": 1.15,
   "alpha": 2.8,
   "sortinoRatio": 1.67,
-  "treynorRatio": 0.089
+  "treynorRatio": 0.089,
+  "calmarRatio": 2.45
 }
 ```
 
 | Pole | Typ | Popis |
 |---|---|---|
-| `peRatio` | number \| null | Vážený P/E ratio portfolia |
 | `sharpeRatio` | number \| null | Sharpe ratio (rizikově vážený výnos) |
 | `beta` | number \| null | Beta portfolia vůči S&P 500 |
 | `alpha` | number \| null | Jensenova Alfa (přebytkový výnos nad CAPM) |
 | `sortinoRatio` | number \| null | Sortino ratio (jen downside riziko) |
 | `treynorRatio` | number \| null | Treynor ratio (systematicky rizikově vážený výnos) |
+| `calmarRatio` | number \| null | Calmar ratio (anualizovaný výnos / maximální propad) |
 
 ### Algoritmus výpočtu
 
 1. Načte 1 rok denních dat pro všechny symboly + S&P 500 (^GSPC) jako benchmark
 2. Spočítá vážené denní výnosy portfolia
-3. **P/E:** Vážený průměr z `trailingPE` jednotlivých symbolů
-4. **Sharpe:** `(annualized_return - risk_free_rate) / annualized_volatility` (risk-free rate = 4,5 %)
-5. **Beta:** `covariance(portfolio, market) / variance(market)`
-6. **Alpha:** `portfolio_return - (risk_free_rate + beta × (market_return - risk_free_rate))`
-7. **Sortino:** Jako Sharpe, ale volatilita pouze z negativních výnosů
-8. **Treynor:** `(annualized_return - risk_free_rate) / beta`
+3. **Sharpe:** `(annualized_return - risk_free_rate) / annualized_volatility` (risk-free rate = 4,5 %)
+4. **Beta:** `covariance(portfolio, market) / variance(market)`
+5. **Alpha:** `portfolio_return - (risk_free_rate + beta × (market_return - risk_free_rate))`
+6. **Sortino:** Jako Sharpe, ale volatilita pouze z negativních výnosů
+7. **Treynor:** `(annualized_return - risk_free_rate) / beta`
+8. **Calmar:** `annualized_return / max_drawdown` (maximální peak-to-trough propad)
 
 ### Poznámky
 

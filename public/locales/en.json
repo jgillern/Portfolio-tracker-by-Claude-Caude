@@ -69,7 +69,7 @@
   },
   "import": {
     "instructions": "CSV Import Instructions",
-    "instructionFormat": "File must be UTF-8 encoded CSV (comma-separated)",
+    "instructionFormat": "File must be UTF-8 encoded CSV (semicolon-separated)",
     "instructionColumns": "Column 1: ticker symbol (e.g. AAPL, BTC-USD)",
     "instructionWeight": "Column 2: portfolio weight in % (optional)",
     "instructionExample": "Example:",
@@ -143,8 +143,8 @@
   },
   "metrics": {
     "title": "Portfolio Rating",
-    "peRatio": "P/E Ratio",
-    "peRatioTooltip": "Price-to-Earnings ratio — measures how expensive the portfolio is relative to earnings. Lower values may indicate undervaluation.",
+    "calmarRatio": "Calmar Ratio",
+    "calmarRatioTooltip": "Calmar Ratio — measures risk-adjusted return by dividing annualized return by maximum drawdown. Higher is better; >3 is excellent, >1 is acceptable.",
     "sharpeRatio": "Sharpe Ratio",
     "sharpeRatioTooltip": "Risk-adjusted return — measures excess return per unit of total risk (volatility). Higher is better; >1 is good, >2 is very good.",
     "beta": "Beta",

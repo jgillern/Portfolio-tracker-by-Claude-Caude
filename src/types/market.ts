@@ -40,12 +40,12 @@ export interface CalendarEvent {
 }
 
 export interface PortfolioMetrics {
-  peRatio: number | null;
   sharpeRatio: number | null;
   beta: number | null;
   alpha: number | null;
   sortinoRatio: number | null;
   treynorRatio: number | null;
+  calmarRatio: number | null;
 }
 
 export interface CountryAllocationItem {
