@@ -95,6 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Clear server-side cookies via API route
+    await fetch('/api/auth/signout', { method: 'POST' });
     setUser(null);
     setProfile(null);
     window.location.href = '/login';

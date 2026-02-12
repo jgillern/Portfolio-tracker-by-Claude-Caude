@@ -195,22 +195,27 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const createPortfolio = useCallback(
     async (name: string): Promise<boolean> => {
       if (!user) return false;
-      const newPortfolio = await db.createPortfolio(user.id, name, true);
-      if (!newPortfolio) return false;
+      try {
+        const newPortfolio = await db.createPortfolio(user.id, name, true);
+        if (!newPortfolio) return false;
 
-      await db.setActivePortfolio(user.id, newPortfolio.id);
+        await db.setActivePortfolio(user.id, newPortfolio.id);
 
-      dispatch({
-        type: 'ADD_PORTFOLIO',
-        payload: {
-          id: newPortfolio.id,
-          name: newPortfolio.name,
-          instruments: [],
-          createdAt: newPortfolio.created_at,
-          updatedAt: newPortfolio.updated_at,
-        },
-      });
-      return true;
+        dispatch({
+          type: 'ADD_PORTFOLIO',
+          payload: {
+            id: newPortfolio.id,
+            name: newPortfolio.name,
+            instruments: [],
+            createdAt: newPortfolio.created_at,
+            updatedAt: newPortfolio.updated_at,
+          },
+        });
+        return true;
+      } catch (err) {
+        console.error('createPortfolio failed:', err);
+        return false;
+      }
     },
     [user]
   );
