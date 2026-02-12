@@ -35,6 +35,7 @@
     "weightsTotal": "Total",
     "weightsWarning": "Weights must sum to 100%",
     "remove": "Remove",
+    "portfolioIncomplete": "Portfolio is incomplete — total weight is {total}%. Statistics may be inaccurate.",
     "autoRefresh": "Auto refresh in",
     "refreshNow": "Refresh now"
   },
@@ -58,6 +59,8 @@
     "weightPlaceholder": "e.g. 25",
     "weightRequired": "Other instruments have weights set — this field is required.",
     "weightHint": "Optional. If set for one instrument, it becomes required for all.",
+    "weightRemaining": "Remaining",
+    "weightExceeded": "Cannot exceed 100% total weight!",
     "back": "Back"
   },
   "search": {

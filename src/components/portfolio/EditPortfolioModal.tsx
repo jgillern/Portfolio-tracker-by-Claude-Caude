@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
-import { Instrument, hasCustomWeights } from '@/types/portfolio';
+import { Instrument } from '@/types/portfolio';
 
 interface Props {
   isOpen: boolean;
@@ -37,6 +37,8 @@ export function EditPortfolioModal({ isOpen, onClose }: Props) {
   const visibleInstruments = localInstruments.filter((i) => !i._removed);
   const anyHasWeight = visibleInstruments.some((i) => i.weight != null && i.weight > 0);
   const weightsTotal = visibleInstruments.reduce((sum, i) => sum + (i.weight ?? 0), 0);
+  const remaining = Math.max(0, 100 - weightsTotal);
+  const weightsExceed = anyHasWeight && weightsTotal > 100.01;
   const weightsValid = !anyHasWeight || Math.abs(weightsTotal - 100) < 0.01;
 
   const handleRemove = (symbol: string) => {
@@ -58,6 +60,9 @@ export function EditPortfolioModal({ isOpen, onClose }: Props) {
   };
 
   const handleSave = () => {
+    // Prevent saving if weights exceed 100%
+    if (weightsExceed) return;
+
     // Apply removals
     const removedSymbols = localInstruments
       .filter((i) => i._removed)
@@ -163,9 +168,17 @@ export function EditPortfolioModal({ isOpen, onClose }: Props) {
       </div>
 
       {anyHasWeight && visibleInstruments.length > 0 && (
-        <div className={`mt-3 text-xs ${weightsValid ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
-          {t('dashboard.weightsTotal')}: {weightsTotal.toFixed(1)}%
-          {!weightsValid && ` — ${t('dashboard.weightsWarning')}`}
+        <div className="mt-3 space-y-1">
+          <div className={`text-xs ${weightsValid ? 'text-green-600 dark:text-green-400' : weightsExceed ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'}`}>
+            {t('dashboard.weightsTotal')}: {weightsTotal.toFixed(1)}%
+            {weightsExceed && ` — ${t('portfolio.weightExceeded')}`}
+            {!weightsValid && !weightsExceed && ` — ${t('dashboard.weightsWarning')}`}
+          </div>
+          {!weightsExceed && remaining > 0.01 && (
+            <div className="text-xs text-blue-600 dark:text-blue-400">
+              {t('portfolio.weightRemaining')}: {remaining.toFixed(1)}%
+            </div>
+          )}
         </div>
       )}
 
@@ -173,7 +186,7 @@ export function EditPortfolioModal({ isOpen, onClose }: Props) {
         <Button variant="secondary" onClick={handleCancel}>
           {t('portfolio.cancel')}
         </Button>
-        <Button onClick={handleSave}>
+        <Button onClick={handleSave} disabled={weightsExceed}>
           {t('portfolio.save')}
         </Button>
       </div>

@@ -12,6 +12,7 @@ import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { RefreshControl } from '@/components/dashboard/RefreshControl';
 import { Button } from '@/components/ui/Button';
+import { hasCustomWeights } from '@/types/portfolio';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -83,6 +84,22 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {activePortfolio.instruments.length > 0 &&
+        hasCustomWeights(activePortfolio) &&
+        (() => {
+          const total = activePortfolio.instruments.reduce((s, i) => s + (i.weight ?? 0), 0);
+          return total < 99.99 ? (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-3">
+              <svg className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                {t('dashboard.portfolioIncomplete').replace('{total}', total.toFixed(1))}
+              </p>
+            </div>
+          ) : null;
+        })()}
 
       <PerformanceChart refreshSignal={chartRefreshSignal} />
       <InstrumentsTable quotes={quotes} isLoading={isLoading} />
