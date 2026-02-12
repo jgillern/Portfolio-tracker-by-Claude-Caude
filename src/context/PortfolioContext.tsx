@@ -187,7 +187,8 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
     load();
     return () => { cancelled = true; };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const activePortfolio =
     state.portfolios.find((p) => p.id === state.activePortfolioId) ?? null;

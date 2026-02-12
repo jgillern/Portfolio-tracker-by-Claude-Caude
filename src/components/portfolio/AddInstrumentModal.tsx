@@ -40,7 +40,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
     setWeight('');
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selected || wouldExceed) return;
     const pw = weight.trim() ? parseFloat(weight) : undefined;
     const instrument: Instrument = {
@@ -51,7 +51,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
       weight: pw != null && !isNaN(pw) && pw > 0 ? pw : undefined,
       addedAt: new Date().toISOString(),
     };
-    addInstrument(activePortfolio.id, instrument);
+    await addInstrument(activePortfolio.id, instrument);
     setSelected(null);
     setWeight('');
     onClose();
