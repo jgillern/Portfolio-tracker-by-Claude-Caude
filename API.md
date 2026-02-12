@@ -1,6 +1,6 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 6 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance a externí logo služby. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 8 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance, finanční metriky a loga instrumentů. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
 
 ---
 
@@ -13,8 +13,10 @@ Portfolio Tracker poskytuje 6 interních API endpointů, které slouží jako se
 5. [GET /api/news](#get-apinews)
 6. [GET /api/calendar](#get-apicalendar)
 7. [GET /api/logo](#get-apilogo)
-8. [Cachování](#cachování)
-9. [Chybové odpovědi](#chybové-odpovědi)
+8. [GET /api/countries](#get-apicountries)
+9. [GET /api/metrics](#get-apimetrics)
+10. [Cachování](#cachování)
+11. [Chybové odpovědi](#chybové-odpovědi)
 
 ---
 
@@ -27,7 +29,9 @@ Portfolio Tracker poskytuje 6 interních API endpointů, které slouží jako se
 | `GET /api/chart` | Historická data pro graf | 5 min |
 | `GET /api/news` | Finanční zprávy | 15 min |
 | `GET /api/calendar` | Kalendářní události (earnings, dividendy) | 30 min |
-| `GET /api/logo` | Logo instrumentu (Clearbit / crypto CDN) | 24 h |
+| `GET /api/logo` | Logo instrumentu (server-side image proxy) | 7 dní |
+| `GET /api/countries` | Země původu instrumentů | 24 h |
+| `GET /api/metrics` | Finanční metriky portfolia (P/E, Sharpe, Beta...) | 10 min |
 
 ---
 
@@ -315,7 +319,7 @@ GET /api/calendar?symbols={symbol1},{symbol2},...
 
 ## GET /api/logo
 
-Vrátí URL loga pro zadaný instrument. Automaticky rozhodne zdroj podle typu instrumentu.
+Server-side image proxy — stáhne logo instrumentu a vrátí surové byty obrázku. Automaticky rozhodne zdroj podle typu instrumentu.
 
 ### Request
 
@@ -330,40 +334,131 @@ GET /api/logo?symbol={symbol}&type={type}
 
 ### Response — 200 OK
 
-```json
-{
-  "logoUrl": "https://logo.clearbit.com/apple.com"
-}
+Vrací **binární data obrázku** (ne JSON).
+
+| Hlavička | Hodnota |
+|---|---|
+| `Content-Type` | `image/png`, `image/x-icon` apod. |
+| `Cache-Control` | `public, max-age=604800, immutable` (7 dní) |
+
+### Response — 404 Not Found
+
+Logo nebylo nalezeno (prázdné tělo).
+
+### Algoritmus resolution
+
+1. **Krypto** (`type === 'crypto'`): Stáhne PNG z cryptocurrency-icons CDN:
+   `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/{symbol}.png`
+   - Symbol se převede na lowercase a odstraní se přípona `-USD` (BTC-USD → btc)
+
+2. **Akcie/ETF/ostatní**:
+   1. Zjistí doménu firmy: COMMON_DOMAINS mapa (~50 známých tickerů) → fallback na `yf.quoteSummary(symbol).assetProfile.website`
+   2. Zkusí `https://{domain}/apple-touch-icon.png`
+   3. Zkusí `https://{domain}/apple-touch-icon-precomposed.png`
+   4. Zkusí Google faviconV2: `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=128`
+   5. `null` (404) — klient zobrazí barevnou iniciálu
+
+### Poznámky
+
+- Server-side cache TTL: 7 dní (loga se mění zřídka)
+- HTTP Cache-Control hlavička zajišťuje cachování v prohlížeči — minimalizuje opakované requesty
+- Obrázky menší než 100 bajtů jsou ignorovány (pravděpodobně chybové odpovědi)
+- Fetch timeout: 5 sekund na každý pokus
+- Pozn.: Clearbit Logo API (dříve používaný) byl zrušen po akvizici HubSpotem
+
+---
+
+## GET /api/countries
+
+Vrátí země původu pro zadané symboly (z Yahoo Finance assetProfile).
+
+### Request
+
+```
+GET /api/countries?symbols={symbol1},{symbol2}&types={type1},{type2}
 ```
 
-nebo pokud logo nebylo nalezeno:
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `symbols` | string | Ano | Čárkou oddělené ticker symboly |
+| `types` | string | Ne | Čárkou oddělené typy instrumentů (pro přeskočení krypta) |
+
+### Response — 200 OK
+
+```json
+[
+  { "symbol": "AAPL", "country": "United States", "countryCode": "US" },
+  { "symbol": "SAP", "country": "Germany", "countryCode": "DE" }
+]
+```
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `symbol` | string | Ticker symbol |
+| `country` | string | Název země (anglicky) |
+| `countryCode` | string | ISO 2-písmenný kód země |
+
+### Poznámky
+
+- Cache TTL: 24 hodin
+- Krypto symboly se přeskakují (nemají zemi původu)
+- Symboly bez assetProfile se v odpovědi vynechají
+
+---
+
+## GET /api/metrics
+
+Vrátí finanční metriky pro portfolio (6 klíčových ukazatelů).
+
+### Request
+
+```
+GET /api/metrics?symbols={symbol1},{symbol2}&weights={w1},{w2}
+```
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `symbols` | string | Ano | Čárkou oddělené ticker symboly |
+| `weights` | string | Ne | Čárkou oddělené váhy (pokud chybí, použije rovné zastoupení) |
+
+### Response — 200 OK
 
 ```json
 {
-  "logoUrl": null
+  "peRatio": 25.4,
+  "sharpeRatio": 1.23,
+  "beta": 1.15,
+  "alpha": 2.8,
+  "sortinoRatio": 1.67,
+  "treynorRatio": 0.089
 }
 ```
 
 | Pole | Typ | Popis |
 |---|---|---|
-| `logoUrl` | string \| null | URL loga nebo null pokud nenalezeno |
+| `peRatio` | number \| null | Vážený P/E ratio portfolia |
+| `sharpeRatio` | number \| null | Sharpe ratio (rizikově vážený výnos) |
+| `beta` | number \| null | Beta portfolia vůči S&P 500 |
+| `alpha` | number \| null | Jensenova Alfa (přebytkový výnos nad CAPM) |
+| `sortinoRatio` | number \| null | Sortino ratio (jen downside riziko) |
+| `treynorRatio` | number \| null | Treynor ratio (systematicky rizikově vážený výnos) |
 
-### Algoritmus resolution
+### Algoritmus výpočtu
 
-1. **Krypto** (`type === 'crypto'`): Vrátí URL z cryptocurrency-icons CDN:
-   `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/{symbol}.png`
-   - Symbol se převede na lowercase a odstraní se přípona `-USD` (BTC-USD → btc)
-
-2. **Akcie/ETF/ostatní**: Tříúrovňový fallback:
-   1. `yf.quoteSummary(symbol, { modules: ['assetProfile'] })` → extrahuje `website` → Clearbit Logo API (`logo.clearbit.com/{domain}`)
-   2. Hardcoded mapování pro ~45 známých tickerů (META→meta.com, AAPL→apple.com, TSLA→tesla.com, NVDA→nvidia.com atd.)
-   3. `null` — klient zobrazí barevnou iniciálu
+1. Načte 1 rok denních dat pro všechny symboly + S&P 500 (^GSPC) jako benchmark
+2. Spočítá vážené denní výnosy portfolia
+3. **P/E:** Vážený průměr z `trailingPE` jednotlivých symbolů
+4. **Sharpe:** `(annualized_return - risk_free_rate) / annualized_volatility` (risk-free rate = 4,5 %)
+5. **Beta:** `covariance(portfolio, market) / variance(market)`
+6. **Alpha:** `portfolio_return - (risk_free_rate + beta × (market_return - risk_free_rate))`
+7. **Sortino:** Jako Sharpe, ale volatilita pouze z negativních výnosů
+8. **Treynor:** `(annualized_return - risk_free_rate) / beta`
 
 ### Poznámky
 
-- Cache TTL: 24 hodin (loga se mění zřídka)
-- Klientská komponenta `InstrumentLogo` cachuje výsledky v module-level `Map` — logo se pro každý symbol stahuje pouze jednou za session
-- Pokud se `<img>` nepodaří načíst (Clearbit vrátí 404), klient automaticky zobrazí fallback (barevná iniciála dle typu instrumentu)
+- Cache TTL: 10 minut
+- Metrika může být `null` pokud není dostatek dat k výpočtu
+- Historická data: 1 rok denních uzavíracích cen
 
 ---
 
@@ -384,7 +479,9 @@ Request → Cache hit?
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
 | `/api/calendar` | 30 min | `calendar:{symbols}` |
-| `/api/logo` | 24 h | `logo:{symbol}` |
+| `/api/logo` | 7 dní | `logo-img:{symbol}` (+ HTTP Cache-Control 7 dní) |
+| `/api/countries` | 24 h | `countries:{symbol}` |
+| `/api/metrics` | 10 min | `metrics:{symbols}:{weights}` |
 
 **Omezení cache:**
 - In-memory — neprežije restart serveru
