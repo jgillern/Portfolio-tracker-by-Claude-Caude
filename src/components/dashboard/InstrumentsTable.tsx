@@ -5,8 +5,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { useMarketData } from '@/hooks/useMarketData';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { RefreshControl } from './RefreshControl';
 import { formatPercent, formatCurrency, cn } from '@/lib/utils';
 import { hasCustomWeights } from '@/types/portfolio';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
@@ -26,10 +26,10 @@ function ChangeCell({ value }: { value: number }) {
 
 export function InstrumentsTable() {
   const { t } = useLanguage();
-  const { activePortfolio, removeInstrument } = usePortfolio();
+  const { activePortfolio } = usePortfolio();
 
   const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
-  const { quotes, isLoading } = useMarketData(symbols);
+  const { quotes, isLoading, refetch, lastUpdated } = useMarketData(symbols);
 
   if (!activePortfolio) return null;
   const { instruments } = activePortfolio;
@@ -47,10 +47,11 @@ export function InstrumentsTable() {
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('dashboard.instruments')}
         </h2>
+        <RefreshControl lastUpdated={lastUpdated} isLoading={isLoading} onRefresh={refetch} />
       </div>
 
       {isLoading && symbols.length > 0 ? (
@@ -71,7 +72,6 @@ export function InstrumentsTable() {
                 <th className="text-right px-2 py-3 hidden md:table-cell">{t('dashboard.change1m')}</th>
                 <th className="text-right px-2 py-3 hidden lg:table-cell">{t('dashboard.change1y')}</th>
                 <th className="text-right px-2 py-3 hidden lg:table-cell">{t('dashboard.changeYtd')}</th>
-                <th className="text-right px-4 sm:px-6 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -125,16 +125,6 @@ export function InstrumentsTable() {
                     </td>
                     <td className="px-2 py-3 text-right hidden lg:table-cell">
                       {quote ? <ChangeCell value={quote.changeYtd} /> : <span className="text-gray-400">—</span>}
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeInstrument(activePortfolio.id, instrument.symbol)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        &times;
-                      </Button>
                     </td>
                   </tr>
                 );

@@ -5,6 +5,7 @@
   "header": {
     "dashboard": "Dashboard",
     "news": "Zprávy",
+    "calendar": "Kalendář",
     "createPortfolio": "Nové portfolio",
     "language": "EN",
     "theme": "Režim"
@@ -33,14 +34,19 @@
     "equalWeights": "Rovné zastoupení",
     "weightsTotal": "Celkem",
     "weightsWarning": "Váhy musí dohromady dávat 100 %",
-    "remove": "Odebrat"
+    "remove": "Odebrat",
+    "autoRefresh": "Automatické obnovení za",
+    "refreshNow": "Obnovit nyní"
   },
   "portfolio": {
     "create": "Vytvořit",
     "cancel": "Zrušit",
+    "close": "Zavřít",
     "name": "Název portfolia",
     "namePlaceholder": "např. Technologické akcie",
     "delete": "Smazat portfolio",
+    "editPortfolio": "Upravit portfolio",
+    "addNewPortfolio": "Přidat nové portfolio",
     "confirmDelete": "Opravdu chcete smazat toto portfolio?",
     "switchPortfolio": "Přepnout portfolio",
     "addInstrument": "Přidat instrument",
@@ -64,6 +70,24 @@
     "readMore": "Číst více",
     "noNews": "Pro instrumenty ve vašem portfoliu nejsou k dispozici žádné zprávy.",
     "source": "Zdroj"
+  },
+  "calendar": {
+    "title": "Kalendář událostí",
+    "noEvents": "Pro instrumenty ve vašem portfoliu nejsou k dispozici žádné události.",
+    "upcoming": "Nadcházející",
+    "past": "Nedávné",
+    "today": "Dnes",
+    "tomorrow": "Zítra",
+    "yesterday": "Včera",
+    "inDays": "Za",
+    "days": "dní",
+    "daysAgo": "dní zpět",
+    "type": {
+      "earnings": "Výsledky",
+      "dividend": "Dividenda",
+      "split": "Split",
+      "other": "Událost"
+    }
   },
   "periods": {
     "1d": "1D",

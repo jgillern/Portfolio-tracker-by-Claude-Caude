@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { cn } from '@/lib/utils';
 
-export function PortfolioSwitcher() {
+interface Props {
+  onCreateNew: () => void;
+}
+
+export function PortfolioSwitcher({ onCreateNew }: Props) {
+  const { t } = useLanguage();
   const { state, activePortfolio, setActivePortfolio } = usePortfolio();
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -43,7 +49,7 @@ export function PortfolioSwitcher() {
                 setIsOpen(false);
               }}
               className={cn(
-                'w-full text-left px-4 py-2.5 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg',
+                'w-full text-left px-4 py-2.5 text-sm transition-colors first:rounded-t-lg',
                 p.id === state.activePortfolioId
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                   : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -55,6 +61,15 @@ export function PortfolioSwitcher() {
               </span>
             </button>
           ))}
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onCreateNew();
+            }}
+            className="w-full text-left px-4 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors rounded-b-lg border-t border-gray-100 dark:border-gray-700"
+          >
+            + {t('portfolio.addNewPortfolio')}
+          </button>
         </div>
       )}
     </div>
