@@ -177,13 +177,22 @@ export function PerformanceChart({ refreshSignal }: Props) {
     const perf = calculatePerformance(mergedChartData, dataKey);
     if (perf === null) return null;
 
+    // Calculate vertical offset to prevent text overlap
+    const allKeys = ['portfolio', ...comparisonInstruments.map(i => i.symbol)];
+    const keyIndex = allKeys.indexOf(dataKey);
+    const verticalOffset = keyIndex * 16; // 16px spacing between labels
+
+    const color = dataKey === 'portfolio'
+      ? (isPositive ? '#10B981' : '#EF4444')
+      : COMPARISON_COLORS[comparisonInstruments.findIndex(i => i.symbol === dataKey) % COMPARISON_COLORS.length];
+
     return (
       <g>
-        <circle cx={cx} cy={cy} r={4} fill={dataKey === 'portfolio' ? (isPositive ? '#10B981' : '#EF4444') : COMPARISON_COLORS[comparisonInstruments.findIndex(i => i.symbol === dataKey) % COMPARISON_COLORS.length]} />
+        <circle cx={cx} cy={cy} r={4} fill={color} />
         <text
           x={cx + 8}
-          y={cy + 4}
-          fill={dataKey === 'portfolio' ? (isPositive ? '#10B981' : '#EF4444') : COMPARISON_COLORS[comparisonInstruments.findIndex(i => i.symbol === dataKey) % COMPARISON_COLORS.length]}
+          y={cy + 4 - verticalOffset}
+          fill={color}
           fontSize={11}
           fontWeight="600"
         >
