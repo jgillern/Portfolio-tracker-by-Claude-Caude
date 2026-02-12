@@ -566,7 +566,7 @@ useDashboardOrder()
     handleDragStart: (id: string) => void, handleDragOver: (id: string) => void, handleDragEnd: () => void }
 ```
 
-Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `localStorage["portfolio-tracker-dashboard-order"]`. Výchozí pořadí: `performance`, `instruments`, `sectorAllocation`, `typeAllocation`, `countryAllocation`, `metrics`. Při načtení sloučí uložené pořadí s výchozím (přidá nové sekce, odebere smazané).
+Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `localStorage["portfolio-tracker-dashboard-order"]` a synchronizuje s Supabase. Výchozí pořadí: `keyStats`, `performance`, `instruments`, `sectorAllocation`, `typeAllocation`, `countryAllocation`, `metrics`. Při načtení sloučí uložené pořadí s výchozím (přidá nové sekce, odebere smazané).
 
 ---
 
@@ -606,9 +606,10 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 | Komponenta | Props | Popis |
 |---|---|---|
 | `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
-| `PerformanceChart` | `refreshSignal?: number` | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
+| `KeyStats` | — | Zobrazuje 5 klíčových statistik výkonnosti portfolia (5 let, 1 rok, YTD, měsíc, týden). Načítá data paralelně pro všechna období přes `/api/chart`. Grid layout (2-3-5 sloupců dle breakpointu). |
+| `PerformanceChart` | `refreshSignal?: number` | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. **Nové:** Možnost porovnání s až 5 dalšími instrumenty. Vyhledávání přes `InstrumentSearch`. Procentuální zhodnocení na konci každé čáry (custom `CustomDot` komponenta). Barevně odlišené čáry pro srovnávací instrumenty. Data srovnání se neukládají (lokální state). Responsive container. |
 | `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). Umístěn na úrovni dashboardu vedle názvu portfolia. Refresh spouští obnovu kotací i grafu (přes refreshSignal prop). |
-| `InstrumentsTable` | `quotes`, `isLoading` | Tabulka instrumentů s logy, cenami, váhami a změnami. Přijímá kotace a stav načítání jako props (nepoužívá vlastní hook). Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
+| `InstrumentsTable` | `quotes`, `isLoading` | Tabulka instrumentů s logy, cenami, váhami a změnami. Přijímá kotace a stav načítání jako props (nepoužívá vlastní hook). Bez tlačítka odebrání (to je v EditPortfolioModal). **Automatické řazení podle váhy** (sestupně) pokud jsou nastaveny vlastní váhy. Responsive. |
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
 | `TypeAllocation` | — | Alokace dle typu instrumentu (stock, ETF, crypto, bond, commodity). Horizontální bar chart + legenda. Barvy: modrá (stock), fialová (ETF), oranžová (crypto), zelená (bond), žlutá (commodity). Čistě klient-side výpočet z portfolia. |
 | `CountryAllocation` | — | Alokace dle země původu. Načítá data přes `useCountries` hook. Stacked bar chart + legenda s vlajkami (flagcdn.com). Loading spinner, empty state. 12 barev pro země. |
@@ -662,8 +663,8 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 - `RefreshControl` vedle názvu portfolia (obnoví kotace i graf přes refreshSignal)
 - Varovný banner pokud portfolio používá vlastní váhy a jejich součet < 100% (informuje o možném zkreslení statistik)
 - Sekce dashboardu obaleny v `DraggableSection` — umožňuje přeřazení myší (drag-and-drop)
-- Pořadí sekcí řízeno přes `useDashboardOrder` hook s localStorage persistencí
-- Sekce: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`, `TypeAllocation`, `CountryAllocation`, `PortfolioMetrics`
+- Pořadí sekcí řízeno přes `useDashboardOrder` hook s localStorage a Supabase persistencí
+- Sekce: `KeyStats`, `PerformanceChart`, `InstrumentsTable`, `AllocationTable`, `TypeAllocation`, `CountryAllocation`, `PortfolioMetrics`
 - Modaly: `AddInstrumentModal`, `EditPortfolioModal`, `ImportCsvModal`
 - Potvrzovací dialog pro smazání portfolia
 - Empty state s tlačítkem pro vytvoření portfolia pokud žádné neexistuje
@@ -711,7 +712,7 @@ Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
 {
   "app":        { ... }     // Název aplikace
   "header":     { ... }     // Navigace, tlačítka v hlavičce
-  "dashboard":  { ... }     // Popisky na dashboardu (vč. typeAllocation, countryAllocation, noCountryData)
+  "dashboard":  { ... }     // Popisky na dashboardu (vč. compare, portfolio, keyStats, period5y, period1y, period1mo, period1w, typeAllocation, countryAllocation, noCountryData)
   "portfolio":  { ... }     // Dialogy správy portfolia (vč. importCsv)
   "import":     { ... }     // CSV import — pokyny, chybové hlášky, výsledky
   "auth":       { ... }     // Autentizace — přihlášení, registrace, chyby
