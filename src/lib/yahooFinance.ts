@@ -305,6 +305,117 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   return articles;
 }
 
+export async function getLogoUrl(
+  symbol: string,
+  type: InstrumentType
+): Promise<string | null> {
+  const cacheKey = `logo:${symbol}`;
+  const cached = getCached<string | null>(cacheKey);
+  if (cached !== null) return cached;
+
+  // Check if cache entry exists but is null (already tried and failed)
+  const entry = cache.get(cacheKey);
+  if (entry && Date.now() <= entry.expiresAt) return null;
+
+  const LOGO_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+  // Crypto: use cryptocurrency-icons CDN
+  if (type === 'crypto') {
+    const base = symbol.replace(/-USD$/, '').toLowerCase();
+    const url = `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/${base}.png`;
+    setCache(cacheKey, url, LOGO_TTL);
+    return url;
+  }
+
+  // Stocks, ETFs, etc.: try to get company website via quoteSummary, then use logo APIs
+  try {
+    const summary = await yf.quoteSummary(symbol, { modules: ['assetProfile'] });
+    const website = summary.assetProfile?.website;
+
+    if (website) {
+      // Extract domain from website URL
+      let domain: string;
+      try {
+        domain = new URL(website).hostname.replace(/^www\./, '');
+      } catch {
+        domain = website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+      }
+
+      // Use Clearbit Logo API (high quality company logos)
+      const logoUrl = `https://logo.clearbit.com/${domain}`;
+      setCache(cacheKey, logoUrl, LOGO_TTL);
+      return logoUrl;
+    }
+  } catch (error) {
+    console.error(`Logo lookup error for ${symbol}:`, error);
+  }
+
+  // Fallback: try Google favicon service with ticker-based domain guess
+  const commonDomains: Record<string, string> = {
+    AAPL: 'apple.com',
+    MSFT: 'microsoft.com',
+    GOOGL: 'google.com',
+    GOOG: 'google.com',
+    AMZN: 'amazon.com',
+    META: 'meta.com',
+    TSLA: 'tesla.com',
+    NVDA: 'nvidia.com',
+    NFLX: 'netflix.com',
+    DIS: 'disney.com',
+    PYPL: 'paypal.com',
+    INTC: 'intel.com',
+    AMD: 'amd.com',
+    CRM: 'salesforce.com',
+    ADBE: 'adobe.com',
+    CSCO: 'cisco.com',
+    ORCL: 'oracle.com',
+    IBM: 'ibm.com',
+    UBER: 'uber.com',
+    ABNB: 'airbnb.com',
+    SQ: 'squareup.com',
+    SHOP: 'shopify.com',
+    SPOT: 'spotify.com',
+    SNAP: 'snap.com',
+    PINS: 'pinterest.com',
+    ZM: 'zoom.us',
+    COIN: 'coinbase.com',
+    HOOD: 'robinhood.com',
+    V: 'visa.com',
+    MA: 'mastercard.com',
+    JPM: 'jpmorganchase.com',
+    BAC: 'bankofamerica.com',
+    GS: 'goldmansachs.com',
+    MS: 'morganstanley.com',
+    WMT: 'walmart.com',
+    COST: 'costco.com',
+    TGT: 'target.com',
+    NKE: 'nike.com',
+    SBUX: 'starbucks.com',
+    MCD: 'mcdonalds.com',
+    KO: 'coca-cola.com',
+    PEP: 'pepsico.com',
+    PG: 'pg.com',
+    JNJ: 'jnj.com',
+    PFE: 'pfizer.com',
+    MRNA: 'modernatx.com',
+    BA: 'boeing.com',
+    CAT: 'cat.com',
+    XOM: 'exxonmobil.com',
+    CVX: 'chevron.com',
+  };
+
+  const knownDomain = commonDomains[symbol.toUpperCase()];
+  if (knownDomain) {
+    const logoUrl = `https://logo.clearbit.com/${knownDomain}`;
+    setCache(cacheKey, logoUrl, LOGO_TTL);
+    return logoUrl;
+  }
+
+  // No logo found
+  setCache(cacheKey, null, LOGO_TTL);
+  return null;
+}
+
 export async function getCalendarEvents(symbols: string[]): Promise<CalendarEvent[]> {
   const cacheKey = `calendar:${symbols.join(',')}`;
   const cached = getCached<CalendarEvent[]>(cacheKey);
