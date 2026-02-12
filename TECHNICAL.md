@@ -7,14 +7,16 @@ Tento dokument popisuje technické detaily implementace Portfolio Trackeru — d
 ## Obsah
 
 1. [Datové modely (Types)](#datové-modely)
-2. [Konfigurace](#konfigurace)
-3. [Utility knihovny (lib/)](#utility-knihovny)
-4. [Context Providers](#context-providers)
-5. [Custom Hooks](#custom-hooks)
-6. [Komponenty](#komponenty)
-7. [Stránky (Pages)](#stránky)
-8. [Styly](#styly)
-9. [Lokalizace](#lokalizace)
+2. [Databázové schéma (Supabase)](#databázové-schéma)
+3. [Konfigurace](#konfigurace)
+4. [Utility knihovny (lib/)](#utility-knihovny)
+5. [Supabase vrstva](#supabase-vrstva)
+6. [Context Providers](#context-providers)
+7. [Custom Hooks](#custom-hooks)
+8. [Komponenty](#komponenty)
+9. [Stránky (Pages)](#stránky)
+10. [Styly](#styly)
+11. [Lokalizace](#lokalizace)
 
 ---
 
@@ -135,6 +137,137 @@ interface ApiError {
 }
 ```
 
+### `src/types/auth.ts`
+
+Definuje struktury pro autentizaci a uživatelské profily.
+
+```typescript
+interface UserProfile {
+  id: string;           // UUID z Supabase Auth
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserPreferences {
+  id: string;           // UUID z Supabase Auth
+  language: string;     // Locale kód (en, cs, sk, uk, zh, mn)
+  theme: string;        // 'light' | 'dark'
+  dashboard_order: string[]; // Pořadí sekcí dashboardu
+  updated_at: string;
+}
+
+interface SignUpData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface SignInData {
+  email: string;
+  password: string;
+}
+```
+
+---
+
+## Databázové schéma
+
+Aplikace používá Supabase PostgreSQL s Row Level Security (RLS). Schema se vytváří ručně v Supabase Dashboard → SQL Editor.
+
+### SQL Schema
+
+```sql
+-- Profily uživatelů (auto-vytvoření přes trigger při registraci)
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  first_name TEXT NOT NULL DEFAULT '',
+  last_name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Uživatelské preference (auto-vytvoření přes trigger při registraci)
+CREATE TABLE user_preferences (
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  language TEXT DEFAULT 'en',
+  theme TEXT DEFAULT 'light',
+  dashboard_order JSONB DEFAULT '["performance","instruments","sectorAllocation","typeAllocation","countryAllocation","metrics"]'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own preferences" ON user_preferences FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own preferences" ON user_preferences FOR UPDATE USING (auth.uid() = id);
+
+-- Portfolia
+CREATE TABLE portfolios (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE portfolios ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own portfolios" ON portfolios FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own portfolios" ON portfolios FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own portfolios" ON portfolios FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own portfolios" ON portfolios FOR DELETE USING (auth.uid() = user_id);
+
+-- Instrumenty
+CREATE TABLE instruments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  portfolio_id UUID REFERENCES portfolios ON DELETE CASCADE NOT NULL,
+  symbol TEXT NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('stock','etf','crypto','bond','commodity')),
+  sector TEXT,
+  weight NUMERIC,
+  logo_url TEXT,
+  added_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE instruments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own instruments" ON instruments FOR SELECT
+  USING (portfolio_id IN (SELECT id FROM portfolios WHERE user_id = auth.uid()));
+CREATE POLICY "Users can insert own instruments" ON instruments FOR INSERT
+  WITH CHECK (portfolio_id IN (SELECT id FROM portfolios WHERE user_id = auth.uid()));
+CREATE POLICY "Users can update own instruments" ON instruments FOR UPDATE
+  USING (portfolio_id IN (SELECT id FROM portfolios WHERE user_id = auth.uid()));
+CREATE POLICY "Users can delete own instruments" ON instruments FOR DELETE
+  USING (portfolio_id IN (SELECT id FROM portfolios WHERE user_id = auth.uid()));
+
+-- Trigger: automatické vytvoření profilu a preferencí při registraci
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO profiles (id, first_name, last_name, email)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
+    NEW.email
+  );
+  INSERT INTO user_preferences (id) VALUES (NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+```
+
 ---
 
 ## Konfigurace
@@ -235,11 +368,70 @@ Vrací surové byty obrázku (ne URL). Server-side proxy stahuje loga z webu fir
 
 ---
 
+## Supabase vrstva
+
+### `src/lib/supabase/client.ts`
+Browser-side Supabase klient (`createBrowserClient` z `@supabase/ssr`). Používá cookie-based session management.
+
+### `src/lib/supabase/server.ts`
+Server-side Supabase klient pro Server Components a API Routes. Čte cookies přes Next.js `cookies()`.
+
+### `src/lib/supabase/middleware.ts`
+Middleware helper — refreshuje session tokeny a vynucuje autentizaci. Nepřihlášení uživatelé jsou přesměrováni na `/login`, přihlášení na `/login` jsou přesměrováni na `/`.
+
+### `src/lib/supabase/database.ts`
+Centrální datová vrstva — CRUD operace pro profily, preference, portfolia a instrumenty. Všechny komponenty přistupují k DB přes tento modul.
+
+| Funkce | Popis |
+|---|---|
+| `getProfile(userId)` | Načte profil uživatele |
+| `updateProfile(userId, updates)` | Aktualizuje jméno/příjmení |
+| `getPreferences(userId)` | Načte preference (jazyk, téma, pořadí) |
+| `updatePreferences(userId, updates)` | Aktualizuje preference |
+| `getPortfolios(userId)` | Načte všechna portfolia uživatele |
+| `createPortfolio(userId, name, isActive)` | Vytvoří nové portfolio |
+| `deletePortfolio(portfolioId)` | Smaže portfolio (kaskádně i instrumenty) |
+| `renamePortfolio(portfolioId, name)` | Přejmenuje portfolio |
+| `setActivePortfolio(userId, portfolioId)` | Nastaví aktivní portfolio |
+| `getInstruments(portfolioId)` | Načte instrumenty portfolia |
+| `getAllInstruments(portfolioIds)` | Načte instrumenty více portfolií najednou |
+| `addInstrument(portfolioId, instrument)` | Přidá instrument |
+| `removeInstrument(portfolioId, symbol)` | Odebere instrument |
+| `updateInstrumentWeight(portfolioId, symbol, weight)` | Aktualizuje váhu instrumentu |
+
+### `src/lib/supabase/migration.ts`
+Jednorázová migrace dat z localStorage do Supabase při prvním přihlášení. Kontroluje, zda uživatel již má data v Supabase — pokud ne, migruje portfolia, instrumenty a preference z localStorage. Po úspěšné migraci vyčistí localStorage.
+
+### `src/middleware.ts`
+Next.js middleware — volá `updateSession()` pro refresh session tokenů. Matcher vylučuje statické soubory, API routes a assety.
+
+---
+
 ## Context Providers
+
+### `src/context/AuthContext.tsx`
+
+Autentizační kontext — spravuje přihlášení, registraci a odhlášení přes Supabase Auth.
+
+**Hook:** `useAuth()`
+
+| Vlastnost / metoda | Typ | Popis |
+|---|---|---|
+| `user` | `User \| null` | Supabase Auth user objekt |
+| `profile` | `UserProfile \| null` | Profil uživatele (jméno, příjmení, e-mail) |
+| `isLoading` | `boolean` | Zda se načítá session |
+| `signIn(data)` | `(SignInData) => Promise<{ error }>` | Přihlášení e-mailem a heslem |
+| `signUp(data)` | `(SignUpData) => Promise<{ error }>` | Registrace s metadaty (jméno, příjmení) |
+| `signOut()` | `() => Promise<void>` | Odhlášení a přesměrování na `/login` |
+
+**Chování:**
+- Při mountu: načte session přes `getUser()`, načte profil, spustí migraci z localStorage
+- Naslouchá `onAuthStateChange` pro aktualizace session
+- Při odhlášení vymaže state a přesměruje
 
 ### `src/context/PortfolioContext.tsx`
 
-Centrální state management pro portfolia. Používá `useReducer` se 7 akcemi.
+Centrální state management pro portfolia. Používá `useReducer` s Supabase jako persistent backend.
 
 **Hook:** `usePortfolio()`
 
@@ -255,9 +447,9 @@ Centrální state management pro portfolia. Používá `useReducer` se 7 akcemi.
 | `removeInstrument(portfolioId, symbol)` | `(string, string) => void` | Odebere instrument z portfolia |
 | `updateInstrumentWeight(portfolioId, symbol, weight)` | `(string, string, number \| undefined) => void` | Aktualizuje váhu instrumentu |
 
-**Reducer akce:** `SET_STATE`, `CREATE_PORTFOLIO`, `DELETE_PORTFOLIO`, `RENAME_PORTFOLIO`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`
+**Reducer akce:** `SET_STATE`, `SET_PORTFOLIOS`, `ADD_PORTFOLIO`, `REMOVE_PORTFOLIO`, `UPDATE_PORTFOLIO_NAME`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`
 
-**Persistence:** Při mountu načte stav z `localStorage["portfolio-tracker-state"]`. Při každé změně stav synchronizuje zpět.
+**Persistence:** Při mountu načte data z Supabase (portfolia + instrumenty). Každá akce (CRUD) volá příslušnou funkci z `database.ts` a současně aktualizuje lokální reducer state. Závisí na `AuthContext` — vyžaduje přihlášeného uživatele.
 
 ### `src/context/LanguageContext.tsx`
 
@@ -288,12 +480,9 @@ Světlý / tmavý režim.
 
 **Chování:**
 - Při mountu: zjistí uložené téma z localStorage, jinak respektuje `prefers-color-scheme`
+- Pokud je uživatel přihlášen, načte preferenci z Supabase (má přednost)
 - Přidává/odebírá třídu `dark` na `<html>` elementu
-- Ukládá preferenci do `localStorage["portfolio-tracker-theme"]`
-
-### `src/context/Providers.tsx`
-
-Kompozitní wrapper: `ThemeProvider` → `LanguageProvider` → `PortfolioProvider`.
+- Ukládá preferenci do localStorage (cache) + Supabase (persistent)
 
 ---
 
@@ -441,11 +630,25 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 - Metadata: title "Portfolio Tracker", description
 - Obaluje `<html>` s `suppressHydrationWarning` (dark mode)
-- Providers wrapper (všechny kontexty)
-- Header komponenta
-- `<main>` s `max-w-7xl` containerem
+- Pouze `ThemeProvider` + `LanguageProvider` (sdílené i pro login)
 
-### `src/app/page.tsx` — Dashboard
+### `src/app/(app)/layout.tsx` — App Layout (chráněné stránky)
+
+- `'use client'` — client-side layout
+- Přidává `AuthProvider` + `PortfolioProvider`
+- Renderuje `Header` a `<main>` container
+- Všechny stránky v `(app)/` route group vyžadují přihlášení
+
+### `src/app/login/page.tsx` — Přihlašovací stránka
+
+- Animované gradientové pozadí (CSS `@keyframes gradient-shift`)
+- Název aplikace "Honzův bombézní portfolio tracker" s bounce animací
+- Dvě záložky: Přihlásit se / Vytvořit účet
+- Formulář s validací (e-mail, heslo, jméno, příjmení)
+- Přepínač jazyků a témat v pravém horním rohu
+- Po úspěšném přihlášení/registraci přesměruje na dashboard
+
+### `src/app/(app)/page.tsx` — Dashboard
 
 - Zobrazuje název aktivního portfolia
 - Tlačítka: přidat instrument, import CSV, upravit portfolio, smazat portfolio
@@ -476,6 +679,8 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 - Dark mode varianta: `@custom-variant dark (&:where(.dark, .dark *))`
 - Theme proměnné: `--color-background`, `--color-foreground`, `--font-sans`, `--font-mono`
 - Custom utilita `.line-clamp-2` pro ořezání textu na 2 řádky
+- Login animace: `@keyframes gradient-shift` (pozadí), `bounce-gentle` (nadpis), `fade-in-up` (karta), `float` (dekorace)
+- CSS třídy: `.login-bg`, `.login-title`, `.login-card`, `.login-float` — podpora dark mode
 
 ### Dark mode strategie
 
@@ -502,6 +707,7 @@ Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
   "dashboard":  { ... }     // Popisky na dashboardu (vč. typeAllocation, countryAllocation, noCountryData)
   "portfolio":  { ... }     // Dialogy správy portfolia (vč. importCsv)
   "import":     { ... }     // CSV import — pokyny, chybové hlášky, výsledky
+  "auth":       { ... }     // Autentizace — přihlášení, registrace, chyby
   "search":     { ... }     // Vyhledávání instrumentů
   "news":       { ... }     // Sekce zpráv
   "calendar":   { ... }     // Kalendář událostí

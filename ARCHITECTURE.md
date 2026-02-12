@@ -32,12 +32,16 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │       │              │              │             │
 │  ┌────┴──────────────┴──────────────┴──────┐    │
 │  │           Context Providers              │    │
-│  │  (Portfolio, Language, Theme)            │    │
+│  │  (Auth, Portfolio, Language, Theme)      │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
-│  │           localStorage                    │    │
-│  │  (portfolio-tracker-state/lang/theme)    │    │
+│  │   Supabase Client (@supabase/ssr)        │    │
+│  │  (cookie sessions + RLS queries)         │    │
+│  └────────────────┬─────────────────────────┘    │
+│                   │                              │
+│  ┌────────────────┴─────────────────────────┐    │
+│  │    localStorage (cache / fallback)        │    │
 │  └──────────────────────────────────────────┘    │
 │                                                  │
 │           fetch() ───────────────────────────────┤
@@ -77,12 +81,24 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 
 ## Tok dat
 
+### Přihlášení uživatele
+
+```
+1. Uživatel otevře stránku → middleware detekuje nepřihlášeného → redirect na /login
+2. Uživatel zadá e-mail a heslo → Supabase Auth signInWithPassword()
+3. Supabase nastaví session cookies
+4. Redirect na / → middleware potvrdí session → propustí
+5. AuthContext načte user profil, spustí migraci z localStorage (jednorázově)
+6. PortfolioContext načte portfolia z Supabase
+```
+
 ### Načtení dashboardu
 
 ```
-1. Uživatel otevře stránku
-2. PortfolioContext načte stav z localStorage
-3. Komponenty získají activePortfolio z kontextu
+1. Uživatel otevře stránku (přihlášen)
+2. AuthContext načte session, profil a spustí migraci z localStorage
+3. PortfolioContext načte portfolia + instrumenty z Supabase
+4. Komponenty získají activePortfolio z kontextu
 4. useMarketData hook → fetch /api/quote?symbols=AAPL,MSFT,...
 5. API route → yahooFinance.getQuotes() → yahoo-finance2 → Yahoo API
 6. Odpověď se cachuje server-side (60s) a vrátí klientovi
@@ -98,9 +114,8 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 3. Uživatel píše do vyhledávání → useSearch hook → /api/search
 4. Výsledky se zobrazí v dropdownu
 5. Uživatel klikne na instrument
-6. addInstrument() → dispatch do PortfolioContext reduceru
-7. Nový stav se synchronizuje do localStorage
-8. Dashboard se přerenderuje s novým instrumentem
+6. addInstrument() → vloží do Supabase DB + dispatch do lokálního reduceru
+7. Dashboard se přerenderuje s novým instrumentem
 9. useMarketData a useChart refetchují data pro nový seznam symbolů
 ```
 
@@ -126,7 +141,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 1. Uživatel otevře jazykový dropdown v hlavičce
 2. Vybere jazyk z 6 možností (EN, CZ, SK, UA, ZH, MN)
 3. setLocale() → změní locale v LanguageContext
-4. Nový locale se uloží do localStorage
+4. Nový locale se uloží do localStorage (cache) + Supabase (persistent)
 5. Načte se příslušný JSON (/locales/{locale}.json) — cachuje se po prvním načtení
 6. t() funkce vrací překlady z nového souboru
 7. Všechny komponenty se přerenderují s novými texty
@@ -139,34 +154,44 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ### Architektura
 
 ```
-                  ┌─────────────┐
-                  │  Providers  │
-                  └──────┬──────┘
+              Root Layout
+           ┌──────┴──────┐
+     ThemeProvider  LanguageProvider
                          │
-          ┌──────────────┼──────────────┐
+               (app) Layout
+              ┌──────┴──────┐
+        AuthProvider  PortfolioProvider
+                         │
+           ┌─────────────┼──────────────┐
+           │             │              │
+    ┌──────┴──────┐ ┌───┴────┐ ┌──────┴──────┐
+    │ThemeContext │ │Language│ │Portfolio   │
+    │ + Supabase │ │Context │ │Context     │
+    │ sync       │ │+ sync  │ │+ Supabase  │
+    └─────────────┘ └────────┘ └─────────────┘
           │              │              │
-   ┌──────┴──────┐ ┌────┴────┐ ┌──────┴──────┐
-   │ThemeContext │ │Language │ │Portfolio   │
-   │            │ │Context  │ │Context     │
-   │ theme      │ │ locale  │ │ portfolios │
-   │ toggle()   │ │ t()     │ │ CRUD ops   │
-   └─────────────┘ └─────────┘ └─────────────┘
-         │              │              │
-    localStorage   localStorage   localStorage
+     localStorage   localStorage    Supabase DB
+     (cache)        (cache)        (persistent)
 ```
 
 ### Proč Context + useReducer?
 
-- Máme pouze 3 globální stavy (portfolia, jazyk, téma)
-- Žádný nestačí komplexní na to, aby vyžadoval Zustand/Redux
+- Máme 4 globální stavy (auth, portfolia, jazyk, téma)
 - `useReducer` dává předvídatelné přechody stavů
 - Tržní data (quotes, chart, news) nejsou globální — fetchují se přes hooky ve scope komponent, které je potřebují
 
-### localStorage klíče
+### Datová persistence
+
+| Zdroj | Data | Účel |
+|---|---|---|
+| **Supabase DB** | Portfolia, instrumenty, preference | Trvalé úložiště, cross-device |
+| **Supabase Auth** | Session, user metadata | Autentizace (cookie-based) |
+| **localStorage** | Jazyk, téma, pořadí sekcí | Cache pro okamžitý start (fallback) |
+
+### localStorage klíče (cache)
 
 | Klíč | Obsah | Aktualizace |
 |---|---|---|
-| `portfolio-tracker-state` | `PortfolioState` (JSON) | Při každé změně portfolia |
 | `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` | Při přepnutí jazyka |
 | `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
 | `portfolio-tracker-dashboard-order` | `string[]` (JSON) — pořadí sekcí dashboardu | Při přeřazení sekcí drag-and-drop |
@@ -215,13 +240,19 @@ Pro každý symbol:
 ## Komponentová hierarchie
 
 ```
-RootLayout
-└── Providers
+RootLayout (ThemeProvider → LanguageProvider)
+├── LoginPage (/login) — veřejná
+│   ├── LanguageToggle + ThemeToggle
+│   ├── Animovaný gradient + nadpis
+│   └── Login/Register formuláře
+│
+└── AppLayout (AuthProvider → PortfolioProvider)
     ├── Header
     │   ├── Logo + navigační linky (Dashboard, Zprávy, Kalendář)
     │   ├── PortfolioSwitcher (dropdown + "Přidat nové portfolio")
     │   ├── LanguageToggle
-    │   └── ThemeToggle
+    │   ├── ThemeToggle
+    │   └── UserMenu (iniciály, jméno, e-mail, odhlášení)
     │
     ├── DashboardPage (/)
     │   ├── Portfolio heading + RefreshControl + akce (přidat, import CSV, upravit, smazat)
@@ -291,11 +322,11 @@ RootLayout
 
 ## Klíčová rozhodnutí
 
-### 1. localStorage místo databáze (Fáze 1)
+### 1. Supabase jako backend (Fáze 2)
 
-**Pro:** Žádná backend infrastruktura, okamžitý start, jednoduchost
-**Proti:** Data nepřežijí změnu prohlížeče/zařízení
-**Mitigace:** Architektura připravena na migraci — PortfolioContext akce lze přesměrovat na API
+**Pro:** Plně spravovaný PostgreSQL + Auth, cookie-based sessions přes `@supabase/ssr`, Row Level Security
+**Architektura:** Kontexty (Theme, Language, Portfolio) fungují jako abstrakční vrstva — komponenty neimportují Supabase přímo. `database.ts` je centrální datový modul.
+**Migrace:** Automatická jednorázová migrace z localStorage při prvním přihlášení (`migration.ts`)
 
 ### 2. Yahoo Finance (neoficiální)
 
@@ -353,8 +384,8 @@ RootLayout
 
 | Omezení | Detail | Plánované řešení |
 |---|---|---|
-| Žádná autentizace | Data jen v lokálním prohlížeči | Fáze 2: NextAuth.js |
-| Žádná databáze | localStorage — max ~5 MB | Fáze 2: PostgreSQL / Supabase |
+| ~~Žádná autentizace~~ | ✅ Implementováno (Supabase Auth) | — |
+| ~~Žádná databáze~~ | ✅ Implementováno (Supabase PostgreSQL) | — |
 | Yahoo API rate limits | Neoficiální API bez garantovaných limitů | Server-side cache minimalizuje požadavky |
 | Žádné nákupní ceny | Nelze počítat reálný P&L | Plánované rozšíření |
 | Max 50 instrumentů | Implicitní limit (výkon API volání) | Optimalizace batch requestů |
@@ -363,41 +394,46 @@ RootLayout
 
 ---
 
-## Plán rozšíření
+## Implementované fáze
 
-### Fáze 2: Autentizace + Databáze
+### Fáze 2: Autentizace + Databáze ✅
 
 ```
-Aktuální stav:                     Cílový stav:
+Stav před:                         Stav po:
 ┌──────────────┐                  ┌──────────────┐
-│ localStorage │                  │   Database   │
+│ localStorage │                  │ Supabase DB  │
 │  (browser)   │                  │ (PostgreSQL) │
 └──────┬───────┘                  └──────┬───────┘
        │                                 │
        ▼                                 ▼
 ┌──────────────┐                  ┌──────────────┐
 │ Portfolio    │                  │ Portfolio    │
-│ Context      │ ───migrate───▶  │ Context      │
-│ (reducer +   │                  │ (API calls + │
-│  localStorage)│                 │  auth check) │
+│ Context      │ ──migrated──▶   │ Context      │
+│ (reducer +   │                  │ (Supabase +  │
+│  localStorage)│                 │  useReducer) │
 └──────────────┘                  └──────────────┘
                                          │
                                          ▼
                                   ┌──────────────┐
-                                  │  NextAuth.js │
-                                  │  (session)   │
+                                  │ Supabase Auth│
+                                  │(@supabase/ssr│
+                                  │ + cookies)   │
                                   └──────────────┘
 ```
 
-**Změny potřebné:**
-1. Přidat `NextAuth.js` provider do `Providers.tsx`
-2. Vytvořit API routes pro CRUD portfolia (`/api/portfolios/*`)
-3. Nahradit localStorage volání za API volání v `PortfolioContext`
-4. Přidat middleware pro autentizaci na API routes
-5. Datové typy (`Portfolio`, `Instrument`) již obsahují `id`, `createdAt`, `updatedAt` — připraveny pro DB
+**Co bylo implementováno:**
+1. Supabase Auth s cookie-based sessions (`@supabase/ssr`)
+2. Next.js middleware pro ochranu routes + session refresh
+3. PostgreSQL tabulky: `profiles`, `user_preferences`, `portfolios`, `instruments` (RLS)
+4. `database.ts` centrální datová vrstva (CRUD operace)
+5. `AuthContext` — přihlášení, registrace, odhlášení
+6. Route group `(app)` pro chráněné stránky
+7. Animovaná login stránka ("Honzův bombézní portfolio tracker")
+8. User menu v Header s iniciálami a odhlášením
+9. Automatická migrace localStorage → Supabase
 
-**Co se nemění:**
-- Všechny UI komponenty
+**Co se nezměnilo:**
+- Všechny UI komponenty (grafem, tabulky, alokace, metriky)
 - Hooky pro tržní data (`useMarketData`, `useChart`, `useNews`)
 - API routes pro Yahoo Finance data
-- Lokalizace a téma
+- Lokalizace (6 jazyků) — rozšířena o `auth` sekci

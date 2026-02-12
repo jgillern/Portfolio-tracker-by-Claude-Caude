@@ -156,6 +156,32 @@
     "treynorRatio": "Treynor Ratio",
     "treynorRatioTooltip": "Систематично зважена дохідність — вимірює надлишкову дохідність на одиницю систематичного ризику (beta). Чим вище, тим краще."
   },
+  "auth": {
+    "appTitle": "Гонзів крутий портфоліо трекер",
+    "tagline": "Твої інвестиції, красиво відстежені",
+    "signIn": "Увійти",
+    "signUp": "Створити акаунт",
+    "signOut": "Вийти",
+    "email": "Електронна пошта",
+    "password": "Пароль",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
+    "emailPlaceholder": "ти@example.com",
+    "passwordPlaceholder": "Твій пароль",
+    "firstNamePlaceholder": "Іван",
+    "lastNamePlaceholder": "Петренко",
+    "signingIn": "Входжу...",
+    "signingUp": "Створюю акаунт...",
+    "noAccount": "Немає акаунту?",
+    "hasAccount": "Вже маєш акаунт?",
+    "welcome": "З поверненням",
+    "createNew": "Створи свій акаунт",
+    "profileMenu": "Профіль",
+    "authError": "Помилка автентифікації. Перевір дані.",
+    "emailExists": "Акаунт з такою поштою вже існує.",
+    "weakPassword": "Пароль повинен містити щонайменше 6 символів.",
+    "invalidEmail": "Введи дійсну електронну адресу."
+  },
   "errors": {
     "fetchFailed": "Не вдалося завантажити дані. Спробуйте ще раз.",
     "networkError": "Помилка мережі. Перевірте підключення."

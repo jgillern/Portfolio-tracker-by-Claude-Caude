@@ -156,6 +156,32 @@
     "treynorRatio": "Treynor Ratio",
     "treynorRatioTooltip": "Systematicky rizikově vážený výnos — měří přebytkový výnos na jednotku systematického rizika (beta). Čím vyšší, tím lepší."
   },
+  "auth": {
+    "appTitle": "Honzův bombézní portfolio tracker",
+    "tagline": "Tvoje investice, přehledně a s grácií",
+    "signIn": "Přihlásit se",
+    "signUp": "Vytvořit účet",
+    "signOut": "Odhlásit se",
+    "email": "E-mail",
+    "password": "Heslo",
+    "firstName": "Jméno",
+    "lastName": "Příjmení",
+    "emailPlaceholder": "ty@example.com",
+    "passwordPlaceholder": "Tvoje heslo",
+    "firstNamePlaceholder": "Jan",
+    "lastNamePlaceholder": "Novák",
+    "signingIn": "Přihlašuji...",
+    "signingUp": "Vytvářím účet...",
+    "noAccount": "Nemáš účet?",
+    "hasAccount": "Už máš účet?",
+    "welcome": "Vítej zpět",
+    "createNew": "Vytvoř si účet",
+    "profileMenu": "Profil",
+    "authError": "Přihlášení selhalo. Zkontroluj údaje.",
+    "emailExists": "Účet s tímto e-mailem již existuje.",
+    "weakPassword": "Heslo musí mít alespoň 6 znaků.",
+    "invalidEmail": "Zadej platnou e-mailovou adresu."
+  },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",
     "networkError": "Chyba sítě. Zkontrolujte připojení."

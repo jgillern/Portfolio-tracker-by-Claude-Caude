@@ -156,6 +156,32 @@
     "treynorRatio": "Treynor Ratio",
     "treynorRatioTooltip": "Systematic risk-adjusted return — measures excess return per unit of systematic risk (beta). Higher is better."
   },
+  "auth": {
+    "appTitle": "Honza's Epic Portfolio Tracker",
+    "tagline": "Your investments, beautifully tracked",
+    "signIn": "Sign In",
+    "signUp": "Create Account",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Your password",
+    "firstNamePlaceholder": "John",
+    "lastNamePlaceholder": "Doe",
+    "signingIn": "Signing in...",
+    "signingUp": "Creating account...",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "welcome": "Welcome back",
+    "createNew": "Create your account",
+    "profileMenu": "Profile",
+    "authError": "Authentication failed. Please check your credentials.",
+    "emailExists": "An account with this email already exists.",
+    "weakPassword": "Password must be at least 6 characters.",
+    "invalidEmail": "Please enter a valid email address."
+  },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",
     "networkError": "Network error. Check your connection."
