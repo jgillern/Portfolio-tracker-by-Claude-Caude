@@ -26,20 +26,29 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
   const existingSymbols = activePortfolio.instruments.map((i) => i.symbol);
   const otherInstrumentsHaveWeights = hasCustomWeights(activePortfolio);
 
+  const currentTotal = activePortfolio.instruments.reduce(
+    (sum, i) => sum + (i.weight ?? 0),
+    0
+  );
+  const remaining = Math.max(0, 100 - currentTotal);
+  const parsedWeight = weight.trim() ? parseFloat(weight) : 0;
+  const wouldExceed =
+    parsedWeight > 0 && currentTotal + parsedWeight > 100.01;
+
   const handleSelect = (result: SearchResult) => {
     setSelected(result);
     setWeight('');
   };
 
   const handleConfirm = () => {
-    if (!selected) return;
-    const parsedWeight = weight.trim() ? parseFloat(weight) : undefined;
+    if (!selected || wouldExceed) return;
+    const pw = weight.trim() ? parseFloat(weight) : undefined;
     const instrument: Instrument = {
       symbol: selected.symbol,
       name: selected.name,
       type: selected.type,
       sector: selected.sector,
-      weight: parsedWeight != null && !isNaN(parsedWeight) && parsedWeight > 0 ? parsedWeight : undefined,
+      weight: pw != null && !isNaN(pw) && pw > 0 ? pw : undefined,
       addedAt: new Date().toISOString(),
     };
     addInstrument(activePortfolio.id, instrument);
@@ -91,7 +100,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
                 <input
                   type="number"
                   min="0"
-                  max="100"
+                  max={remaining}
                   step="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
@@ -100,7 +109,20 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
                 />
                 <span className="text-sm text-gray-500">%</span>
               </div>
-              {otherInstrumentsHaveWeights && !weight.trim() && (
+
+              {otherInstrumentsHaveWeights && (
+                <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                  {t('portfolio.weightRemaining')}: {remaining.toFixed(1)}%
+                </p>
+              )}
+
+              {wouldExceed && (
+                <p className="mt-1 text-xs text-red-500 font-medium">
+                  {t('portfolio.weightExceeded')}
+                </p>
+              )}
+
+              {otherInstrumentsHaveWeights && !weight.trim() && !wouldExceed && (
                 <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                   {t('portfolio.weightRequired')}
                 </p>
@@ -113,7 +135,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={handleConfirm}>
+              <Button onClick={handleConfirm} disabled={wouldExceed}>
                 {t('search.add')} {selected.symbol}
               </Button>
             </div>

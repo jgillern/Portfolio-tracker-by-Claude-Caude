@@ -6,13 +6,13 @@ import { STORAGE_KEYS } from '@/config/constants';
 
 export type Locale = 'en' | 'cs' | 'sk' | 'uk' | 'zh' | 'mn';
 
-export const LOCALES: { code: Locale; flag: string; label: string }[] = [
-  { code: 'en', flag: '🇬🇧', label: 'EN' },
-  { code: 'cs', flag: '🇨🇿', label: 'CZ' },
-  { code: 'sk', flag: '🇸🇰', label: 'SK' },
-  { code: 'uk', flag: '🇺🇦', label: 'UA' },
-  { code: 'zh', flag: '🇨🇳', label: 'ZH' },
-  { code: 'mn', flag: '🇲🇳', label: 'MN' },
+export const LOCALES: { code: Locale; countryCode: string; label: string }[] = [
+  { code: 'en', countryCode: 'gb', label: 'EN' },
+  { code: 'cs', countryCode: 'cz', label: 'CZ' },
+  { code: 'sk', countryCode: 'sk', label: 'SK' },
+  { code: 'uk', countryCode: 'ua', label: 'UA' },
+  { code: 'zh', countryCode: 'cn', label: 'ZH' },
+  { code: 'mn', countryCode: 'mn', label: 'MN' },
 ];
 
 interface LanguageContextValue {

@@ -35,6 +35,7 @@
     "weightsTotal": "Celkom",
     "weightsWarning": "Váhy musia spolu dávať 100 %",
     "remove": "Odstrániť",
+    "portfolioIncomplete": "Portfólio nie je kompletné — celková váha je {total} %. Štatistiky môžu byť skreslené.",
     "autoRefresh": "Automatická aktualizácia za",
     "refreshNow": "Aktualizovať teraz"
   },
@@ -58,6 +59,8 @@
     "weightPlaceholder": "napr. 25",
     "weightRequired": "Ostatné inštrumenty majú nastavené váhy — toto pole je povinné.",
     "weightHint": "Nepovinné. Ak je vyplnené pri jednom inštrumente, stáva sa povinným pre všetky.",
+    "weightRemaining": "Zostáva",
+    "weightExceeded": "Nemožno prekročiť celkovú váhu 100 %!",
     "back": "Späť"
   },
   "search": {

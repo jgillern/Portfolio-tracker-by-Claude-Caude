@@ -35,6 +35,7 @@
     "weightsTotal": "合计",
     "weightsWarning": "权重之和必须为100%",
     "remove": "移除",
+    "portfolioIncomplete": "投资组合不完整 — 总权重为{total}%。统计数据可能不准确。",
     "autoRefresh": "自动刷新倒计时",
     "refreshNow": "立即刷新"
   },
@@ -58,6 +59,8 @@
     "weightPlaceholder": "例如 25",
     "weightRequired": "其他工具已设置权重 — 此字段为必填。",
     "weightHint": "可选。若任一工具设置了权重，则所有工具均需设置。",
+    "weightRemaining": "剩余",
+    "weightExceeded": "总权重不能超过100%！",
     "back": "返回"
   },
   "search": {
