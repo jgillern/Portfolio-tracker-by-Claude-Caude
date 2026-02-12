@@ -40,7 +40,14 @@
     "refreshNow": "Obnovit nyní",
     "typeAllocation": "Rozdělení dle typu",
     "countryAllocation": "Rozdělení dle země",
-    "noCountryData": "Pro instrumenty v portfoliu nejsou k dispozici údaje o zemi původu."
+    "noCountryData": "Pro instrumenty v portfoliu nejsou k dispozici údaje o zemi původu.",
+    "compare": "Porovnat",
+    "portfolio": "Portfolio",
+    "keyStats": "Hlavní statistiky",
+    "period5y": "5 let",
+    "period1y": "1 rok",
+    "period1mo": "Měsíc",
+    "period1w": "Týden"
   },
   "portfolio": {
     "create": "Vytvořit",

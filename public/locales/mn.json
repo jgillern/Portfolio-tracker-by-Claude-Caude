@@ -40,7 +40,14 @@
     "refreshNow": "Одоо шинэчлэх",
     "typeAllocation": "Төрлөөр хуваарилалт",
     "countryAllocation": "Улсаар хуваарилалт",
-    "noCountryData": "Багцын хэрэгслүүдийн улсын мэдээлэл байхгүй."
+    "noCountryData": "Багцын хэрэгслүүдийн улсын мэдээлэл байхгүй.",
+    "compare": "Харьцуулах",
+    "portfolio": "Багц",
+    "keyStats": "Үндсэн статистик",
+    "period5y": "5 жил",
+    "period1y": "1 жил",
+    "period1mo": "Сар",
+    "period1w": "Долоо хоног"
   },
   "portfolio": {
     "create": "Үүсгэх",

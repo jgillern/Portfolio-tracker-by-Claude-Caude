@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 const STORAGE_KEY = 'portfolio-tracker-dashboard-order';
 
 const DEFAULT_ORDER = [
+  'keyStats',
   'performance',
   'instruments',
   'sectorAllocation',

@@ -40,7 +40,14 @@
     "refreshNow": "Refresh now",
     "typeAllocation": "Allocation by Type",
     "countryAllocation": "Allocation by Country",
-    "noCountryData": "No country data available for portfolio instruments."
+    "noCountryData": "No country data available for portfolio instruments.",
+    "compare": "Compare",
+    "portfolio": "Portfolio",
+    "keyStats": "Key Statistics",
+    "period5y": "5 Years",
+    "period1y": "1 Year",
+    "period1mo": "Month",
+    "period1w": "Week"
   },
   "portfolio": {
     "create": "Create",

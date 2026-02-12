@@ -11,6 +11,7 @@ import { AllocationTable } from '@/components/dashboard/AllocationTable';
 import { TypeAllocation } from '@/components/dashboard/TypeAllocation';
 import { CountryAllocation } from '@/components/dashboard/CountryAllocation';
 import { PortfolioMetrics } from '@/components/dashboard/PortfolioMetrics';
+import { KeyStats } from '@/components/dashboard/KeyStats';
 import { DraggableSection } from '@/components/dashboard/DraggableSection';
 import { AddInstrumentModal } from '@/components/portfolio/AddInstrumentModal';
 import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
@@ -43,6 +44,7 @@ export default function DashboardPage() {
 
   const sectionComponents: Record<string, React.ReactNode> = useMemo(
     () => ({
+      keyStats: <KeyStats />,
       performance: <PerformanceChart refreshSignal={chartRefreshSignal} />,
       instruments: <InstrumentsTable quotes={quotes} isLoading={isLoading} />,
       sectorAllocation: <AllocationTable />,

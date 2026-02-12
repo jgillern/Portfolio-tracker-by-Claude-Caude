@@ -40,7 +40,14 @@
     "refreshNow": "立即刷新",
     "typeAllocation": "按类型分配",
     "countryAllocation": "按国家分配",
-    "noCountryData": "投资组合工具没有可用的国家数据。"
+    "noCountryData": "投资组合工具没有可用的国家数据。",
+    "compare": "比较",
+    "portfolio": "投资组合",
+    "keyStats": "关键统计",
+    "period5y": "5年",
+    "period1y": "1年",
+    "period1mo": "月",
+    "period1w": "周"
   },
   "portfolio": {
     "create": "创建",
