@@ -147,12 +147,20 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
   // Load portfolios + instruments from Supabase on mount / user change
   useEffect(() => {
+    console.log('[PortfolioContext] useEffect triggered:', {
+      authLoading,
+      hasUser: !!user,
+      userId: user?.id
+    });
+
     // Don't reset state while auth is still loading
     if (authLoading) {
+      console.log('[PortfolioContext] Auth still loading, skipping');
       return;
     }
 
     if (!user) {
+      console.log('[PortfolioContext] No user, resetting to initial state');
       dispatch({ type: 'SET_STATE', payload: initialState });
       setIsLoading(false);
       return;
@@ -161,12 +169,15 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function load() {
+      console.log('[PortfolioContext] Starting to load portfolios for user:', user!.id);
       setIsLoading(true);
       const portfolios = await db.getPortfolios(user!.id);
+      console.log('[PortfolioContext] Loaded portfolios:', portfolios.length);
       if (cancelled) return;
 
       const portfolioIds = portfolios.map((p) => p.id);
       const allInstruments = await db.getAllInstruments(portfolioIds);
+      console.log('[PortfolioContext] Loaded instruments:', allInstruments.length);
       if (cancelled) return;
 
       const localPortfolios: Portfolio[] = portfolios.map((p) => ({
@@ -187,6 +198,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
           activePortfolioId: activePortfolio?.id ?? localPortfolios[0]?.id ?? null,
         },
       });
+      console.log('[PortfolioContext] Portfolios set in state');
       setIsLoading(false);
     }
 
