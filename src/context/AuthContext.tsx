@@ -69,6 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const p = await getProfile(newUser.id);
         setProfile(p);
       }
+
+      // CRITICAL: Set loading to false after handling auth state change
+      // This ensures PortfolioContext can proceed with data fetching
+      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
