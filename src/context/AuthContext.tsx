@@ -36,13 +36,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const currentUser = session?.user ?? null;
       setUser(currentUser);
+
+      // CRITICAL: Set loading to false BEFORE async operations
+      // This ensures PortfolioContext can start loading immediately
+      setIsLoading(false);
+
       if (currentUser) {
         const p = await getProfile(currentUser.id);
         setProfile(p);
         // Run migration from localStorage (no-op if already migrated)
         await migrateLocalStorageToSupabase(currentUser.id);
       }
-      setIsLoading(false);
     });
 
     // Listen for auth changes
