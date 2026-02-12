@@ -308,6 +308,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 strokeWidth={2}
                 dot={<CustomDot dataKey="portfolio" />}
                 activeDot={{ r: 4 }}
+                connectNulls={true}
               />
               {comparisonInstruments.map((instrument, idx) => (
                 <Line
@@ -318,6 +319,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
                   strokeWidth={2}
                   dot={<CustomDot dataKey={instrument.symbol} />}
                   activeDot={{ r: 4 }}
+                  connectNulls={true}
                 />
               ))}
             </LineChart>
