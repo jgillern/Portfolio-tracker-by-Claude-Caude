@@ -106,12 +106,13 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ### Přepnutí jazyka
 
 ```
-1. Uživatel klikne LanguageToggle
-2. toggleLanguage() → změní locale v LanguageContext (en ↔ cs)
-3. Nový locale se uloží do localStorage
-4. Načte se příslušný JSON (/locales/cs.json nebo /locales/en.json)
-5. t() funkce vrací překlady z nového souboru
-6. Všechny komponenty se přerenderují s novými texty
+1. Uživatel otevře jazykový dropdown v hlavičce
+2. Vybere jazyk z 6 možností (EN, CZ, SK, UA, ZH, MN)
+3. setLocale() → změní locale v LanguageContext
+4. Nový locale se uloží do localStorage
+5. Načte se příslušný JSON (/locales/{locale}.json) — cachuje se po prvním načtení
+6. t() funkce vrací překlady z nového souboru
+7. Všechny komponenty se přerenderují s novými texty
 ```
 
 ---
@@ -149,7 +150,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 | Klíč | Obsah | Aktualizace |
 |---|---|---|
 | `portfolio-tracker-state` | `PortfolioState` (JSON) | Při každé změně portfolia |
-| `portfolio-tracker-lang` | `"en"` nebo `"cs"` | Při přepnutí jazyka |
+| `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` | Při přepnutí jazyka |
 | `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
 
 ---
@@ -205,19 +206,18 @@ RootLayout
     │   └── ThemeToggle
     │
     ├── DashboardPage (/)
-    │   ├── Portfolio heading + akce (přidat, upravit, smazat)
-    │   ├── PerformanceChart
+    │   ├── Portfolio heading + RefreshControl + akce (přidat, upravit, smazat)
+    │   ├── PerformanceChart (refreshSignal prop)
     │   │   └── TimePeriodSelector
-    │   ├── InstrumentsTable
-    │   │   ├── RefreshControl (odpočítávání + manuální refresh)
+    │   ├── InstrumentsTable (quotes + isLoading props)
     │   │   └── InstrumentRow × N (logo + váha + ceny)
     │   ├── AllocationTable
     │   │   ├── Stacked bar
     │   │   └── Legend
     │   ├── AddInstrumentModal
-    │   │   ├── InstrumentSearch (krok 1)
-    │   │   └── Weight input + potvrzení (krok 2)
-    │   ├── EditPortfolioModal
+    │   │   ├── InstrumentSearch
+    │   │   └── Vybraný instrument + weight input (jeden krok)
+    │   ├── EditPortfolioModal (lokální kopie stavu, Save/Cancel)
     │   │   └── InstrumentRow × N (logo + editace váhy + odebrání)
     │   ├── Empty state + CreatePortfolioModal (pokud žádné portfolio)
     │   └── Delete confirmation dialog

@@ -216,17 +216,19 @@ Centrální state management pro portfolia. Používá `useReducer` se 7 akcemi.
 
 ### `src/context/LanguageContext.tsx`
 
-Bilingvální i18n systém (EN/CS).
+Vícejazyčný i18n systém (6 jazyků).
 
 **Hook:** `useLanguage()`
 
 | Vlastnost / metoda | Typ | Popis |
 |---|---|---|
-| `locale` | `'en' \| 'cs'` | Aktuální jazyk |
-| `toggleLanguage()` | `() => void` | Přepne jazyk |
+| `locale` | `'en' \| 'cs' \| 'sk' \| 'uk' \| 'zh' \| 'mn'` | Aktuální jazyk |
+| `setLocale(locale)` | `(Locale) => void` | Nastaví jazyk na zvolený locale |
 | `t(key)` | `(string) => string` | Přeloží klíč (dot notation: `'dashboard.name'`) |
 
-**Překlady:** Lazy-loaded JSON soubory z `/locales/{en,cs}.json`. Cachovány v paměti po prvním načtení.
+**Podporované jazyky:** EN (angličtina), CZ (čeština), SK (slovenština), UA (ukrajinština), ZH (čínština), MN (mongolština).
+
+**Překlady:** Lazy-loaded JSON soubory z `/locales/{en,cs,sk,uk,zh,mn}.json`. Cachovány v paměti po prvním načtení.
 
 ### `src/context/ThemeContext.tsx`
 
@@ -310,7 +312,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | `Spinner` | `className?` | Animovaný loading indikátor |
 | `Badge` | `type: InstrumentType`, `label`, `className?` | Barevný badge podle typu instrumentu |
 | `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu — zobrazí obrázek (pokud logoUrl) nebo barevnou iniciálu dle typu |
-| `LanguageToggle` | — | Tlačítko pro přepnutí jazyka |
+| `LanguageToggle` | — | Dropdown pro výběr jazyka (6 jazyků s vlaječkami) |
 | `ThemeToggle` | — | Tlačítko pro přepnutí tématu (ikona slunce/měsíc) |
 
 ### Layout (`src/components/layout/`)
@@ -324,10 +326,10 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | Komponenta | Props | Popis |
 |---|---|---|
 | `PortfolioSwitcher` | `onCreateNew: () => void` | Dropdown pro přepínání mezi portfolii. Zobrazuje název + počet instrumentů. Poslední položka "+ Přidat nové portfolio" otevře modal. Click-outside zavření. |
-| `EditPortfolioModal` | `isOpen`, `onClose` | Modal pro správu instrumentů v portfoliu — zobrazuje seznam s logy, umožňuje editaci vah a odebrání instrumentů křížkem s potvrzením. |
+| `EditPortfolioModal` | `isOpen`, `onClose` | Modal pro správu instrumentů v portfoliu — pracuje s lokální kopií stavu. Zobrazuje seznam s logy, umožňuje editaci vah a odebrání instrumentů. Tlačítko Save uloží změny do kontextu, Cancel zahodí úpravy. |
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
-| `AddInstrumentModal` | `isOpen`, `onClose` | Dvou-krokový modal: 1) vyhledání instrumentu, 2) potvrzení s volitelným zadáním váhy (%). Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
+| `AddInstrumentModal` | `isOpen`, `onClose` | Jednokrokový modal: vyhledávání, vybraný instrument a zadání váhy (%) na jedné obrazovce. Po přidání se modal zavře. Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
 
 ### Dashboard (`src/components/dashboard/`)
 
@@ -335,8 +337,8 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 |---|---|---|
 | `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
 | `PerformanceChart` | — | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
-| `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). |
-| `InstrumentsTable` | — | Tabulka instrumentů s logy, cenami, váhami a změnami. RefreshControl v hlavičce. Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
+| `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). Umístěn na úrovni dashboardu vedle názvu portfolia. Refresh spouští obnovu kotací i grafu (přes refreshSignal prop). |
+| `InstrumentsTable` | `quotes`, `isLoading` | Tabulka instrumentů s logy, cenami, váhami a změnami. Přijímá kotace a stav načítání jako props (nepoužívá vlastní hook). Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
 
 ### News (`src/components/news/`)
@@ -368,6 +370,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 
 - Zobrazuje název aktivního portfolia
 - Tlačítka: přidat instrument, upravit portfolio, smazat portfolio
+- `RefreshControl` vedle názvu portfolia (obnoví kotace i graf přes refreshSignal)
 - Komponenty: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`
 - Modaly: `AddInstrumentModal`, `EditPortfolioModal`
 - Potvrzovací dialog pro smazání portfolia
@@ -408,7 +411,7 @@ Třída `dark` na `<html>` elementu (spravována přes `ThemeContext`). Všechny
 
 ### Struktura překladových souborů
 
-Soubory: `public/locales/en.json`, `public/locales/cs.json`
+Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
 
 ```
 {
@@ -436,5 +439,5 @@ t('types.stock')         // → "Stock" nebo "Akcie"
 
 ### Přidání nového překladu
 
-1. Přidejte klíč do obou souborů (`en.json` i `cs.json`)
+1. Přidejte klíč do všech 6 jazykových souborů (`en.json`, `cs.json`, `sk.json`, `uk.json`, `zh.json`, `mn.json`)
 2. Použijte přes `t('section.key')` v komponentě

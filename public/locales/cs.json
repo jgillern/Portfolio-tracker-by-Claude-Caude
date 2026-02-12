@@ -42,6 +42,7 @@
     "create": "Vytvořit",
     "cancel": "Zrušit",
     "close": "Zavřít",
+    "save": "Uložit",
     "name": "Název portfolia",
     "namePlaceholder": "např. Technologické akcie",
     "delete": "Smazat portfolio",

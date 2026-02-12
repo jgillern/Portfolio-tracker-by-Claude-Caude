@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -18,7 +18,20 @@ import { TimePeriodSelector } from './TimePeriodSelector';
 import { Spinner } from '@/components/ui/Spinner';
 import { getPortfolioWeights } from '@/lib/utils';
 
-export function PerformanceChart() {
+const DATE_LOCALE_MAP: Record<string, string> = {
+  en: 'en-US',
+  cs: 'cs-CZ',
+  sk: 'sk-SK',
+  uk: 'uk-UA',
+  zh: 'zh-CN',
+  mn: 'mn-MN',
+};
+
+interface Props {
+  refreshSignal?: number;
+}
+
+export function PerformanceChart({ refreshSignal }: Props) {
   const { t, locale } = useLanguage();
   const { activePortfolio } = usePortfolio();
   const [period, setPeriod] = useState<TimePeriod>('1mo');
@@ -28,22 +41,33 @@ export function PerformanceChart() {
     ? getPortfolioWeights(activePortfolio)
     : [];
 
-  const { data, isLoading } = useChart(symbols, period, weights);
+  const { data, isLoading, refetch } = useChart(symbols, period, weights);
+
+  // Refetch chart when refreshSignal changes (manual refresh from parent)
+  const prevSignal = useRef(refreshSignal);
+  useEffect(() => {
+    if (refreshSignal !== undefined && refreshSignal !== prevSignal.current) {
+      prevSignal.current = refreshSignal;
+      refetch();
+    }
+  }, [refreshSignal, refetch]);
 
   const chartData = data.map((d) => ({
     time: d.timestamp,
     value: d.value,
   }));
 
+  const dateLocale = DATE_LOCALE_MAP[locale] || 'en-US';
+
   const formatTime = (ts: number) => {
     const date = new Date(ts);
     if (period === '1d') {
-      return date.toLocaleTimeString(locale === 'cs' ? 'cs-CZ' : 'en-US', {
+      return date.toLocaleTimeString(dateLocale, {
         hour: '2-digit',
         minute: '2-digit',
       });
     }
-    return date.toLocaleDateString(locale === 'cs' ? 'cs-CZ' : 'en-US', {
+    return date.toLocaleDateString(dateLocale, {
       month: 'short',
       day: 'numeric',
     });

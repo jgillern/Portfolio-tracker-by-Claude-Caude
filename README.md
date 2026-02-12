@@ -12,7 +12,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Vytvoření nového portfolia přímo z dropdownu (položka "+ Přidat nové portfolio")
 - Pokud neexistuje žádné portfolio, tlačítko pro vytvoření je přímo na dashboardu
 - Přidávání instrumentů vyhledáváním podle názvu nebo tickeru (AAPL, BTC-USD, GLD...)
-- Úprava portfolia přes modální dialog "Upravit portfolio" — změna vah a odebrání instrumentů
+- Úprava portfolia přes modální dialog "Upravit portfolio" — změna vah a odebrání instrumentů (editace probíhá na lokální kopii, uložení přes Save, zrušení přes Cancel)
 - Smazání celého portfolia s potvrzovacím dialogem
 
 ### Dashboard
@@ -26,7 +26,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Aktuální cena
   - Změna za: 24h, 1 týden, 1 měsíc, 1 rok, YTD (v %)
   - Barevné kódování: zelená (kladná) / červená (záporná)
-  - Odpočítávání automatického obnovení dat (10 min) + tlačítko pro manuální refresh
+  - Tlačítko pro manuální refresh vedle názvu portfolia (obnoví kotace i graf současně)
 - **Sektorová alokace** — vizuální rozdělení portfolia dle sektorů (technologie, finance, krypto...)
   - Horizontální stacked bar chart
   - Legenda s procentuálním podílem
@@ -56,8 +56,9 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Počet dní do/od události, barevné ikony dle typu
 
 ### Lokalizace
-- Čeština a angličtina s okamžitým přepínáním
-- Všechny popisky, tlačítka, chybové hlášky ve dvou jazycích
+- 6 jazyků: angličtina, čeština, slovenština, ukrajinština, čínština, mongolština
+- Přepínání přes dropdown v hlavičce s vlaječkami
+- Všechny popisky, tlačítka, chybové hlášky ve všech podporovaných jazycích
 
 ### Tmavý režim
 - Přepínání světlý / tmavý režim
@@ -150,7 +151,7 @@ src/
 ├── types/                        # TypeScript definice typů
 └── config/                       # Konfigurace a konstanty
 public/
-└── locales/                      # Jazykové soubory (en.json, cs.json)
+└── locales/                      # Jazykové soubory (en.json, cs.json, sk.json, uk.json, zh.json, mn.json)
 ```
 
 Podrobnou technickou dokumentaci najdete v [TECHNICAL.md](./TECHNICAL.md).

@@ -85,6 +85,9 @@ export function AllocationTable() {
 
 function getSectorLabel(sector: string, locale: string): string {
   const labels = SECTOR_LABELS[sector];
-  if (labels) return locale === 'cs' ? labels.cs : labels.en;
+  if (labels) {
+    if (locale === 'cs' || locale === 'sk') return labels.cs;
+    return labels.en;
+  }
   return sector;
 }

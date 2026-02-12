@@ -42,6 +42,7 @@
     "create": "Create",
     "cancel": "Cancel",
     "close": "Close",
+    "save": "Save",
     "name": "Portfolio Name",
     "namePlaceholder": "e.g. Tech Stocks",
     "delete": "Delete Portfolio",

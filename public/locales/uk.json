@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "Portfolio Tracker"
+  },
+  "header": {
+    "dashboard": "Панель",
+    "news": "Новини",
+    "calendar": "Календар",
+    "createPortfolio": "Нове портфоліо",
+    "language": "UA",
+    "theme": "Тема"
+  },
+  "dashboard": {
+    "performance": "Ефективність портфоліо",
+    "instruments": "Інструменти",
+    "allocation": "Розподіл за секторами",
+    "name": "Назва",
+    "type": "Тип",
+    "weight": "Вага",
+    "price": "Ціна",
+    "change24h": "24г",
+    "change1w": "1Т",
+    "change1m": "1М",
+    "change1y": "1Р",
+    "changeYtd": "YTD",
+    "actions": "Дії",
+    "noInstruments": "У цьому портфоліо поки немає інструментів.",
+    "addSome": "Додайте декілька для початку!",
+    "noPortfolio": "Портфоліо не вибрано.",
+    "createFirst": "Створіть своє перше портфоліо.",
+    "sector": "Сектор",
+    "percentage": "Частка",
+    "customWeights": "Власні ваги",
+    "equalWeights": "Рівний розподіл",
+    "weightsTotal": "Всього",
+    "weightsWarning": "Ваги повинні складати 100%",
+    "remove": "Видалити",
+    "autoRefresh": "Автооновлення через",
+    "refreshNow": "Оновити зараз"
+  },
+  "portfolio": {
+    "create": "Створити",
+    "cancel": "Скасувати",
+    "close": "Закрити",
+    "save": "Зберегти",
+    "name": "Назва портфоліо",
+    "namePlaceholder": "напр. Технологічні акції",
+    "delete": "Видалити портфоліо",
+    "editPortfolio": "Редагувати портфоліо",
+    "addNewPortfolio": "Додати нове портфоліо",
+    "confirmDelete": "Ви впевнені, що хочете видалити це портфоліо?",
+    "switchPortfolio": "Переключити портфоліо",
+    "addInstrument": "Додати інструмент",
+    "yes": "Так",
+    "no": "Ні",
+    "changeInstrument": "Змінити",
+    "weightLabel": "Частка в портфоліо",
+    "weightPlaceholder": "напр. 25",
+    "weightRequired": "Інші інструменти мають встановлені ваги — це поле є обов'язковим.",
+    "weightHint": "Необов'язково. Якщо заповнено для одного інструмента, стає обов'язковим для всіх.",
+    "back": "Назад"
+  },
+  "search": {
+    "placeholder": "Шукати за назвою або тікером...",
+    "noResults": "Нічого не знайдено.",
+    "add": "Додати",
+    "searching": "Шукаю..."
+  },
+  "news": {
+    "title": "Фінансові новини",
+    "readMore": "Читати далі",
+    "noNews": "Немає новин для інструментів вашого портфоліо.",
+    "noSelection": "Виберіть хоча б один інструмент для відображення новин.",
+    "source": "Джерело",
+    "filterLabel": "Інструменти",
+    "filterAll": "Всі інструменти",
+    "filterNone": "Немає інструментів",
+    "filterCount": "{count} інструментів",
+    "selectAll": "Вибрати все",
+    "deselectAll": "Скасувати вибір"
+  },
+  "calendar": {
+    "title": "Календар подій",
+    "noEvents": "Немає подій для інструментів вашого портфоліо.",
+    "upcoming": "Майбутні",
+    "past": "Нещодавні",
+    "today": "Сьогодні",
+    "tomorrow": "Завтра",
+    "yesterday": "Вчора",
+    "inDays": "Через",
+    "days": "днів",
+    "daysAgo": "днів тому",
+    "type": {
+      "earnings": "Звітність",
+      "dividend": "Дивіденд",
+      "split": "Спліт",
+      "other": "Подія"
+    }
+  },
+  "periods": {
+    "1d": "1Д",
+    "1w": "1Т",
+    "1mo": "1М",
+    "1y": "1Р",
+    "5y": "5Р",
+    "ytd": "YTD"
+  },
+  "types": {
+    "stock": "Акція",
+    "etf": "ETF",
+    "crypto": "Крипто",
+    "bond": "Облігація",
+    "commodity": "Товар"
+  },
+  "errors": {
+    "fetchFailed": "Не вдалося завантажити дані. Спробуйте ще раз.",
+    "networkError": "Помилка мережі. Перевірте підключення."
+  }
+}

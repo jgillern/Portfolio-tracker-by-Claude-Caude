@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "投资组合追踪器"
+  },
+  "header": {
+    "dashboard": "仪表板",
+    "news": "新闻",
+    "calendar": "日历",
+    "createPortfolio": "新建组合",
+    "language": "ZH",
+    "theme": "主题"
+  },
+  "dashboard": {
+    "performance": "投资组合表现",
+    "instruments": "金融工具",
+    "allocation": "行业配置",
+    "name": "名称",
+    "type": "类型",
+    "weight": "权重",
+    "price": "价格",
+    "change24h": "24小时",
+    "change1w": "1周",
+    "change1m": "1月",
+    "change1y": "1年",
+    "changeYtd": "年初至今",
+    "actions": "操作",
+    "noInstruments": "此投资组合中还没有任何金融工具。",
+    "addSome": "添加一些开始吧！",
+    "noPortfolio": "未选择投资组合。",
+    "createFirst": "创建您的第一个投资组合。",
+    "sector": "行业",
+    "percentage": "占比",
+    "customWeights": "自定义权重",
+    "equalWeights": "等权重",
+    "weightsTotal": "合计",
+    "weightsWarning": "权重之和必须为100%",
+    "remove": "移除",
+    "autoRefresh": "自动刷新倒计时",
+    "refreshNow": "立即刷新"
+  },
+  "portfolio": {
+    "create": "创建",
+    "cancel": "取消",
+    "close": "关闭",
+    "save": "保存",
+    "name": "组合名称",
+    "namePlaceholder": "例如 科技股票",
+    "delete": "删除组合",
+    "editPortfolio": "编辑组合",
+    "addNewPortfolio": "新建组合",
+    "confirmDelete": "确定要删除此投资组合吗？",
+    "switchPortfolio": "切换组合",
+    "addInstrument": "添加工具",
+    "yes": "是",
+    "no": "否",
+    "changeInstrument": "更换",
+    "weightLabel": "组合权重",
+    "weightPlaceholder": "例如 25",
+    "weightRequired": "其他工具已设置权重 — 此字段为必填。",
+    "weightHint": "可选。若任一工具设置了权重，则所有工具均需设置。",
+    "back": "返回"
+  },
+  "search": {
+    "placeholder": "按名称或代码搜索...",
+    "noResults": "未找到结果。",
+    "add": "添加",
+    "searching": "搜索中..."
+  },
+  "news": {
+    "title": "财经新闻",
+    "readMore": "阅读更多",
+    "noNews": "您的投资组合工具暂无相关新闻。",
+    "noSelection": "请至少选择一个工具以显示新闻。",
+    "source": "来源",
+    "filterLabel": "金融工具",
+    "filterAll": "所有工具",
+    "filterNone": "未选择工具",
+    "filterCount": "{count} 个工具",
+    "selectAll": "全选",
+    "deselectAll": "取消全选"
+  },
+  "calendar": {
+    "title": "事件日历",
+    "noEvents": "您的投资组合工具暂无相关事件。",
+    "upcoming": "即将到来",
+    "past": "最近",
+    "today": "今天",
+    "tomorrow": "明天",
+    "yesterday": "昨天",
+    "inDays": "还有",
+    "days": "天",
+    "daysAgo": "天前",
+    "type": {
+      "earnings": "财报",
+      "dividend": "股息",
+      "split": "拆股",
+      "other": "事件"
+    }
+  },
+  "periods": {
+    "1d": "1日",
+    "1w": "1周",
+    "1mo": "1月",
+    "1y": "1年",
+    "5y": "5年",
+    "ytd": "今年"
+  },
+  "types": {
+    "stock": "股票",
+    "etf": "ETF",
+    "crypto": "加密货币",
+    "bond": "债券",
+    "commodity": "商品"
+  },
+  "errors": {
+    "fetchFailed": "数据加载失败，请重试。",
+    "networkError": "网络错误，请检查连接。"
+  }
+}

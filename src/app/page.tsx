@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
+import { useMarketData } from '@/hooks/useMarketData';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { InstrumentsTable } from '@/components/dashboard/InstrumentsTable';
 import { AllocationTable } from '@/components/dashboard/AllocationTable';
 import { AddInstrumentModal } from '@/components/portfolio/AddInstrumentModal';
 import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
+import { RefreshControl } from '@/components/dashboard/RefreshControl';
 import { Button } from '@/components/ui/Button';
 
 export default function DashboardPage() {
@@ -18,6 +20,15 @@ export default function DashboardPage() {
   const [showEditPortfolio, setShowEditPortfolio] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
+  const [chartRefreshSignal, setChartRefreshSignal] = useState(0);
+
+  const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
+  const { quotes, isLoading, refetch, lastUpdated } = useMarketData(symbols);
+
+  const handleRefreshAll = useCallback(() => {
+    refetch();
+    setChartRefreshSignal((prev) => prev + 1);
+  }, [refetch]);
 
   if (!activePortfolio) {
     return (
@@ -43,9 +54,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {activePortfolio.name}
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {activePortfolio.name}
+          </h1>
+          {symbols.length > 0 && (
+            <RefreshControl lastUpdated={lastUpdated} isLoading={isLoading} onRefresh={handleRefreshAll} />
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setShowAddInstrument(true)}>
             + {t('portfolio.addInstrument')}
@@ -68,8 +84,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <PerformanceChart />
-      <InstrumentsTable />
+      <PerformanceChart refreshSignal={chartRefreshSignal} />
+      <InstrumentsTable quotes={quotes} isLoading={isLoading} />
       <AllocationTable />
 
       <AddInstrumentModal
