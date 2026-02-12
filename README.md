@@ -20,7 +20,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Časová období: 1D, 1T, 1M, 1R, 5L, YTD
   - Zelená/červená barva podle celkového vývoje
 - **Tabulka instrumentů** — přehled všech instrumentů v portfoliu:
-  - Logo instrumentu (barevná iniciála dle typu, nebo vlastní logo)
+  - Logo instrumentu — automaticky načtené z Clearbit Logo API (akcie/ETF) nebo cryptocurrency-icons CDN (krypto); barevná iniciála jako fallback
   - Název, symbol, typ (barevný badge)
   - Sloupec Zastoupení (% váha, pokud je vyplněna)
   - Aktuální cena
@@ -36,6 +36,9 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Automatická detekce: pokud má alespoň jeden instrument vyplněnou váhu, stává se povinnou pro všechny
 - Pokud žádný instrument nemá váhu, použije se rovné zastoupení
 - Váhy ovlivňují graf výkonnosti i sektorovou alokaci
+- **Validace vah:**
+  - Celková váha nemůže překročit 100% — při přidávání i úpravě se zobrazuje zbývající procento a tlačítko je zablokováno při překročení
+  - Pokud je portfolio neúplné (součet vah < 100%), zobrazí se na dashboardu varovný banner informující o možném zkreslení statistik
 
 ### Zprávy
 - Sekce s finančními zprávami relevantními k instrumentům v portfoliu
@@ -57,7 +60,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 
 ### Lokalizace
 - 6 jazyků: angličtina, čeština, slovenština, ukrajinština, čínština, mongolština
-- Přepínání přes dropdown v hlavičce s vlaječkami
+- Přepínání přes dropdown v hlavičce s obrázky vlajek (flagcdn.com CDN) a kódem jazyka
 - Všechny popisky, tlačítka, chybové hlášky ve všech podporovaných jazycích
 
 ### Tmavý režim
@@ -137,7 +140,8 @@ src/
 │       ├── quote/route.ts        # GET /api/quote?symbols=...
 │       ├── chart/route.ts        # GET /api/chart?symbols=...&range=...
 │       ├── news/route.ts         # GET /api/news?symbols=...
-│       └── calendar/route.ts     # GET /api/calendar?symbols=...
+│       ├── calendar/route.ts     # GET /api/calendar?symbols=...
+│       └── logo/route.ts         # GET /api/logo?symbol=...&type=...
 ├── components/
 │   ├── ui/                       # Znovupoužitelné UI primitiva (Button, Modal, Badge, InstrumentLogo...)
 │   ├── layout/                   # Header, navigace

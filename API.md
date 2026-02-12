@@ -1,6 +1,6 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 5 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 6 interních API endpointů, které slouží jako server-side proxy pro Yahoo Finance a externí logo služby. Všechny endpointy jsou GET requesty a běží na straně serveru (Next.js API Routes).
 
 ---
 
@@ -12,8 +12,9 @@ Portfolio Tracker poskytuje 5 interních API endpointů, které slouží jako se
 4. [GET /api/chart](#get-apichart)
 5. [GET /api/news](#get-apinews)
 6. [GET /api/calendar](#get-apicalendar)
-7. [Cachování](#cachování)
-8. [Chybové odpovědi](#chybové-odpovědi)
+7. [GET /api/logo](#get-apilogo)
+8. [Cachování](#cachování)
+9. [Chybové odpovědi](#chybové-odpovědi)
 
 ---
 
@@ -26,6 +27,7 @@ Portfolio Tracker poskytuje 5 interních API endpointů, které slouží jako se
 | `GET /api/chart` | Historická data pro graf | 5 min |
 | `GET /api/news` | Finanční zprávy | 15 min |
 | `GET /api/calendar` | Kalendářní události (earnings, dividendy) | 30 min |
+| `GET /api/logo` | Logo instrumentu (Clearbit / crypto CDN) | 24 h |
 
 ---
 
@@ -311,6 +313,60 @@ GET /api/calendar?symbols={symbol1},{symbol2},...
 
 ---
 
+## GET /api/logo
+
+Vrátí URL loga pro zadaný instrument. Automaticky rozhodne zdroj podle typu instrumentu.
+
+### Request
+
+```
+GET /api/logo?symbol={symbol}&type={type}
+```
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `symbol` | string | Ano | Ticker symbol (AAPL, BTC-USD, META...) |
+| `type` | InstrumentType | Ne | Typ instrumentu (výchozí: `stock`) |
+
+### Response — 200 OK
+
+```json
+{
+  "logoUrl": "https://logo.clearbit.com/apple.com"
+}
+```
+
+nebo pokud logo nebylo nalezeno:
+
+```json
+{
+  "logoUrl": null
+}
+```
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `logoUrl` | string \| null | URL loga nebo null pokud nenalezeno |
+
+### Algoritmus resolution
+
+1. **Krypto** (`type === 'crypto'`): Vrátí URL z cryptocurrency-icons CDN:
+   `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/{symbol}.png`
+   - Symbol se převede na lowercase a odstraní se přípona `-USD` (BTC-USD → btc)
+
+2. **Akcie/ETF/ostatní**: Tříúrovňový fallback:
+   1. `yf.quoteSummary(symbol, { modules: ['assetProfile'] })` → extrahuje `website` → Clearbit Logo API (`logo.clearbit.com/{domain}`)
+   2. Hardcoded mapování pro ~45 známých tickerů (META→meta.com, AAPL→apple.com, TSLA→tesla.com, NVDA→nvidia.com atd.)
+   3. `null` — klient zobrazí barevnou iniciálu
+
+### Poznámky
+
+- Cache TTL: 24 hodin (loga se mění zřídka)
+- Klientská komponenta `InstrumentLogo` cachuje výsledky v module-level `Map` — logo se pro každý symbol stahuje pouze jednou za session
+- Pokud se `<img>` nepodaří načíst (Clearbit vrátí 404), klient automaticky zobrazí fallback (barevná iniciála dle typu instrumentu)
+
+---
+
 ## Cachování
 
 Všechny endpointy využívají server-side in-memory cache.
@@ -328,6 +384,7 @@ Request → Cache hit?
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
 | `/api/calendar` | 30 min | `calendar:{symbols}` |
+| `/api/logo` | 24 h | `logo:{symbol}` |
 
 **Omezení cache:**
 - In-memory — neprežije restart serveru

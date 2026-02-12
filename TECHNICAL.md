@@ -150,7 +150,7 @@ interface ApiError {
 | `cn` | `(...inputs: ClassValue[]) => string` | Spojení CSS tříd přes `clsx` |
 | `formatPercent` | `(value: number) => string` | Formátování procent s +/- znaménkem (`+1.23%`, `-0.45%`) |
 | `formatCurrency` | `(value: number, currency?: string) => string` | Formátování ceny přes `Intl.NumberFormat` |
-| `formatDate` | `(date: Date \| string, locale?: string) => string` | Lokalizované formátování data (cs-CZ / en-US) |
+| `formatDate` | `(date: Date \| string, locale?: string) => string` | Lokalizované formátování data (6 lokálů: en-US, cs-CZ, sk-SK, uk-UA, zh-CN, mn-MN) |
 | `getEqualWeights` | `(count: number) => number[]` | Vrací pole rovných vah pro `count` instrumentů |
 | `getPortfolioWeights` | `(portfolio: Portfolio) => number[]` | Vrací pole vah — auto-detekce přes `hasCustomWeights()` |
 
@@ -175,6 +175,13 @@ Server-side wrapper nad knihovnou `yahoo-finance2` (v3). Instance `new YahooFina
 | `getChart` | `(symbols: string[], period: TimePeriod, weights?: number[]) => Promise<ChartDataPoint[]>` | 5 min |
 | `getNews` | `(symbols: string[]) => Promise<NewsArticle[]>` | 15 min |
 | `getCalendarEvents` | `(symbols: string[]) => Promise<CalendarEvent[]>` | 30 min |
+| `getLogoUrl` | `(symbol: string, type: InstrumentType) => Promise<string \| null>` | 24 h |
+
+**Logo resolution (`getLogoUrl`):**
+1. **Krypto:** Vrátí URL z cryptocurrency-icons CDN (`cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons/.../{symbol}.png`), odstraní příponu `-USD` ze symbolu
+2. **Akcie/ETF:** Zavolá `yf.quoteSummary(symbol, { modules: ['assetProfile'] })`, extrahuje doménu z `website` pole a vrátí Clearbit Logo API URL (`logo.clearbit.com/{domain}`)
+3. **Fallback domény:** Pro ~45 nejznámějších tickerů (AAPL, META, TSLA...) je hardcoded mapování symbol→doména, použije se pokud Yahoo nemá website
+4. Vrací `null` pokud logo nelze najít — klient pak zobrazí barevnou iniciálu
 
 **Cachování:** In-memory `Map` s TTL expirací. Každý záznam má `{ data, expiresAt }`. Při expiraci se záznam smaže a znovu načte.
 
@@ -311,8 +318,8 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | `Modal` | `isOpen`, `onClose`, `title`, `children`, `className?` | Modální dialog s overlay, ESC zavření, click-outside |
 | `Spinner` | `className?` | Animovaný loading indikátor |
 | `Badge` | `type: InstrumentType`, `label`, `className?` | Barevný badge podle typu instrumentu |
-| `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu — zobrazí obrázek (pokud logoUrl) nebo barevnou iniciálu dle typu |
-| `LanguageToggle` | — | Dropdown pro výběr jazyka (6 jazyků s vlaječkami) |
+| `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu s automatickým načtením — modul-level cache (`Map`), lazy fetch z `/api/logo`, deduplikace in-flight requestů, onError fallback na barevnou iniciálu dle typu |
+| `LanguageToggle` | — | Dropdown pro výběr jazyka (6 jazyků) — obrázky vlajek z flagcdn.com CDN (`<img>` tagy s srcSet pro retina), click-outside zavření, zvýraznění aktivního jazyka |
 | `ThemeToggle` | — | Tlačítko pro přepnutí tématu (ikona slunce/měsíc) |
 
 ### Layout (`src/components/layout/`)
@@ -326,17 +333,17 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | Komponenta | Props | Popis |
 |---|---|---|
 | `PortfolioSwitcher` | `onCreateNew: () => void` | Dropdown pro přepínání mezi portfolii. Zobrazuje název + počet instrumentů. Poslední položka "+ Přidat nové portfolio" otevře modal. Click-outside zavření. |
-| `EditPortfolioModal` | `isOpen`, `onClose` | Modal pro správu instrumentů v portfoliu — pracuje s lokální kopií stavu. Zobrazuje seznam s logy, umožňuje editaci vah a odebrání instrumentů. Tlačítko Save uloží změny do kontextu, Cancel zahodí úpravy. |
+| `EditPortfolioModal` | `isOpen`, `onClose` | Modal pro správu instrumentů v portfoliu — pracuje s lokální kopií stavu. Zobrazuje seznam s logy, umožňuje editaci vah a odebrání instrumentů. Zobrazuje celkovou váhu, zbývající %, blokuje uložení při >100%. Tlačítko Save uloží změny do kontextu, Cancel zahodí úpravy. |
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
-| `AddInstrumentModal` | `isOpen`, `onClose` | Jednokrokový modal: vyhledávání, vybraný instrument a zadání váhy (%) na jedné obrazovce. Po přidání se modal zavře. Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
+| `AddInstrumentModal` | `isOpen`, `onClose` | Jednokrokový modal: vyhledávání, vybraný instrument a zadání váhy (%) na jedné obrazovce. Po přidání se modal zavře. Zobrazuje zbývající % váhy, blokuje přidání při překročení 100%. Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
 
 ### Dashboard (`src/components/dashboard/`)
 
 | Komponenta | Props | Popis |
 |---|---|---|
 | `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
-| `PerformanceChart` | — | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
+| `PerformanceChart` | `refreshSignal?: number` | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
 | `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). Umístěn na úrovni dashboardu vedle názvu portfolia. Refresh spouští obnovu kotací i grafu (přes refreshSignal prop). |
 | `InstrumentsTable` | `quotes`, `isLoading` | Tabulka instrumentů s logy, cenami, váhami a změnami. Přijímá kotace a stav načítání jako props (nepoužívá vlastní hook). Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
@@ -371,6 +378,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 - Zobrazuje název aktivního portfolia
 - Tlačítka: přidat instrument, upravit portfolio, smazat portfolio
 - `RefreshControl` vedle názvu portfolia (obnoví kotace i graf přes refreshSignal)
+- Varovný banner pokud portfolio používá vlastní váhy a jejich součet < 100% (informuje o možném zkreslení statistik)
 - Komponenty: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`
 - Modaly: `AddInstrumentModal`, `EditPortfolioModal`
 - Potvrzovací dialog pro smazání portfolia
