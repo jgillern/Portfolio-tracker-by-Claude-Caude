@@ -65,14 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const newUser = session?.user ?? null;
       setUser(newUser);
 
+      // CRITICAL: Set loading to false immediately after setting user
+      // This ensures both updates happen in the same render batch
+      setIsLoading(false);
+
       if (newUser && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED')) {
         const p = await getProfile(newUser.id);
         setProfile(p);
       }
-
-      // CRITICAL: Set loading to false after handling auth state change
-      // This ensures PortfolioContext can proceed with data fetching
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
