@@ -169,41 +169,55 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function load() {
-      console.log('[PortfolioContext] Starting to load portfolios for user:', user!.id);
-      setIsLoading(true);
-      const portfolios = await db.getPortfolios(user!.id);
-      console.log('[PortfolioContext] Loaded portfolios:', portfolios.length);
-      if (cancelled) return;
+      try {
+        console.log('[PortfolioContext] Starting to load portfolios for user:', user!.id);
+        setIsLoading(true);
+        const portfolios = await db.getPortfolios(user!.id);
+        console.log('[PortfolioContext] Loaded portfolios:', portfolios.length);
+        if (cancelled) {
+          console.log('[PortfolioContext] Load cancelled after getPortfolios');
+          return;
+        }
 
-      const portfolioIds = portfolios.map((p) => p.id);
-      const allInstruments = await db.getAllInstruments(portfolioIds);
-      console.log('[PortfolioContext] Loaded instruments:', allInstruments.length);
-      if (cancelled) return;
+        const portfolioIds = portfolios.map((p) => p.id);
+        const allInstruments = await db.getAllInstruments(portfolioIds);
+        console.log('[PortfolioContext] Loaded instruments:', allInstruments.length);
+        if (cancelled) {
+          console.log('[PortfolioContext] Load cancelled after getAllInstruments');
+          return;
+        }
 
-      const localPortfolios: Portfolio[] = portfolios.map((p) => ({
-        id: p.id,
-        name: p.name,
-        instruments: allInstruments
-          .filter((inst) => inst.portfolio_id === p.id)
-          .map(dbInstrumentToLocal),
-        createdAt: p.created_at,
-        updatedAt: p.updated_at,
-      }));
+        const localPortfolios: Portfolio[] = portfolios.map((p) => ({
+          id: p.id,
+          name: p.name,
+          instruments: allInstruments
+            .filter((inst) => inst.portfolio_id === p.id)
+            .map(dbInstrumentToLocal),
+          createdAt: p.created_at,
+          updatedAt: p.updated_at,
+        }));
 
-      const activePortfolio = portfolios.find((p) => p.is_active);
-      dispatch({
-        type: 'SET_PORTFOLIOS',
-        payload: {
-          portfolios: localPortfolios,
-          activePortfolioId: activePortfolio?.id ?? localPortfolios[0]?.id ?? null,
-        },
-      });
-      console.log('[PortfolioContext] Portfolios set in state');
-      setIsLoading(false);
+        const activePortfolio = portfolios.find((p) => p.is_active);
+        dispatch({
+          type: 'SET_PORTFOLIOS',
+          payload: {
+            portfolios: localPortfolios,
+            activePortfolioId: activePortfolio?.id ?? localPortfolios[0]?.id ?? null,
+          },
+        });
+        console.log('[PortfolioContext] Portfolios set in state');
+        setIsLoading(false);
+      } catch (error) {
+        console.error('[PortfolioContext] Load failed:', error);
+        setIsLoading(false);
+      }
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      console.log('[PortfolioContext] Cleanup: setting cancelled=true');
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
 
