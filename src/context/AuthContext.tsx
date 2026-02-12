@@ -27,7 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
 
     // Get initial session from local storage (fast, no API call)
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      console.log('[AuthContext] getSession result:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        error
+      });
+
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
@@ -43,6 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AuthContext] onAuthStateChange:', {
+        event,
+        hasSession: !!session,
+        userId: session?.user?.id
+      });
+
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
