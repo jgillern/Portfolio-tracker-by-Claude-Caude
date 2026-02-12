@@ -47,6 +47,14 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
 
   const showWeights = hasCustomWeights(activePortfolio);
 
+  // Sort instruments by weight (descending)
+  const sortedInstruments = [...instruments].sort((a, b) => {
+    if (!showWeights) return 0;
+    const weightA = a.weight ?? 0;
+    const weightB = b.weight ?? 0;
+    return weightB - weightA;
+  });
+
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -76,7 +84,7 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
               </tr>
             </thead>
             <tbody>
-              {instruments.map((instrument) => {
+              {sortedInstruments.map((instrument) => {
                 const quote = quotes.find((q) => q.symbol === instrument.symbol);
                 return (
                   <tr
