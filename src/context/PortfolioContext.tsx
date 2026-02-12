@@ -143,10 +143,15 @@ const PortfolioContext = createContext<PortfolioContextValue | null>(null);
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   // Load portfolios + instruments from Supabase on mount / user change
   useEffect(() => {
+    // Don't reset state while auth is still loading
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
       dispatch({ type: 'SET_STATE', payload: initialState });
       setIsLoading(false);
@@ -188,7 +193,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     load();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
   const activePortfolio =
     state.portfolios.find((p) => p.id === state.activePortfolioId) ?? null;
