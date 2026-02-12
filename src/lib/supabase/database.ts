@@ -72,15 +72,22 @@ export interface DbPortfolio {
 }
 
 export async function getPortfolios(userId: string): Promise<DbPortfolio[]> {
-  const { data, error } = await supabase()
-    .from('portfolios')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: true });
-  if (error) {
-    console.error('getPortfolios error:', error.message);
+  console.log('[DB] getPortfolios called for userId:', userId);
+  try {
+    const { data, error } = await supabase()
+      .from('portfolios')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+    console.log('[DB] getPortfolios result:', { count: data?.length ?? 0, error: error?.message });
+    if (error) {
+      console.error('getPortfolios error:', error.message);
+    }
+    return data ?? [];
+  } catch (e) {
+    console.error('[DB] getPortfolios exception:', e);
+    return [];
   }
-  return data ?? [];
 }
 
 export async function createPortfolio(
