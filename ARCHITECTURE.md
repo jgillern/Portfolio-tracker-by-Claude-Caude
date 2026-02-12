@@ -345,7 +345,7 @@ RootLayout
 ### 9. CSV import s validací
 
 **Pro:** Hromadné přidání instrumentů bez opakovaného vyhledávání
-**Realizace:** `ImportCsvModal` parsuje CSV soubor (UTF-8, čárka jako oddělovač), zobrazí náhled v tabulce, postupně validuje tickery přes `/api/search`. Kontroluje duplicity a nepřekročení 100% váhy. Zobrazí výsledek: úspěšně přidané + přeskočené s důvody.
+**Realizace:** `ImportCsvModal` parsuje CSV soubor (UTF-8, středník jako oddělovač — český formát), zobrazí náhled v tabulce, postupně validuje tickery přes `/api/search`. Kontroluje duplicity a nepřekročení 100% váhy. Zobrazí výsledek: úspěšně přidané + přeskočené s důvody.
 
 ---
 

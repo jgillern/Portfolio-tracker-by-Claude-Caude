@@ -22,16 +22,6 @@ export function PortfolioMetrics() {
 
   const metricConfigs = [
     {
-      key: 'peRatio',
-      name: t('metrics.peRatio'),
-      tooltip: t('metrics.peRatioTooltip'),
-      value: metrics?.peRatio ?? null,
-      min: 0,
-      max: 50,
-      invertScale: true,
-      format: (v: number) => v.toFixed(1),
-    },
-    {
       key: 'sharpeRatio',
       name: t('metrics.sharpeRatio'),
       tooltip: t('metrics.sharpeRatioTooltip'),
@@ -46,7 +36,6 @@ export function PortfolioMetrics() {
       value: metrics?.beta ?? null,
       min: 0,
       max: 2,
-      invertScale: true,
     },
     {
       key: 'alpha',
@@ -73,6 +62,15 @@ export function PortfolioMetrics() {
       min: -0.1,
       max: 0.3,
     },
+    {
+      key: 'calmarRatio',
+      name: t('metrics.calmarRatio'),
+      tooltip: t('metrics.calmarRatioTooltip'),
+      value: metrics?.calmarRatio ?? null,
+      min: -1,
+      max: 5,
+      format: (v: number) => v.toFixed(2),
+    },
   ];
 
   return (
@@ -96,7 +94,6 @@ export function PortfolioMetrics() {
               min={config.min}
               max={config.max}
               format={config.format}
-              invertScale={config.invertScale}
             />
           ))}
         </div>

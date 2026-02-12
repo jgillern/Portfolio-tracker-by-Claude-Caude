@@ -37,7 +37,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Obrázky vlajek z flagcdn.com CDN
   - Stacked bar chart s legendou
 - **Hodnocení portfolia** — 6 finančních metrik s vizuálním ukazatelem:
-  - P/E Ratio, Sharpe Ratio, Beta, Jensenova Alfa, Sortino Ratio, Treynor Ratio
+  - Sharpe Ratio, Beta, Jensenova Alfa, Sortino Ratio, Treynor Ratio, Calmar Ratio
   - Každá metrika se zobrazuje s hodnotou a gradientní osou (červená → žlutá → zelená)
   - Tooltip s vysvětlením, co daná metrika měří
 - **Drag-and-drop** — přetahování sekcí dashboardu myší pro změnu pořadí
@@ -45,7 +45,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Vizuální zpětná vazba při přetahování (zvýrazněný okraj, změna průhlednosti)
 - **Import CSV** — hromadné přidání instrumentů z CSV souboru
   - Modal s instrukcemi, nahrání souboru a náhledem
-  - Formát: UTF-8 CSV, sloupce ticker + váha v %
+  - Formát: UTF-8 CSV (oddělovač středník), sloupce ticker + váha v %
   - Validace tickerů přes Yahoo Finance API
   - Kontrola nepřekročení 100% váhy
   - Výsledek s počtem úspěšně importovaných a přeskočených instrumentů

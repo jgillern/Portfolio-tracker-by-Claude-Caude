@@ -101,12 +101,12 @@ interface CalendarEvent {
 }
 
 interface PortfolioMetrics {
-  peRatio: number | null;      // Vážený P/E ratio
   sharpeRatio: number | null;  // Sharpe ratio (rizikově vážený výnos)
   beta: number | null;         // Beta vůči S&P 500
   alpha: number | null;        // Jensenova Alfa
   sortinoRatio: number | null; // Sortino ratio (jen downside volatilita)
   treynorRatio: number | null; // Treynor ratio (systematický rizik. výnos)
+  calmarRatio: number | null;  // Calmar ratio (výnos / max. propad)
 }
 
 interface CountryAllocationItem {
@@ -213,7 +213,7 @@ Vrací surové byty obrázku (ne URL). Server-side proxy stahuje loga z webu fir
 **Výpočet metrik portfolia (`getPortfolioMetrics`):**
 1. Načte 1 rok denních dat pro všechny symboly + S&P 500 (^GSPC) jako benchmark
 2. Spočítá vážené denní výnosy portfolia
-3. Vypočte 6 metrik: P/E (vážený průměr), Sharpe, Beta, Jensenova Alfa, Sortino, Treynor
+3. Vypočte 6 metrik: Sharpe, Beta, Jensenova Alfa, Sortino, Treynor, Calmar (anualizovaný výnos / maximální propad)
 4. Risk-free rate: 4,5 % p.a.
 
 **Výpočet zemí (`getCountries`):**
@@ -403,7 +403,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
 | `AddInstrumentModal` | `isOpen`, `onClose` | Jednokrokový modal: vyhledávání, vybraný instrument a zadání váhy (%) na jedné obrazovce. Po přidání se modal zavře. Zobrazuje zbývající % váhy, blokuje přidání při překročení 100%. Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
-| `ImportCsvModal` | `isOpen`, `onClose` | Modal pro hromadný import instrumentů z CSV souboru. Zobrazuje pokyny k formátu, nahrání souboru (.csv/.txt), parsování a náhled v tabulce. Po importu validuje tickery přes `/api/search`, kontroluje nepřekročení 100% váhy. Výsledek: počet úspěšně importovaných + přeskočených s důvody. |
+| `ImportCsvModal` | `isOpen`, `onClose` | Modal pro hromadný import instrumentů z CSV souboru (oddělovač středník). Zobrazuje pokyny k formátu, nahrání souboru (.csv/.txt), parsování a náhled v tabulce. Po importu validuje tickery přes `/api/search`, kontroluje nepřekročení 100% váhy. Výsledek: počet úspěšně importovaných + přeskočených s důvody. |
 
 ### Dashboard (`src/components/dashboard/`)
 
@@ -417,7 +417,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 | `TypeAllocation` | — | Alokace dle typu instrumentu (stock, ETF, crypto, bond, commodity). Horizontální bar chart + legenda. Barvy: modrá (stock), fialová (ETF), oranžová (crypto), zelená (bond), žlutá (commodity). Čistě klient-side výpočet z portfolia. |
 | `CountryAllocation` | — | Alokace dle země původu. Načítá data přes `useCountries` hook. Stacked bar chart + legenda s vlajkami (flagcdn.com). Loading spinner, empty state. 12 barev pro země. |
 | `PortfolioMetrics` | — | Hodnocení portfolia — 6 finančních metrik ve 2-sloupcové mřížce. Každá metrika zobrazena přes `MetricGauge`. Načítá data přes `useMetrics` hook. Loading spinner. |
-| `MetricGauge` | `label`, `value`, `tooltip`, `min`, `max`, `inverted?` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. Invertovaná škála pro metriky kde nižší = lepší (P/E, Beta). |
+| `MetricGauge` | `label`, `value`, `tooltip`, `min`, `max` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. Všechny osy mají orientaci červená (vlevo) → zelená (vpravo). |
 | `DraggableSection` | `id`, `isDragged`, `isDragOver`, `onDragStart`, `onDragOver`, `onDragEnd`, `children` | Wrapper pro drag-and-drop sekcí. HTML5 DnD API. Vizuální zpětná vazba: opacity při přetahování, modrý ring při hoveru. 6-bodová drag handle ikona v pravém horním rohu. |
 
 ### News (`src/components/news/`)

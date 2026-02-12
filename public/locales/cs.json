@@ -69,7 +69,7 @@
   },
   "import": {
     "instructions": "Pokyny pro import CSV",
-    "instructionFormat": "Soubor musí být ve formátu CSV s kódováním UTF-8 (oddělovač čárka)",
+    "instructionFormat": "Soubor musí být ve formátu CSV s kódováním UTF-8 (oddělovač středník)",
     "instructionColumns": "Sloupec 1: ticker (např. AAPL, BTC-USD)",
     "instructionWeight": "Sloupec 2: zastoupení v portfoliu v % (nepovinné)",
     "instructionExample": "Příklad:",
@@ -143,8 +143,8 @@
   },
   "metrics": {
     "title": "Hodnocení portfolia",
-    "peRatio": "P/E Ratio",
-    "peRatioTooltip": "Poměr ceny k zisku — měří, jak drahé je portfolio vzhledem k ziskům. Nižší hodnoty mohou znamenat podhodnocení.",
+    "calmarRatio": "Calmar Ratio",
+    "calmarRatioTooltip": "Calmar Ratio — měří rizikově upravený výnos dělením anualizovaného výnosu maximálním propadem. Čím vyšší, tím lepší; >3 je výborné, >1 je přijatelné.",
     "sharpeRatio": "Sharpe Ratio",
     "sharpeRatioTooltip": "Rizikově vážený výnos — měří přebytkový výnos na jednotku celkového rizika (volatility). Čím vyšší, tím lepší; >1 je dobré, >2 je velmi dobré.",
     "beta": "Beta",
