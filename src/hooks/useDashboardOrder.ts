@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { getItem, setItem } from '@/lib/localStorage';
+import { createClient } from '@/lib/supabase/client';
 
 const STORAGE_KEY = 'portfolio-tracker-dashboard-order';
 
@@ -28,6 +29,29 @@ export function useDashboardOrder() {
       if (!merged.includes(id)) merged.push(id);
     }
     setOrder(merged);
+
+    // Load from Supabase if logged in
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from('user_preferences')
+          .select('dashboard_order')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.dashboard_order?.length) {
+              const dbOrder = data.dashboard_order as string[];
+              const mergedDb = dbOrder.filter((id) => validSections.has(id));
+              for (const id of DEFAULT_ORDER) {
+                if (!mergedDb.includes(id)) mergedDb.push(id);
+              }
+              setOrder(mergedDb);
+              setItem(STORAGE_KEY, mergedDb);
+            }
+          });
+      }
+    });
   }, []);
 
   const handleDragStart = useCallback((id: string) => {
@@ -48,6 +72,15 @@ export function useDashboardOrder() {
         newOrder.splice(fromIdx, 1);
         newOrder.splice(toIdx, 0, draggedId);
         setItem(STORAGE_KEY, newOrder);
+
+        // Sync to Supabase
+        const supabase = createClient();
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            supabase.from('user_preferences').update({ dashboard_order: newOrder }).eq('id', user.id).then(() => {});
+          }
+        });
+
         return newOrder;
       });
     }

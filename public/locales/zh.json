@@ -156,6 +156,32 @@
     "treynorRatio": "特雷诺比率",
     "treynorRatioTooltip": "系统风险调整收益 — 衡量每单位系统性风险（beta）的超额收益。越高越好。"
   },
+  "auth": {
+    "appTitle": "Honza的超级投资组合追踪器",
+    "tagline": "优雅追踪你的投资",
+    "signIn": "登录",
+    "signUp": "创建账户",
+    "signOut": "退出登录",
+    "email": "电子邮箱",
+    "password": "密码",
+    "firstName": "名",
+    "lastName": "姓",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "您的密码",
+    "firstNamePlaceholder": "小明",
+    "lastNamePlaceholder": "王",
+    "signingIn": "登录中...",
+    "signingUp": "创建账户中...",
+    "noAccount": "还没有账户？",
+    "hasAccount": "已有账户？",
+    "welcome": "欢迎回来",
+    "createNew": "创建您的账户",
+    "profileMenu": "个人资料",
+    "authError": "认证失败，请检查您的凭据。",
+    "emailExists": "该邮箱已被注册。",
+    "weakPassword": "密码至少需要6个字符。",
+    "invalidEmail": "请输入有效的电子邮箱地址。"
+  },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",
     "networkError": "网络错误，请检查连接。"

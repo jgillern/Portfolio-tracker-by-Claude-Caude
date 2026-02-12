@@ -87,10 +87,20 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Automatická detekce systémové preference
 - Všechny komponenty podporují oba režimy
 
+### Autentizace a uživatelské účty
+- Registrace a přihlášení přes e-mail a heslo (Supabase Auth)
+- Registrace vyžaduje: jméno, příjmení, e-mail, heslo
+- Vizuálně atraktivní přihlašovací stránka s animovaným gradientovým pozadím
+- Název aplikace na login stránce: "Honzův bombézní portfolio tracker"
+- Automatická ochrana všech stránek — nepřihlášený uživatel je přesměrován na `/login`
+- User menu v hlavičce s iniciálami, jménem a odhlášením
+- Automatická migrace dat z localStorage do Supabase při prvním přihlášení
+
 ### Persistence dat
-- Portfolia, jazyk, téma a pořadí sekcí dashboardu se ukládají do `localStorage`
-- Data přežijí zavření a znovuotevření prohlížeče
-- Připraveno pro budoucí migraci na databázi + autentizaci
+- Všechna data (portfolia, instrumenty, preference) se ukládají v Supabase PostgreSQL databázi
+- Data dostupná napříč zařízeními a prohlížeči po přihlášení
+- Dual-write: localStorage slouží jako cache pro okamžitý start, Supabase jako trvalé úložiště
+- Row Level Security (RLS) — každý uživatel vidí pouze svá data
 
 ---
 
@@ -137,6 +147,8 @@ npm run lint
 | [React](https://react.dev) | 19.2.3 | UI knihovna |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Typová bezpečnost |
 | [Tailwind CSS](https://tailwindcss.com) | 4.x | Utility-first CSS framework |
+| [Supabase](https://supabase.com) | 2.x | PostgreSQL databáze + autentizace |
+| [@supabase/ssr](https://github.com/supabase/auth-helpers) | 0.x | Cookie-based session management |
 | [Recharts](https://recharts.org) | 3.7.0 | Knihovna pro grafy |
 | [yahoo-finance2](https://github.com/gadicc/node-yahoo-finance2) | 3.13.0 | Yahoo Finance API klient |
 | [date-fns](https://date-fns.org) | 4.1.0 | Práce s daty |
@@ -149,11 +161,14 @@ npm run lint
 ```
 src/
 ├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout (Providers, Header)
-│   ├── page.tsx                  # Dashboard (hlavní stránka)
-│   ├── globals.css               # Tailwind + globální styly
-│   ├── news/page.tsx             # Stránka se zprávami
-│   ├── calendar/page.tsx         # Stránka s kalendářem událostí
+│   ├── layout.tsx                # Root layout (Theme + Language providers)
+│   ├── globals.css               # Tailwind + globální styly + login animace
+│   ├── login/page.tsx            # Přihlašovací stránka (veřejná)
+│   ├── (app)/                    # Route group — chráněné stránky
+│   │   ├── layout.tsx            # Auth + Portfolio providers + Header
+│   │   ├── page.tsx              # Dashboard (hlavní stránka)
+│   │   ├── news/page.tsx         # Stránka se zprávami
+│   │   └── calendar/page.tsx     # Stránka s kalendářem událostí
 │   └── api/                      # Serverové API routes
 │       ├── search/route.ts       # GET /api/search?q=...
 │       ├── quote/route.ts        # GET /api/quote?symbols=...
@@ -171,9 +186,11 @@ src/
 │   ├── news/                     # Zprávy
 │   └── calendar/                 # Kalendář událostí
 ├── hooks/                        # Custom React hooks
-├── context/                      # React Context providers
+├── context/                      # React Context providers (Auth, Portfolio, Language, Theme)
 ├── lib/                          # Utility funkce a integrace
-├── types/                        # TypeScript definice typů
+│   └── supabase/                 # Supabase klientské soubory (client, server, middleware, database, migration)
+├── middleware.ts                  # Next.js middleware — ochrana routes + session refresh
+├── types/                        # TypeScript definice typů (vč. auth.ts)
 └── config/                       # Konfigurace a konstanty
 public/
 └── locales/                      # Jazykové soubory (en.json, cs.json, sk.json, uk.json, zh.json, mn.json)
@@ -185,12 +202,30 @@ Popis architektury najdete v [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
-## Plán dalšího vývoje
+## Nastavení Supabase
 
-### Fáze 2 — Autentizace a databáze
-- Registrace / přihlášení uživatelů (NextAuth.js)
-- Migrace z localStorage na databázi (PostgreSQL / Supabase)
-- Synchronizace portfolií napříč zařízeními
+Pro zprovoznění aplikace je potřeba:
+
+### 1. Vytvořte projekt v Supabase
+- Přejděte na [supabase.com](https://supabase.com) a vytvořte nový projekt
+
+### 2. Nastavte proměnné prostředí
+Vytvořte soubor `.env.local` v kořenu projektu:
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### 3. Vytvořte databázové tabulky
+V Supabase Dashboard → SQL Editor spusťte SQL schema (viz `TECHNICAL.md` sekce "Databázové schéma").
+
+### 4. Vypněte potvrzení e-mailu
+V Supabase Dashboard → Authentication → Settings → Email Auth:
+- Vypněte "Confirm email" (pro zjednodušení registrace)
+
+---
+
+## Plán dalšího vývoje
 
 ### Budoucí funkce
 - Zadávání nákupních cen a množství pro výpočet P&L

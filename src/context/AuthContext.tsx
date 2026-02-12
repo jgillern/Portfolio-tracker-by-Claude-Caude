@@ -1,0 +1,103 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { getProfile } from '@/lib/supabase/database';
+import { migrateLocalStorageToSupabase } from '@/lib/supabase/migration';
+import type { User } from '@supabase/supabase-js';
+import type { UserProfile, SignUpData, SignInData } from '@/types/auth';
+
+interface AuthContextValue {
+  user: User | null;
+  profile: UserProfile | null;
+  isLoading: boolean;
+  signIn: (data: SignInData) => Promise<{ error: string | null }>;
+  signUp: (data: SignUpData) => Promise<{ error: string | null }>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get initial session
+    supabase.auth.getUser().then(async ({ data: { user: currentUser } }) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const p = await getProfile(currentUser.id);
+        setProfile(p);
+        // Run migration from localStorage (no-op if already migrated)
+        await migrateLocalStorageToSupabase(currentUser.id);
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const newUser = session?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        const p = await getProfile(newUser.id);
+        setProfile(p);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn = useCallback(async (data: SignInData) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+  }, []);
+
+  const signUp = useCallback(async (data: SignUpData) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+        },
+      },
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+  }, []);
+
+  const signOut = useCallback(async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    window.location.href = '/login';
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, profile, isLoading, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}

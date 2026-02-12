@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getItem, setItem } from '@/lib/localStorage';
 import { STORAGE_KEYS } from '@/config/constants';
+import { createClient } from '@/lib/supabase/client';
 
 export type Locale = 'en' | 'cs' | 'sk' | 'uk' | 'zh' | 'mn';
 
@@ -59,6 +60,28 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const valid = LOCALES.some((l) => l.code === saved);
     setLocaleState(valid ? saved : 'en');
     setMounted(true);
+
+    // Load from Supabase if logged in
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from('user_preferences')
+          .select('language')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.language) {
+              const lang = data.language as Locale;
+              const isValid = LOCALES.some((l) => l.code === lang);
+              if (isValid) {
+                setLocaleState(lang);
+                setItem(STORAGE_KEYS.LANGUAGE, lang);
+              }
+            }
+          });
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -70,6 +93,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
+    // Sync to Supabase
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('user_preferences').update({ language: newLocale }).eq('id', user.id).then(() => {});
+      }
+    });
   }, []);
 
   const t = useCallback(

@@ -3,12 +3,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getItem, setItem } from '@/lib/localStorage';
 import { STORAGE_KEYS } from '@/config/constants';
+import { createClient } from '@/lib/supabase/client';
 
 type Theme = 'light' | 'dark';
 
 interface ThemeContextValue {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -22,12 +24,30 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setTheme(getInitialTheme());
+    setThemeState(getInitialTheme());
     setMounted(true);
+
+    // Load from Supabase if logged in
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from('user_preferences')
+          .select('theme')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.theme) {
+              setThemeState(data.theme as Theme);
+              setItem(STORAGE_KEYS.THEME, data.theme);
+            }
+          });
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -41,12 +61,33 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setItem(STORAGE_KEYS.THEME, theme);
   }, [theme, mounted]);
 
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+    // Sync to Supabase
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('user_preferences').update({ theme: newTheme }).eq('id', user.id).then(() => {});
+      }
+    });
+  }, []);
+
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setThemeState((prev) => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      // Sync to Supabase
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from('user_preferences').update({ theme: newTheme }).eq('id', user.id).then(() => {});
+        }
+      });
+      return newTheme;
+    });
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

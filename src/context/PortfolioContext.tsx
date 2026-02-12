@@ -1,15 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react';
 import { Portfolio, PortfolioState, Instrument } from '@/types/portfolio';
-import { getItem, setItem } from '@/lib/localStorage';
-import { STORAGE_KEYS } from '@/config/constants';
+import { useAuth } from '@/context/AuthContext';
+import * as db from '@/lib/supabase/database';
 
 type Action =
   | { type: 'SET_STATE'; payload: PortfolioState }
-  | { type: 'CREATE_PORTFOLIO'; payload: { name: string } }
-  | { type: 'DELETE_PORTFOLIO'; payload: { id: string } }
-  | { type: 'RENAME_PORTFOLIO'; payload: { id: string; name: string } }
+  | { type: 'SET_PORTFOLIOS'; payload: { portfolios: Portfolio[]; activePortfolioId: string | null } }
+  | { type: 'ADD_PORTFOLIO'; payload: Portfolio }
+  | { type: 'REMOVE_PORTFOLIO'; payload: { id: string } }
+  | { type: 'UPDATE_PORTFOLIO_NAME'; payload: { id: string; name: string } }
   | { type: 'SET_ACTIVE'; payload: { id: string | null } }
   | { type: 'ADD_INSTRUMENT'; payload: { portfolioId: string; instrument: Instrument } }
   | { type: 'REMOVE_INSTRUMENT'; payload: { portfolioId: string; symbol: string } }
@@ -27,22 +28,19 @@ function reducer(state: PortfolioState, action: Action): PortfolioState {
     case 'SET_STATE':
       return action.payload;
 
-    case 'CREATE_PORTFOLIO': {
-      const newPortfolio: Portfolio = {
-        id: crypto.randomUUID(),
-        name: action.payload.name,
-        instruments: [],
-        createdAt: now,
-        updatedAt: now,
-      };
-      const portfolios = [...state.portfolios, newPortfolio];
+    case 'SET_PORTFOLIOS':
       return {
-        portfolios,
-        activePortfolioId: newPortfolio.id,
+        portfolios: action.payload.portfolios,
+        activePortfolioId: action.payload.activePortfolioId,
       };
-    }
 
-    case 'DELETE_PORTFOLIO': {
+    case 'ADD_PORTFOLIO':
+      return {
+        portfolios: [...state.portfolios, action.payload],
+        activePortfolioId: action.payload.id,
+      };
+
+    case 'REMOVE_PORTFOLIO': {
       const portfolios = state.portfolios.filter((p) => p.id !== action.payload.id);
       return {
         portfolios,
@@ -53,7 +51,7 @@ function reducer(state: PortfolioState, action: Action): PortfolioState {
       };
     }
 
-    case 'RENAME_PORTFOLIO':
+    case 'UPDATE_PORTFOLIO_NAME':
       return {
         ...state,
         portfolios: state.portfolios.map((p) =>
@@ -115,9 +113,22 @@ function reducer(state: PortfolioState, action: Action): PortfolioState {
   }
 }
 
+function dbInstrumentToLocal(inst: db.DbInstrument): Instrument {
+  return {
+    symbol: inst.symbol,
+    name: inst.name,
+    type: inst.type,
+    sector: inst.sector ?? undefined,
+    weight: inst.weight != null ? Number(inst.weight) : undefined,
+    logoUrl: inst.logo_url ?? undefined,
+    addedAt: inst.added_at,
+  };
+}
+
 interface PortfolioContextValue {
   state: PortfolioState;
   activePortfolio: Portfolio | null;
+  isLoading: boolean;
   createPortfolio: (name: string) => void;
   deletePortfolio: (id: string) => void;
   renamePortfolio: (id: string, name: string) => void;
@@ -131,37 +142,155 @@ const PortfolioContext = createContext<PortfolioContextValue | null>(null);
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
+  // Load portfolios + instruments from Supabase on mount / user change
   useEffect(() => {
-    const saved = getItem<PortfolioState>(STORAGE_KEYS.PORTFOLIO_STATE, initialState);
-    dispatch({ type: 'SET_STATE', payload: saved });
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      setItem(STORAGE_KEYS.PORTFOLIO_STATE, state);
+    if (!user) {
+      dispatch({ type: 'SET_STATE', payload: initialState });
+      setIsLoading(false);
+      return;
     }
-  }, [state, mounted]);
+
+    let cancelled = false;
+
+    async function load() {
+      setIsLoading(true);
+      const portfolios = await db.getPortfolios(user!.id);
+      if (cancelled) return;
+
+      const portfolioIds = portfolios.map((p) => p.id);
+      const allInstruments = await db.getAllInstruments(portfolioIds);
+      if (cancelled) return;
+
+      const localPortfolios: Portfolio[] = portfolios.map((p) => ({
+        id: p.id,
+        name: p.name,
+        instruments: allInstruments
+          .filter((inst) => inst.portfolio_id === p.id)
+          .map(dbInstrumentToLocal),
+        createdAt: p.created_at,
+        updatedAt: p.updated_at,
+      }));
+
+      const activePortfolio = portfolios.find((p) => p.is_active);
+      dispatch({
+        type: 'SET_PORTFOLIOS',
+        payload: {
+          portfolios: localPortfolios,
+          activePortfolioId: activePortfolio?.id ?? localPortfolios[0]?.id ?? null,
+        },
+      });
+      setIsLoading(false);
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const activePortfolio =
     state.portfolios.find((p) => p.id === state.activePortfolioId) ?? null;
 
+  const createPortfolio = useCallback(
+    async (name: string) => {
+      if (!user) return;
+      const newPortfolio = await db.createPortfolio(user.id, name, true);
+      if (!newPortfolio) return;
+
+      await db.setActivePortfolio(user.id, newPortfolio.id);
+
+      dispatch({
+        type: 'ADD_PORTFOLIO',
+        payload: {
+          id: newPortfolio.id,
+          name: newPortfolio.name,
+          instruments: [],
+          createdAt: newPortfolio.created_at,
+          updatedAt: newPortfolio.updated_at,
+        },
+      });
+    },
+    [user]
+  );
+
+  const deletePortfolioFn = useCallback(
+    async (id: string) => {
+      await db.deletePortfolio(id);
+      dispatch({ type: 'REMOVE_PORTFOLIO', payload: { id } });
+
+      if (user && state.activePortfolioId === id) {
+        const remaining = state.portfolios.filter((p) => p.id !== id);
+        const newActive = remaining[0]?.id ?? null;
+        if (newActive) await db.setActivePortfolio(user.id, newActive);
+      }
+    },
+    [user, state.activePortfolioId, state.portfolios]
+  );
+
+  const renamePortfolioFn = useCallback(
+    async (id: string, name: string) => {
+      await db.renamePortfolio(id, name);
+      dispatch({ type: 'UPDATE_PORTFOLIO_NAME', payload: { id, name } });
+    },
+    []
+  );
+
+  const setActivePortfolioFn = useCallback(
+    async (id: string | null) => {
+      if (user) await db.setActivePortfolio(user.id, id);
+      dispatch({ type: 'SET_ACTIVE', payload: { id } });
+    },
+    [user]
+  );
+
+  const addInstrumentFn = useCallback(
+    async (portfolioId: string, instrument: Instrument) => {
+      const added = await db.addInstrument(portfolioId, {
+        symbol: instrument.symbol,
+        name: instrument.name,
+        type: instrument.type,
+        sector: instrument.sector,
+        weight: instrument.weight,
+        logoUrl: instrument.logoUrl,
+      });
+      if (!added) return;
+
+      dispatch({
+        type: 'ADD_INSTRUMENT',
+        payload: { portfolioId, instrument: { ...instrument, addedAt: added.added_at } },
+      });
+    },
+    []
+  );
+
+  const removeInstrumentFn = useCallback(
+    async (portfolioId: string, symbol: string) => {
+      await db.removeInstrument(portfolioId, symbol);
+      dispatch({ type: 'REMOVE_INSTRUMENT', payload: { portfolioId, symbol } });
+    },
+    []
+  );
+
+  const updateInstrumentWeightFn = useCallback(
+    async (portfolioId: string, symbol: string, weight: number | undefined) => {
+      await db.updateInstrumentWeight(portfolioId, symbol, weight ?? null);
+      dispatch({ type: 'UPDATE_INSTRUMENT_WEIGHT', payload: { portfolioId, symbol, weight } });
+    },
+    []
+  );
+
   const value: PortfolioContextValue = {
     state,
     activePortfolio,
-    createPortfolio: (name) => dispatch({ type: 'CREATE_PORTFOLIO', payload: { name } }),
-    deletePortfolio: (id) => dispatch({ type: 'DELETE_PORTFOLIO', payload: { id } }),
-    renamePortfolio: (id, name) =>
-      dispatch({ type: 'RENAME_PORTFOLIO', payload: { id, name } }),
-    setActivePortfolio: (id) => dispatch({ type: 'SET_ACTIVE', payload: { id } }),
-    addInstrument: (portfolioId, instrument) =>
-      dispatch({ type: 'ADD_INSTRUMENT', payload: { portfolioId, instrument } }),
-    removeInstrument: (portfolioId, symbol) =>
-      dispatch({ type: 'REMOVE_INSTRUMENT', payload: { portfolioId, symbol } }),
-    updateInstrumentWeight: (portfolioId, symbol, weight) =>
-      dispatch({ type: 'UPDATE_INSTRUMENT_WEIGHT', payload: { portfolioId, symbol, weight } }),
+    isLoading,
+    createPortfolio,
+    deletePortfolio: deletePortfolioFn,
+    renamePortfolio: renamePortfolioFn,
+    setActivePortfolio: setActivePortfolioFn,
+    addInstrument: addInstrumentFn,
+    removeInstrument: removeInstrumentFn,
+    updateInstrumentWeight: updateInstrumentWeightFn,
   };
 
   return (

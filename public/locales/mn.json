@@ -156,6 +156,32 @@
     "treynorRatio": "Treynor Ratio",
     "treynorRatioTooltip": "Системийн эрсдэлд тохируулсан өгөөж — системийн эрсдэлийн (beta) нэгж бүрд ногдох илүүдэл өгөөжийг хэмждэг. Өндөр нь илүү сайн."
   },
+  "auth": {
+    "appTitle": "Гонзагийн гайхалтай багцын хяналт",
+    "tagline": "Таны хөрөнгө оруулалтыг үзэсгэлэнтэй хянах",
+    "signIn": "Нэвтрэх",
+    "signUp": "Бүртгүүлэх",
+    "signOut": "Гарах",
+    "email": "Имэйл",
+    "password": "Нууц үг",
+    "firstName": "Нэр",
+    "lastName": "Овог",
+    "emailPlaceholder": "ta@example.com",
+    "passwordPlaceholder": "Нууц үгээ оруулна уу",
+    "firstNamePlaceholder": "Бат",
+    "lastNamePlaceholder": "Дорж",
+    "signingIn": "Нэвтэрч байна...",
+    "signingUp": "Бүртгэж байна...",
+    "noAccount": "Бүртгэл байхгүй юу?",
+    "hasAccount": "Бүртгэлтэй юу?",
+    "welcome": "Тавтай морил",
+    "createNew": "Шинэ бүртгэл үүсгэх",
+    "profileMenu": "Профайл",
+    "authError": "Нэвтрэх амжилтгүй боллоо. Мэдээллээ шалгана уу.",
+    "emailExists": "Энэ имэйлтэй бүртгэл аль хэдийн байна.",
+    "weakPassword": "Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.",
+    "invalidEmail": "Зөв имэйл хаяг оруулна уу."
+  },
   "errors": {
     "fetchFailed": "Өгөгдөл ачаалж чадсангүй. Дахин оролдоно уу.",
     "networkError": "Сүлжээний алдаа. Холболтоо шалгана уу."

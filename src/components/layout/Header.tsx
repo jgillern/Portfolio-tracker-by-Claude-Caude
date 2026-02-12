@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
+import { useAuth } from '@/context/AuthContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher';
@@ -14,14 +15,32 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const { t } = useLanguage();
   const { state } = usePortfolio();
+  const { profile, signOut } = useAuth();
   const pathname = usePathname();
   const [showCreate, setShowCreate] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navLinks = [
     { href: '/', label: t('header.dashboard') },
     { href: '/news', label: t('header.news') },
     { href: '/calendar', label: t('header.calendar') },
   ];
+
+  const initials = profile
+    ? `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase()
+    : '?';
 
   return (
     <>
@@ -56,6 +75,41 @@ export function Header() {
               )}
               <LanguageToggle />
               <ThemeToggle />
+
+              {/* User menu */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                  title={profile ? `${profile.first_name} ${profile.last_name}` : ''}
+                >
+                  {initials}
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                    {profile && (
+                      <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {profile.first_name} {profile.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {profile.email}
+                        </p>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        signOut();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      {t('auth.signOut')}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
