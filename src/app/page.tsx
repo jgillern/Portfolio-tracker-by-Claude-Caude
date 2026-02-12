@@ -1,18 +1,21 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { useMarketData } from '@/hooks/useMarketData';
+import { useDashboardOrder } from '@/hooks/useDashboardOrder';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { InstrumentsTable } from '@/components/dashboard/InstrumentsTable';
 import { AllocationTable } from '@/components/dashboard/AllocationTable';
 import { TypeAllocation } from '@/components/dashboard/TypeAllocation';
 import { CountryAllocation } from '@/components/dashboard/CountryAllocation';
 import { PortfolioMetrics } from '@/components/dashboard/PortfolioMetrics';
+import { DraggableSection } from '@/components/dashboard/DraggableSection';
 import { AddInstrumentModal } from '@/components/portfolio/AddInstrumentModal';
 import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
+import { ImportCsvModal } from '@/components/portfolio/ImportCsvModal';
 import { RefreshControl } from '@/components/dashboard/RefreshControl';
 import { Button } from '@/components/ui/Button';
 import { hasCustomWeights } from '@/types/portfolio';
@@ -24,7 +27,11 @@ export default function DashboardPage() {
   const [showEditPortfolio, setShowEditPortfolio] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
+  const [showImportCsv, setShowImportCsv] = useState(false);
   const [chartRefreshSignal, setChartRefreshSignal] = useState(0);
+
+  const { order, draggedId, dragOverId, handleDragStart, handleDragOver, handleDragEnd } =
+    useDashboardOrder();
 
   const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
   const { quotes, isLoading, refetch, lastUpdated } = useMarketData(symbols);
@@ -33,6 +40,18 @@ export default function DashboardPage() {
     refetch();
     setChartRefreshSignal((prev) => prev + 1);
   }, [refetch]);
+
+  const sectionComponents: Record<string, React.ReactNode> = useMemo(
+    () => ({
+      performance: <PerformanceChart refreshSignal={chartRefreshSignal} />,
+      instruments: <InstrumentsTable quotes={quotes} isLoading={isLoading} />,
+      sectorAllocation: <AllocationTable />,
+      typeAllocation: <TypeAllocation />,
+      countryAllocation: <CountryAllocation />,
+      metrics: <PortfolioMetrics />,
+    }),
+    [chartRefreshSignal, quotes, isLoading]
+  );
 
   if (!activePortfolio) {
     return (
@@ -73,6 +92,13 @@ export default function DashboardPage() {
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => setShowImportCsv(true)}
+          >
+            {t('portfolio.importCsv')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setShowEditPortfolio(true)}
           >
             {t('portfolio.editPortfolio')}
@@ -104,12 +130,19 @@ export default function DashboardPage() {
           ) : null;
         })()}
 
-      <PerformanceChart refreshSignal={chartRefreshSignal} />
-      <InstrumentsTable quotes={quotes} isLoading={isLoading} />
-      <AllocationTable />
-      <TypeAllocation />
-      <CountryAllocation />
-      <PortfolioMetrics />
+      {order.map((sectionId) => (
+        <DraggableSection
+          key={sectionId}
+          id={sectionId}
+          isDragged={draggedId === sectionId}
+          isDragOver={dragOverId === sectionId}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          {sectionComponents[sectionId]}
+        </DraggableSection>
+      ))}
 
       <AddInstrumentModal
         isOpen={showAddInstrument}
@@ -119,6 +152,11 @@ export default function DashboardPage() {
       <EditPortfolioModal
         isOpen={showEditPortfolio}
         onClose={() => setShowEditPortfolio(false)}
+      />
+
+      <ImportCsvModal
+        isOpen={showImportCsv}
+        onClose={() => setShowImportCsv(false)}
       />
 
       {showDeleteConfirm && (

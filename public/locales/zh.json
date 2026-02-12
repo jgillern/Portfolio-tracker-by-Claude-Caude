@@ -64,7 +64,30 @@
     "weightHint": "可选。若任一工具设置了权重，则所有工具均需设置。",
     "weightRemaining": "剩余",
     "weightExceeded": "总权重不能超过100%！",
-    "back": "返回"
+    "back": "返回",
+    "importCsv": "导入 CSV"
+  },
+  "import": {
+    "instructions": "CSV 导入说明",
+    "instructionFormat": "文件必须是 UTF-8 编码的 CSV 格式（逗号分隔）",
+    "instructionColumns": "第1列：代码（如 AAPL、BTC-USD）",
+    "instructionWeight": "第2列：投资组合权重百分比（可选）",
+    "instructionExample": "示例：",
+    "emptyFile": "文件为空。",
+    "line": "行",
+    "missingTicker": "缺少代码",
+    "invalidWeight": "无效的权重值",
+    "parseErrors": "文件中发现错误：",
+    "preview": "{count} 个工具准备导入：",
+    "importing": "导入中...",
+    "startImport": "导入工具",
+    "alreadyExists": "已在组合中",
+    "weightExceeded": "将超过总权重 100%",
+    "searchFailed": "无法验证代码",
+    "notFound": "未找到代码",
+    "successCount": "成功导入 {count} 个工具！",
+    "skippedCount": "跳过 {count} 个工具：",
+    "noneImported": "未导入任何工具。请检查代码后重试。"
   },
   "search": {
     "placeholder": "按名称或代码搜索...",
