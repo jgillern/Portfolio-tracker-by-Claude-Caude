@@ -26,8 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = createClient();
 
-    // Get initial session
-    supabase.auth.getUser().then(async ({ data: { user: currentUser } }) => {
+    // Get initial session from local storage (fast, no API call)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
         const p = await getProfile(currentUser.id);
@@ -45,16 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
+        setIsLoading(false);
         return;
       }
 
       const newUser = session?.user ?? null;
-      if (newUser) {
-        setUser(newUser);
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          const p = await getProfile(newUser.id);
-          setProfile(p);
-        }
+      setUser(newUser);
+
+      if (newUser && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED')) {
+        const p = await getProfile(newUser.id);
+        setProfile(p);
       }
     });
 
