@@ -159,7 +159,7 @@ export function ImportCsvModal({ isOpen, onClose }: Props) {
           addedAt: new Date().toISOString(),
         };
 
-        addInstrument(activePortfolio.id, instrument);
+        await addInstrument(activePortfolio.id, instrument);
         added.push(match.symbol);
 
         if (row.weight != null) {

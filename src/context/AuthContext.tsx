@@ -41,14 +41,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const newUser = session?.user ?? null;
-      setUser(newUser);
-      if (newUser) {
-        const p = await getProfile(newUser.id);
-        setProfile(p);
-      } else {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
         setProfile(null);
+        return;
+      }
+
+      const newUser = session?.user ?? null;
+      if (newUser) {
+        setUser(newUser);
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          const p = await getProfile(newUser.id);
+          setProfile(p);
+        }
       }
     });
 
