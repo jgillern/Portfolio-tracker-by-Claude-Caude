@@ -51,7 +51,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │  │           API Routes                      │    │
 │  │  /api/search  /api/quote                 │    │
 │  │  /api/chart   /api/news                  │    │
-│  │  /api/calendar                           │    │
+│  │  /api/calendar /api/logo                 │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
@@ -61,7 +61,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
 │  │         In-memory cache (Map)             │    │
-│  │     (TTL: 60s - 30min dle endpointu)     │    │
+│  │   (TTL: 60s - 24h dle endpointu)        │    │
 │  └──────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────┘
                         │
@@ -101,6 +101,21 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 7. Nový stav se synchronizuje do localStorage
 8. Dashboard se přerenderuje s novým instrumentem
 9. useMarketData a useChart refetchují data pro nový seznam symbolů
+```
+
+### Načtení loga instrumentu
+
+```
+1. InstrumentLogo se renderuje poprvé pro daný symbol
+2. Zkontroluje module-level cache (klient-side Map)
+3. Pokud cache miss → fetch /api/logo?symbol=X&type=Y
+4. Deduplikace: pokud již probíhá request pro stejný symbol, čeká na stejný Promise
+5. API route → yahooFinance.getLogoUrl()
+   - Krypto: vrátí URL z cryptocurrency-icons CDN
+   - Akcie: quoteSummary → assetProfile → website → Clearbit Logo API
+   - Fallback: hardcoded domény pro ~45 známých tickerů
+6. Výsledek se cachuje server-side (24h) i klient-side (module-level Map)
+7. Pokud se logo nepodaří načíst (HTTP error), onError → zobrazí barevnou iniciálu
 ```
 
 ### Přepnutí jazyka
@@ -207,6 +222,7 @@ RootLayout
     │
     ├── DashboardPage (/)
     │   ├── Portfolio heading + RefreshControl + akce (přidat, upravit, smazat)
+    │   ├── Varovný banner (pokud váhy < 100%)
     │   ├── PerformanceChart (refreshSignal prop)
     │   │   └── TimePeriodSelector
     │   ├── InstrumentsTable (quotes + isLoading props)
@@ -245,6 +261,11 @@ RootLayout
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
 | `/api/calendar` | 30 min | `calendar:{symbols}` |
+| `/api/logo` | 24 h | `logo:{symbol}` |
+
+**Klient-side cache (InstrumentLogo):**
+- Module-level `Map<string, string | null>` — sdílená mezi všemi instancemi komponenty
+- Deduplikace in-flight requestů přes `Map<string, Promise>` — stejný symbol se nenačítá vícekrát
 
 **Poznámky:**
 - Cache žije pouze po dobu běhu serveru (restart = vyčištění)
@@ -287,6 +308,22 @@ RootLayout
 
 **Pro:** Uživatel nemusí přepínat žádný toggle — systém automaticky detekuje, zda jsou váhy nastaveny
 **Realizace:** `hasCustomWeights(portfolio)` kontroluje, zda alespoň jeden instrument má weight > 0. Pokud ano, použijí se custom váhy; jinak rovné zastoupení. Váha se zadává přímo při přidávání instrumentu.
+
+### 6. Validace vah a ochrana před překročením 100%
+
+**Pro:** Uživatel nemůže vytvořit nekonzistentní portfolio s váhami > 100%
+**Realizace:**
+- `AddInstrumentModal` a `EditPortfolioModal` počítají `currentTotal` a `remaining`
+- Tlačítko Přidat/Uložit je `disabled` pokud by nová váha překročila 100%
+- Zobrazuje se zbývající procento jako informativní text
+- Dashboard zobrazuje varovný banner (amber) pokud `hasCustomWeights && total < 100%`
+
+### 7. Logo resolution s fallback chain
+
+**Pro:** Uživatel vidí reálná loga firem místo generických iniciál
+**Realizace:** Tříúrovňový fallback: Clearbit Logo API (ze stránky firmy) → hardcoded domény pro známé tickery → barevná iniciála.
+Krypto má vlastní cestu přes cryptocurrency-icons CDN.
+Client-side: module-level cache + deduplikace requestů zabraňuje opakovaným voláním API.
 
 ---
 
