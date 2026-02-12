@@ -129,7 +129,7 @@ interface PortfolioContextValue {
   state: PortfolioState;
   activePortfolio: Portfolio | null;
   isLoading: boolean;
-  createPortfolio: (name: string) => void;
+  createPortfolio: (name: string) => Promise<boolean>;
   deletePortfolio: (id: string) => void;
   renamePortfolio: (id: string, name: string) => void;
   setActivePortfolio: (id: string | null) => void;
@@ -193,10 +193,10 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     state.portfolios.find((p) => p.id === state.activePortfolioId) ?? null;
 
   const createPortfolio = useCallback(
-    async (name: string) => {
-      if (!user) return;
+    async (name: string): Promise<boolean> => {
+      if (!user) return false;
       const newPortfolio = await db.createPortfolio(user.id, name, true);
-      if (!newPortfolio) return;
+      if (!newPortfolio) return false;
 
       await db.setActivePortfolio(user.id, newPortfolio.id);
 
@@ -210,6 +210,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
           updatedAt: newPortfolio.updated_at,
         },
       });
+      return true;
     },
     [user]
   );
