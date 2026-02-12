@@ -180,7 +180,8 @@
     "authError": "认证失败，请检查您的凭据。",
     "emailExists": "该邮箱已被注册。",
     "weakPassword": "密码至少需要6个字符。",
-    "invalidEmail": "请输入有效的电子邮箱地址。"
+    "invalidEmail": "请输入有效的电子邮箱地址。",
+    "dbError": "数据库配置错误。请确认SQL架构已在Supabase中正确执行。"
   },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",

@@ -22,6 +22,20 @@ export async function updateProfile(
   await supabase().from('profiles').update(updates).eq('id', userId);
 }
 
+export async function ensureProfile(
+  userId: string,
+  firstName: string,
+  lastName: string,
+  email: string
+): Promise<void> {
+  await supabase()
+    .from('profiles')
+    .upsert(
+      { id: userId, first_name: firstName, last_name: lastName, email },
+      { onConflict: 'id' }
+    );
+}
+
 // ── Preferences ──────────────────────────────────────────
 
 export async function getPreferences(userId: string): Promise<UserPreferences | null> {
@@ -38,6 +52,12 @@ export async function updatePreferences(
   updates: Partial<Pick<UserPreferences, 'language' | 'theme' | 'dashboard_order'>>
 ): Promise<void> {
   await supabase().from('user_preferences').update(updates).eq('id', userId);
+}
+
+export async function ensurePreferences(userId: string): Promise<void> {
+  await supabase()
+    .from('user_preferences')
+    .upsert({ id: userId }, { onConflict: 'id' });
 }
 
 // ── Portfolios ───────────────────────────────────────────

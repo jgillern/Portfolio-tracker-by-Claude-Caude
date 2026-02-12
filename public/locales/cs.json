@@ -180,7 +180,8 @@
     "authError": "Přihlášení selhalo. Zkontroluj údaje.",
     "emailExists": "Účet s tímto e-mailem již existuje.",
     "weakPassword": "Heslo musí mít alespoň 6 znaků.",
-    "invalidEmail": "Zadej platnou e-mailovou adresu."
+    "invalidEmail": "Zadej platnou e-mailovou adresu.",
+    "dbError": "Chyba databáze. Ověř, že SQL schéma bylo správně spuštěno v Supabase."
   },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",
