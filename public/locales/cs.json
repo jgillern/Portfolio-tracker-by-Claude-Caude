@@ -64,7 +64,30 @@
     "weightHint": "Nepovinné. Pokud je vyplněno u jednoho instrumentu, stává se povinným pro všechny.",
     "weightRemaining": "Zbývá",
     "weightExceeded": "Nelze překročit celkovou váhu 100 %!",
-    "back": "Zpět"
+    "back": "Zpět",
+    "importCsv": "Import CSV"
+  },
+  "import": {
+    "instructions": "Pokyny pro import CSV",
+    "instructionFormat": "Soubor musí být ve formátu CSV s kódováním UTF-8 (oddělovač čárka)",
+    "instructionColumns": "Sloupec 1: ticker (např. AAPL, BTC-USD)",
+    "instructionWeight": "Sloupec 2: zastoupení v portfoliu v % (nepovinné)",
+    "instructionExample": "Příklad:",
+    "emptyFile": "Soubor je prázdný.",
+    "line": "Řádek",
+    "missingTicker": "chybí ticker",
+    "invalidWeight": "neplatná hodnota váhy",
+    "parseErrors": "V souboru byly nalezeny chyby:",
+    "preview": "{count} instrumentů připraveno k importu:",
+    "importing": "Importuji...",
+    "startImport": "Importovat instrumenty",
+    "alreadyExists": "již je v portfoliu",
+    "weightExceeded": "překročena celková váha 100 %",
+    "searchFailed": "ticker se nepodařilo ověřit",
+    "notFound": "ticker nenalezen",
+    "successCount": "{count} instrumentů úspěšně importováno!",
+    "skippedCount": "{count} instrumentů přeskočeno:",
+    "noneImported": "Žádné instrumenty nebyly importovány. Zkontrolujte tickery a zkuste to znovu."
   },
   "search": {
     "placeholder": "Hledat podle názvu nebo tickeru...",

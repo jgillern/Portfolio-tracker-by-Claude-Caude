@@ -64,7 +64,30 @@
     "weightHint": "Заавал биш. Нэг хэрэгсэлд тохируулсан бол бүгдэд заавал болно.",
     "weightRemaining": "Үлдсэн",
     "weightExceeded": "Нийт жин 100%-иас хэтэрч болохгүй!",
-    "back": "Буцах"
+    "back": "Буцах",
+    "importCsv": "CSV импорт"
+  },
+  "import": {
+    "instructions": "CSV импортын заавар",
+    "instructionFormat": "Файл UTF-8 кодчилолтой CSV формат байх ёстой (таслалаар тусгаарласан)",
+    "instructionColumns": "Багана 1: тикер (жнь. AAPL, BTC-USD)",
+    "instructionWeight": "Багана 2: багцын жин % (заавал биш)",
+    "instructionExample": "Жишээ:",
+    "emptyFile": "Файл хоосон байна.",
+    "line": "Мөр",
+    "missingTicker": "тикер байхгүй",
+    "invalidWeight": "жингийн утга буруу",
+    "parseErrors": "Файлаас алдаа олдсон:",
+    "preview": "{count} хэрэгсэл импортод бэлэн:",
+    "importing": "Импортлож байна...",
+    "startImport": "Хэрэгслүүдийг импортлох",
+    "alreadyExists": "багцад аль хэдийн байна",
+    "weightExceeded": "нийт жин 100%-иас хэтрэх болно",
+    "searchFailed": "тикер баталгаажуулж чадсангүй",
+    "notFound": "тикер олдсонгүй",
+    "successCount": "{count} хэрэгсэл амжилттай импортлогдлоо!",
+    "skippedCount": "{count} хэрэгсэл алгасагдлаа:",
+    "noneImported": "Хэрэгсэл импортлогдоогүй. Тикерүүдээ шалгаад дахин оролдоно уу."
   },
   "search": {
     "placeholder": "Нэр эсвэл тикерээр хайх...",

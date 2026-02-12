@@ -64,7 +64,30 @@
     "weightHint": "Optional. If set for one instrument, it becomes required for all.",
     "weightRemaining": "Remaining",
     "weightExceeded": "Cannot exceed 100% total weight!",
-    "back": "Back"
+    "back": "Back",
+    "importCsv": "Import CSV"
+  },
+  "import": {
+    "instructions": "CSV Import Instructions",
+    "instructionFormat": "File must be UTF-8 encoded CSV (comma-separated)",
+    "instructionColumns": "Column 1: ticker symbol (e.g. AAPL, BTC-USD)",
+    "instructionWeight": "Column 2: portfolio weight in % (optional)",
+    "instructionExample": "Example:",
+    "emptyFile": "The file is empty.",
+    "line": "Line",
+    "missingTicker": "missing ticker symbol",
+    "invalidWeight": "invalid weight value",
+    "parseErrors": "Errors found in file:",
+    "preview": "{count} instruments ready for import:",
+    "importing": "Importing...",
+    "startImport": "Import instruments",
+    "alreadyExists": "already in portfolio",
+    "weightExceeded": "would exceed 100% weight",
+    "searchFailed": "could not resolve ticker",
+    "notFound": "ticker not found",
+    "successCount": "{count} instruments imported successfully!",
+    "skippedCount": "{count} instruments skipped:",
+    "noneImported": "No instruments were imported. Check the tickers and try again."
   },
   "search": {
     "placeholder": "Search by name or ticker...",

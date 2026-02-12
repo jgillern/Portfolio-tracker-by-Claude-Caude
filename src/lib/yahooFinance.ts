@@ -305,110 +305,99 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   return articles;
 }
 
-export async function getLogoUrl(
-  symbol: string,
-  type: InstrumentType
-): Promise<string | null> {
-  const cacheKey = `logo:${symbol}`;
-  const cached = getCached<string | null>(cacheKey);
-  if (cached !== null) return cached;
+const COMMON_DOMAINS: Record<string, string> = {
+  AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com', GOOG: 'google.com',
+  AMZN: 'amazon.com', META: 'meta.com', TSLA: 'tesla.com', NVDA: 'nvidia.com',
+  NFLX: 'netflix.com', DIS: 'disney.com', PYPL: 'paypal.com', INTC: 'intel.com',
+  AMD: 'amd.com', CRM: 'salesforce.com', ADBE: 'adobe.com', CSCO: 'cisco.com',
+  ORCL: 'oracle.com', IBM: 'ibm.com', UBER: 'uber.com', ABNB: 'airbnb.com',
+  SQ: 'squareup.com', SHOP: 'shopify.com', SPOT: 'spotify.com', SNAP: 'snap.com',
+  PINS: 'pinterest.com', ZM: 'zoom.us', COIN: 'coinbase.com', HOOD: 'robinhood.com',
+  V: 'visa.com', MA: 'mastercard.com', JPM: 'jpmorganchase.com',
+  BAC: 'bankofamerica.com', GS: 'goldmansachs.com', MS: 'morganstanley.com',
+  WMT: 'walmart.com', COST: 'costco.com', TGT: 'target.com', NKE: 'nike.com',
+  SBUX: 'starbucks.com', MCD: 'mcdonalds.com', KO: 'coca-cola.com', PEP: 'pepsico.com',
+  PG: 'pg.com', JNJ: 'jnj.com', PFE: 'pfizer.com', MRNA: 'modernatx.com',
+  BA: 'boeing.com', CAT: 'cat.com', XOM: 'exxonmobil.com', CVX: 'chevron.com',
+};
 
-  // Check if cache entry exists but is null (already tried and failed)
-  const entry = cache.get(cacheKey);
-  if (entry && Date.now() <= entry.expiresAt) return null;
+async function resolveDomain(symbol: string): Promise<string | null> {
+  // Check hardcoded map first
+  const known = COMMON_DOMAINS[symbol.toUpperCase()];
+  if (known) return known;
 
-  const LOGO_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-  // Crypto: use cryptocurrency-icons CDN
-  if (type === 'crypto') {
-    const base = symbol.replace(/-USD$/, '').toLowerCase();
-    const url = `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/${base}.png`;
-    setCache(cacheKey, url, LOGO_TTL);
-    return url;
-  }
-
-  // Stocks, ETFs, etc.: try to get company website via quoteSummary, then use logo APIs
+  // Try Yahoo Finance assetProfile
   try {
     const summary = await yf.quoteSummary(symbol, { modules: ['assetProfile'] });
     const website = summary.assetProfile?.website;
-
     if (website) {
-      // Extract domain from website URL
-      let domain: string;
       try {
-        domain = new URL(website).hostname.replace(/^www\./, '');
+        return new URL(website).hostname.replace(/^www\./, '');
       } catch {
-        domain = website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+        return website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
       }
-
-      // Use Clearbit Logo API (high quality company logos)
-      const logoUrl = `https://logo.clearbit.com/${domain}`;
-      setCache(cacheKey, logoUrl, LOGO_TTL);
-      return logoUrl;
     }
-  } catch (error) {
-    console.error(`Logo lookup error for ${symbol}:`, error);
+  } catch { /* assetProfile unavailable */ }
+
+  return null;
+}
+
+async function tryFetchImage(url: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(5000),
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    });
+    if (!res.ok) return null;
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('image')) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length < 100) return null; // too small, probably placeholder
+    return { buffer, contentType: ct };
+  } catch {
+    return null;
+  }
+}
+
+export async function getLogoImage(
+  symbol: string,
+  type: InstrumentType
+): Promise<{ buffer: Buffer; contentType: string } | null> {
+  const cacheKey = `logo-img:${symbol}`;
+  const cached = getCached<{ buffer: Buffer; contentType: string } | null>(cacheKey);
+  if (cached !== undefined) {
+    const entry = cache.get(cacheKey);
+    if (entry && Date.now() <= entry.expiresAt) return entry.data as { buffer: Buffer; contentType: string } | null;
   }
 
-  // Fallback: try Google favicon service with ticker-based domain guess
-  const commonDomains: Record<string, string> = {
-    AAPL: 'apple.com',
-    MSFT: 'microsoft.com',
-    GOOGL: 'google.com',
-    GOOG: 'google.com',
-    AMZN: 'amazon.com',
-    META: 'meta.com',
-    TSLA: 'tesla.com',
-    NVDA: 'nvidia.com',
-    NFLX: 'netflix.com',
-    DIS: 'disney.com',
-    PYPL: 'paypal.com',
-    INTC: 'intel.com',
-    AMD: 'amd.com',
-    CRM: 'salesforce.com',
-    ADBE: 'adobe.com',
-    CSCO: 'cisco.com',
-    ORCL: 'oracle.com',
-    IBM: 'ibm.com',
-    UBER: 'uber.com',
-    ABNB: 'airbnb.com',
-    SQ: 'squareup.com',
-    SHOP: 'shopify.com',
-    SPOT: 'spotify.com',
-    SNAP: 'snap.com',
-    PINS: 'pinterest.com',
-    ZM: 'zoom.us',
-    COIN: 'coinbase.com',
-    HOOD: 'robinhood.com',
-    V: 'visa.com',
-    MA: 'mastercard.com',
-    JPM: 'jpmorganchase.com',
-    BAC: 'bankofamerica.com',
-    GS: 'goldmansachs.com',
-    MS: 'morganstanley.com',
-    WMT: 'walmart.com',
-    COST: 'costco.com',
-    TGT: 'target.com',
-    NKE: 'nike.com',
-    SBUX: 'starbucks.com',
-    MCD: 'mcdonalds.com',
-    KO: 'coca-cola.com',
-    PEP: 'pepsico.com',
-    PG: 'pg.com',
-    JNJ: 'jnj.com',
-    PFE: 'pfizer.com',
-    MRNA: 'modernatx.com',
-    BA: 'boeing.com',
-    CAT: 'cat.com',
-    XOM: 'exxonmobil.com',
-    CVX: 'chevron.com',
-  };
+  const LOGO_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-  const knownDomain = commonDomains[symbol.toUpperCase()];
-  if (knownDomain) {
-    const logoUrl = `https://logo.clearbit.com/${knownDomain}`;
-    setCache(cacheKey, logoUrl, LOGO_TTL);
-    return logoUrl;
+  // Crypto: cryptocurrency-icons CDN
+  if (type === 'crypto') {
+    const base = symbol.replace(/-USD$/, '').toLowerCase();
+    const result = await tryFetchImage(
+      `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/128/color/${base}.png`
+    );
+    setCache(cacheKey, result, LOGO_TTL);
+    return result;
+  }
+
+  // Stocks/ETFs: resolve domain, then try multiple icon sources
+  const domain = await resolveDomain(symbol);
+  if (domain) {
+    // Try apple-touch-icon (high quality, usually 180x180)
+    const touchIcon = await tryFetchImage(`https://${domain}/apple-touch-icon.png`);
+    if (touchIcon) { setCache(cacheKey, touchIcon, LOGO_TTL); return touchIcon; }
+
+    // Try apple-touch-icon-precomposed
+    const precomposed = await tryFetchImage(`https://${domain}/apple-touch-icon-precomposed.png`);
+    if (precomposed) { setCache(cacheKey, precomposed, LOGO_TTL); return precomposed; }
+
+    // Try Google's faviconV2 service (reliable, returns 128px)
+    const googleFav = await tryFetchImage(
+      `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+    );
+    if (googleFav) { setCache(cacheKey, googleFav, LOGO_TTL); return googleFav; }
   }
 
   // No logo found
