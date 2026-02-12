@@ -39,9 +39,14 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 
 ### Zprávy
 - Sekce s finančními zprávami relevantními k instrumentům v portfoliu
+- **Multi-select filtr instrumentů** — dropdown v hlavičce sekce umožňuje filtrovat zprávy podle konkrétních instrumentů
+  - Defaultně vybrány všechny instrumenty v portfoliu
+  - Checkboxy s logem a názvem instrumentu
+  - Tlačítko „Vybrat vše" / „Zrušit výběr"
+  - Dynamický popisek: „Všechny instrumenty", „2 instrumentů", konkrétní symboly (1-2)
 - Každá zpráva: náhledový obrázek, nadpis, krátký text, vydavatel, datum
 - Proklik na zdrojový článek (nová karta)
-- Aktualizace při změně portfolia
+- Aktualizace při změně portfolia nebo filtru
 
 ### Kalendář událostí
 - Sekce s nadcházejícími klíčovými událostmi pro instrumenty v portfoliu

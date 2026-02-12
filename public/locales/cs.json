@@ -69,7 +69,14 @@
     "title": "Finanční zprávy",
     "readMore": "Číst více",
     "noNews": "Pro instrumenty ve vašem portfoliu nejsou k dispozici žádné zprávy.",
-    "source": "Zdroj"
+    "noSelection": "Vyberte alespoň jeden instrument pro zobrazení zpráv.",
+    "source": "Zdroj",
+    "filterLabel": "Instrumenty",
+    "filterAll": "Všechny instrumenty",
+    "filterNone": "Žádné instrumenty",
+    "filterCount": "{count} instrumentů",
+    "selectAll": "Vybrat vše",
+    "deselectAll": "Zrušit výběr"
   },
   "calendar": {
     "title": "Kalendář událostí",

@@ -344,7 +344,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | Komponenta | Props | Popis |
 |---|---|---|
 | `NewsCard` | `article: NewsArticle` | Karta zprávy: thumbnail (nebo placeholder), nadpis, shrnutí (2 řádky), vydavatel, datum, související symboly, odkaz. |
-| `NewsFeed` | — | Seznam zpráv z aktivního portfolia. Loading a empty stavy. |
+| `NewsFeed` | — | Seznam zpráv z aktivního portfolia s multi-select filtrem instrumentů. Dropdown s checkboxy, logy a názvy instrumentů. Defaultně všechny vybrány. Loading, empty a no-selection stavy. |
 
 ### Calendar (`src/components/calendar/`)
 

@@ -224,6 +224,7 @@ RootLayout
     │
     ├── NewsPage (/news)
     │   └── NewsFeed
+    │       ├── InstrumentFilter (multi-select dropdown s checkboxy)
     │       └── NewsCard × N
     │
     └── CalendarPage (/calendar)
