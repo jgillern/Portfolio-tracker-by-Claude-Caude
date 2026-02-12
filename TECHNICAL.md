@@ -88,6 +88,17 @@ interface NewsArticle {
 }
 
 type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd';
+
+type CalendarEventType = 'earnings' | 'dividend' | 'split' | 'other';
+
+interface CalendarEvent {
+  symbol: string;          // Ticker symbol
+  name: string;            // Název instrumentu
+  type: CalendarEventType; // Typ události
+  date: string;            // ISO datum události
+  title: string;           // Nadpis události
+  detail?: string;         // Doplňující informace (EPS odhad atd.)
+}
 ```
 
 ### `src/types/api.ts`
@@ -163,6 +174,7 @@ Server-side wrapper nad knihovnou `yahoo-finance2` (v3). Instance `new YahooFina
 | `getQuotes` | `(symbols: string[]) => Promise<Quote[]>` | 60 s |
 | `getChart` | `(symbols: string[], period: TimePeriod, weights?: number[]) => Promise<ChartDataPoint[]>` | 5 min |
 | `getNews` | `(symbols: string[]) => Promise<NewsArticle[]>` | 15 min |
+| `getCalendarEvents` | `(symbols: string[]) => Promise<CalendarEvent[]>` | 30 min |
 
 **Cachování:** In-memory `Map` s TTL expirací. Každý záznam má `{ data, expiresAt }`. Při expiraci se záznam smaže a znovu načte.
 
@@ -244,10 +256,10 @@ Kompozitní wrapper: `ThemeProvider` → `LanguageProvider` → `PortfolioProvid
 
 ```typescript
 useMarketData(symbols: string[])
-→ { quotes: Quote[], isLoading: boolean, error: string | null, refetch: () => Promise<void> }
+→ { quotes: Quote[], isLoading: boolean, error: string | null, refetch: () => Promise<void>, lastUpdated: number | null }
 ```
 
-Načítá kotace z `/api/quote`. Auto-refresh každých 60 sekund. Refetchuje při změně seznamu symbolů.
+Načítá kotace z `/api/quote`. Auto-refresh každých 10 minut. Vrací `lastUpdated` timestamp pro odpočítávání. Refetchuje při změně seznamu symbolů.
 
 ### `src/hooks/useChart.ts`
 
@@ -276,6 +288,15 @@ useNews(symbols: string[])
 
 Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 
+### `src/hooks/useCalendar.ts`
+
+```typescript
+useCalendar(symbols: string[])
+→ { events: CalendarEvent[], isLoading: boolean, error: string | null, refetch: () => Promise<void> }
+```
+
+Načítá kalendářní události z `/api/calendar`. Refetchuje při změně seznamu symbolů.
+
 ---
 
 ## Komponenty
@@ -296,13 +317,14 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 
 | Komponenta | Popis |
 |---|---|
-| `Header` | Sticky hlavička s navigací (Dashboard, Zprávy), portfolio switcherem, tlačítkem pro vytvoření portfolia, jazykovým a tematickým přepínačem. Responsive — mobilní navigace pod hlavičkou. |
+| `Header` | Sticky hlavička s navigací (Dashboard, Zprávy, Kalendář), portfolio switcherem, jazykovým a tematickým přepínačem. Responsive — mobilní navigace pod hlavičkou. |
 
 ### Portfolio (`src/components/portfolio/`)
 
 | Komponenta | Props | Popis |
 |---|---|---|
-| `PortfolioSwitcher` | — | Dropdown pro přepínání mezi portfolii. Zobrazuje název + počet instrumentů. Click-outside zavření. |
+| `PortfolioSwitcher` | `onCreateNew: () => void` | Dropdown pro přepínání mezi portfolii. Zobrazuje název + počet instrumentů. Poslední položka "+ Přidat nové portfolio" otevře modal. Click-outside zavření. |
+| `EditPortfolioModal` | `isOpen`, `onClose` | Modal pro správu instrumentů v portfoliu — zobrazuje seznam s logy, umožňuje editaci vah a odebrání instrumentů křížkem s potvrzením. |
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
 | `AddInstrumentModal` | `isOpen`, `onClose` | Dvou-krokový modal: 1) vyhledání instrumentu, 2) potvrzení s volitelným zadáním váhy (%). Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
@@ -313,7 +335,8 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 |---|---|---|
 | `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
 | `PerformanceChart` | — | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. Responsive container. |
-| `InstrumentsTable` | — | Tabulka instrumentů s logy, cenami, váhami a změnami. Sloupec Zastoupení vždy viditelný (zobrazuje % nebo —). Responsive — skrývá sloupce na menších obrazovkách. |
+| `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). |
+| `InstrumentsTable` | — | Tabulka instrumentů s logy, cenami, váhami a změnami. RefreshControl v hlavičce. Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
 
 ### News (`src/components/news/`)
@@ -322,6 +345,12 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 |---|---|---|
 | `NewsCard` | `article: NewsArticle` | Karta zprávy: thumbnail (nebo placeholder), nadpis, shrnutí (2 řádky), vydavatel, datum, související symboly, odkaz. |
 | `NewsFeed` | — | Seznam zpráv z aktivního portfolia. Loading a empty stavy. |
+
+### Calendar (`src/components/calendar/`)
+
+| Komponenta | Props | Popis |
+|---|---|---|
+| `CalendarFeed` | — | Seznam nadcházejících a nedávných událostí (earnings, dividendy) pro instrumenty v portfoliu. Barevné ikony dle typu, počet dní do události. |
 
 ---
 
@@ -338,15 +367,19 @@ Načítá zprávy z `/api/news`. Refetchuje při změně seznamu symbolů.
 ### `src/app/page.tsx` — Dashboard
 
 - Zobrazuje název aktivního portfolia
-- Tlačítka: přidat instrument, smazat portfolio
+- Tlačítka: přidat instrument, upravit portfolio, smazat portfolio
 - Komponenty: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`
-- Modal: `AddInstrumentModal`
+- Modaly: `AddInstrumentModal`, `EditPortfolioModal`
 - Potvrzovací dialog pro smazání portfolia
-- Empty state pokud žádné portfolio neexistuje
+- Empty state s tlačítkem pro vytvoření portfolia pokud žádné neexistuje
 
 ### `src/app/news/page.tsx` — Zprávy
 
 - Wrapper renderující `NewsFeed` komponentu
+
+### `src/app/calendar/page.tsx` — Kalendář událostí
+
+- Wrapper renderující `CalendarFeed` komponentu
 
 ---
 
@@ -385,6 +418,7 @@ Soubory: `public/locales/en.json`, `public/locales/cs.json`
   "portfolio":  { ... }     // Dialogy správy portfolia
   "search":     { ... }     // Vyhledávání instrumentů
   "news":       { ... }     // Sekce zpráv
+  "calendar":   { ... }     // Kalendář událostí
   "periods":    { ... }     // Časová období (1D, 1T, 1M...)
   "types":      { ... }     // Typy instrumentů
   "errors":     { ... }     // Chybové hlášky

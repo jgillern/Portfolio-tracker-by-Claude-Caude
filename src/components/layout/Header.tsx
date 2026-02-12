@@ -7,7 +7,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { Button } from '@/components/ui/Button';
 import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { cn } from '@/lib/utils';
@@ -17,6 +16,12 @@ export function Header() {
   const { state } = usePortfolio();
   const pathname = usePathname();
   const [showCreate, setShowCreate] = useState(false);
+
+  const navLinks = [
+    { href: '/', label: t('header.dashboard') },
+    { href: '/news', label: t('header.news') },
+    { href: '/calendar', label: t('header.calendar') },
+  ];
 
   return (
     <>
@@ -28,36 +33,27 @@ export function Header() {
                 {t('app.title')}
               </Link>
               <nav className="hidden sm:flex items-center gap-1">
-                <Link
-                  href="/"
-                  className={cn(
-                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    pathname === '/'
-                      ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                  )}
-                >
-                  {t('header.dashboard')}
-                </Link>
-                <Link
-                  href="/news"
-                  className={cn(
-                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    pathname === '/news'
-                      ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
-                  )}
-                >
-                  {t('header.news')}
-                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      pathname === link.href
+                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                        : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </nav>
             </div>
 
             <div className="flex items-center gap-2">
-              {state.portfolios.length > 0 && <PortfolioSwitcher />}
-              <Button size="sm" onClick={() => setShowCreate(true)}>
-                + {t('header.createPortfolio')}
-              </Button>
+              {state.portfolios.length > 0 && (
+                <PortfolioSwitcher onCreateNew={() => setShowCreate(true)} />
+              )}
               <LanguageToggle />
               <ThemeToggle />
             </div>
@@ -65,28 +61,20 @@ export function Header() {
 
           {/* Mobile nav */}
           <nav className="flex sm:hidden items-center gap-1 pb-2">
-            <Link
-              href="/"
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                pathname === '/'
-                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                  : 'text-gray-600 dark:text-gray-400'
-              )}
-            >
-              {t('header.dashboard')}
-            </Link>
-            <Link
-              href="/news"
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                pathname === '/news'
-                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
-                  : 'text-gray-600 dark:text-gray-400'
-              )}
-            >
-              {t('header.news')}
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                  pathname === link.href
+                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>

@@ -27,3 +27,14 @@ export interface NewsArticle {
 }
 
 export type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd';
+
+export type CalendarEventType = 'earnings' | 'dividend' | 'split' | 'other';
+
+export interface CalendarEvent {
+  symbol: string;
+  name: string;
+  type: CalendarEventType;
+  date: string;
+  title: string;
+  detail?: string;
+}

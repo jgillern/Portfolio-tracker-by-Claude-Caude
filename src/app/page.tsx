@@ -7,13 +7,17 @@ import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { InstrumentsTable } from '@/components/dashboard/InstrumentsTable';
 import { AllocationTable } from '@/components/dashboard/AllocationTable';
 import { AddInstrumentModal } from '@/components/portfolio/AddInstrumentModal';
+import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
+import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { Button } from '@/components/ui/Button';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
   const { activePortfolio, deletePortfolio } = usePortfolio();
   const [showAddInstrument, setShowAddInstrument] = useState(false);
+  const [showEditPortfolio, setShowEditPortfolio] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
 
   if (!activePortfolio) {
     return (
@@ -25,6 +29,13 @@ export default function DashboardPage() {
           {t('dashboard.noPortfolio')}
         </h2>
         <p className="mt-1 text-gray-500 dark:text-gray-400">{t('dashboard.createFirst')}</p>
+        <Button className="mt-4" onClick={() => setShowCreatePortfolio(true)}>
+          + {t('header.createPortfolio')}
+        </Button>
+        <CreatePortfolioModal
+          isOpen={showCreatePortfolio}
+          onClose={() => setShowCreatePortfolio(false)}
+        />
       </div>
     );
   }
@@ -38,6 +49,13 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <Button onClick={() => setShowAddInstrument(true)}>
             + {t('portfolio.addInstrument')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowEditPortfolio(true)}
+          >
+            {t('portfolio.editPortfolio')}
           </Button>
           <Button
             variant="ghost"
@@ -57,6 +75,11 @@ export default function DashboardPage() {
       <AddInstrumentModal
         isOpen={showAddInstrument}
         onClose={() => setShowAddInstrument(false)}
+      />
+
+      <EditPortfolioModal
+        isOpen={showEditPortfolio}
+        onClose={() => setShowEditPortfolio(false)}
       />
 
       {showDeleteConfirm && (

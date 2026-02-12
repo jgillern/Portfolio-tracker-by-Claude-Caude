@@ -9,8 +9,10 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 ### Správa portfolií
 - Vytvoření libovolného počtu portfolií s vlastním názvem
 - Přepínání mezi portfolii přes dropdown v hlavičce
+- Vytvoření nového portfolia přímo z dropdownu (položka "+ Přidat nové portfolio")
+- Pokud neexistuje žádné portfolio, tlačítko pro vytvoření je přímo na dashboardu
 - Přidávání instrumentů vyhledáváním podle názvu nebo tickeru (AAPL, BTC-USD, GLD...)
-- Odebrání jednotlivých instrumentů z portfolia
+- Úprava portfolia přes modální dialog "Upravit portfolio" — změna vah a odebrání instrumentů
 - Smazání celého portfolia s potvrzovacím dialogem
 
 ### Dashboard
@@ -24,7 +26,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Aktuální cena
   - Změna za: 24h, 1 týden, 1 měsíc, 1 rok, YTD (v %)
   - Barevné kódování: zelená (kladná) / červená (záporná)
-  - Možnost odebrání instrumentu
+  - Odpočítávání automatického obnovení dat (10 min) + tlačítko pro manuální refresh
 - **Sektorová alokace** — vizuální rozdělení portfolia dle sektorů (technologie, finance, krypto...)
   - Horizontální stacked bar chart
   - Legenda s procentuálním podílem
@@ -40,6 +42,13 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Každá zpráva: náhledový obrázek, nadpis, krátký text, vydavatel, datum
 - Proklik na zdrojový článek (nová karta)
 - Aktualizace při změně portfolia
+
+### Kalendář událostí
+- Sekce s nadcházejícími klíčovými událostmi pro instrumenty v portfoliu
+- Zobrazuje earnings (výsledky hospodaření) a ex-dividend data
+- Rozdělení na nadcházející a nedávné události
+- U earnings: odhad EPS a rozsah (pokud dostupné)
+- Počet dní do/od události, barevné ikony dle typu
 
 ### Lokalizace
 - Čeština a angličtina s okamžitým přepínáním
@@ -116,17 +125,20 @@ src/
 │   ├── page.tsx                  # Dashboard (hlavní stránka)
 │   ├── globals.css               # Tailwind + globální styly
 │   ├── news/page.tsx             # Stránka se zprávami
+│   ├── calendar/page.tsx         # Stránka s kalendářem událostí
 │   └── api/                      # Serverové API routes
 │       ├── search/route.ts       # GET /api/search?q=...
 │       ├── quote/route.ts        # GET /api/quote?symbols=...
 │       ├── chart/route.ts        # GET /api/chart?symbols=...&range=...
-│       └── news/route.ts         # GET /api/news?symbols=...
+│       ├── news/route.ts         # GET /api/news?symbols=...
+│       └── calendar/route.ts     # GET /api/calendar?symbols=...
 ├── components/
 │   ├── ui/                       # Znovupoužitelné UI primitiva (Button, Modal, Badge, InstrumentLogo...)
 │   ├── layout/                   # Header, navigace
 │   ├── portfolio/                # Správa portfolií
-│   ├── dashboard/                # Graf, tabulky, alokace
-│   └── news/                     # Zprávy
+│   ├── dashboard/                # Graf, tabulky, alokace, refresh
+│   ├── news/                     # Zprávy
+│   └── calendar/                 # Kalendář událostí
 ├── hooks/                        # Custom React hooks
 ├── context/                      # React Context providers
 ├── lib/                          # Utility funkce a integrace

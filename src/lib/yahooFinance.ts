@@ -1,7 +1,7 @@
 import YahooFinance from 'yahoo-finance2';
 import { SearchResult } from '@/types/api';
 import { InstrumentType } from '@/types/portfolio';
-import { Quote, ChartDataPoint, NewsArticle, TimePeriod } from '@/types/market';
+import { Quote, ChartDataPoint, NewsArticle, TimePeriod, CalendarEvent, CalendarEventType } from '@/types/market';
 import { subDays, subMonths, subYears, startOfYear } from 'date-fns';
 
 const yf = new YahooFinance();
@@ -303,4 +303,82 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
 
   setCache(cacheKey, articles, 15 * 60 * 1000);
   return articles;
+}
+
+export async function getCalendarEvents(symbols: string[]): Promise<CalendarEvent[]> {
+  const cacheKey = `calendar:${symbols.join(',')}`;
+  const cached = getCached<CalendarEvent[]>(cacheKey);
+  if (cached) return cached;
+
+  const events: CalendarEvent[] = [];
+
+  await Promise.allSettled(
+    symbols.slice(0, 15).map(async (symbol) => {
+      try {
+        const summary = await yf.quoteSummary(symbol, { modules: ['calendarEvents', 'price'] });
+        const cal = summary.calendarEvents;
+        const price = summary.price;
+        const name = price?.shortName || price?.longName || symbol;
+
+        if (cal?.earnings) {
+          const earningsDate = cal.earnings.earningsDate?.[0];
+          if (earningsDate) {
+            const dateStr = earningsDate instanceof Date
+              ? earningsDate.toISOString()
+              : new Date(earningsDate).toISOString();
+
+            let detail: string | undefined;
+            const avg = cal.earnings.earningsAverage;
+            const low = cal.earnings.earningsLow;
+            const high = cal.earnings.earningsHigh;
+            if (avg != null) {
+              detail = `EPS est. ${avg}`;
+              if (low != null && high != null) {
+                detail += ` (${low} - ${high})`;
+              }
+            }
+
+            events.push({
+              symbol,
+              name,
+              type: 'earnings' as CalendarEventType,
+              date: dateStr,
+              title: `${symbol} Earnings`,
+              detail,
+            });
+          }
+        }
+
+        if (cal?.exDividendDate) {
+          const divDate = cal.exDividendDate instanceof Date
+            ? cal.exDividendDate.toISOString()
+            : new Date(cal.exDividendDate).toISOString();
+
+          let detail: string | undefined;
+          if (cal.dividendDate) {
+            const payDate = cal.dividendDate instanceof Date
+              ? cal.dividendDate.toLocaleDateString('en-US')
+              : new Date(cal.dividendDate).toLocaleDateString('en-US');
+            detail = `Pay date: ${payDate}`;
+          }
+
+          events.push({
+            symbol,
+            name,
+            type: 'dividend' as CalendarEventType,
+            date: divDate,
+            title: `${symbol} Ex-Dividend`,
+            detail,
+          });
+        }
+      } catch (error) {
+        console.error(`Calendar error for ${symbol}:`, error);
+      }
+    })
+  );
+
+  events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  setCache(cacheKey, events, 30 * 60 * 1000);
+  return events;
 }

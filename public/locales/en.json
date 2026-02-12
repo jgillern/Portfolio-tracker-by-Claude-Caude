@@ -5,6 +5,7 @@
   "header": {
     "dashboard": "Dashboard",
     "news": "News",
+    "calendar": "Calendar",
     "createPortfolio": "New Portfolio",
     "language": "CZ",
     "theme": "Theme"
@@ -33,14 +34,19 @@
     "equalWeights": "Equal weights",
     "weightsTotal": "Total",
     "weightsWarning": "Weights must sum to 100%",
-    "remove": "Remove"
+    "remove": "Remove",
+    "autoRefresh": "Auto refresh in",
+    "refreshNow": "Refresh now"
   },
   "portfolio": {
     "create": "Create",
     "cancel": "Cancel",
+    "close": "Close",
     "name": "Portfolio Name",
     "namePlaceholder": "e.g. Tech Stocks",
     "delete": "Delete Portfolio",
+    "editPortfolio": "Edit Portfolio",
+    "addNewPortfolio": "Add New Portfolio",
     "confirmDelete": "Are you sure you want to delete this portfolio?",
     "switchPortfolio": "Switch Portfolio",
     "addInstrument": "Add Instrument",
@@ -64,6 +70,24 @@
     "readMore": "Read more",
     "noNews": "No news available for your portfolio instruments.",
     "source": "Source"
+  },
+  "calendar": {
+    "title": "Events Calendar",
+    "noEvents": "No upcoming events for your portfolio instruments.",
+    "upcoming": "Upcoming",
+    "past": "Recent",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "inDays": "In",
+    "days": "days",
+    "daysAgo": "days ago",
+    "type": {
+      "earnings": "Earnings",
+      "dividend": "Dividend",
+      "split": "Split",
+      "other": "Event"
+    }
   },
   "periods": {
     "1d": "1D",
