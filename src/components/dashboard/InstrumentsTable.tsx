@@ -3,10 +3,9 @@
 import React from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
-import { useMarketData } from '@/hooks/useMarketData';
+import { Quote } from '@/types/market';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
-import { RefreshControl } from './RefreshControl';
 import { formatPercent, formatCurrency, cn } from '@/lib/utils';
 import { hasCustomWeights } from '@/types/portfolio';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
@@ -24,15 +23,18 @@ function ChangeCell({ value }: { value: number }) {
   );
 }
 
-export function InstrumentsTable() {
+interface Props {
+  quotes: Quote[];
+  isLoading: boolean;
+}
+
+export function InstrumentsTable({ quotes, isLoading }: Props) {
   const { t } = useLanguage();
   const { activePortfolio } = usePortfolio();
 
-  const symbols = activePortfolio?.instruments.map((i) => i.symbol) ?? [];
-  const { quotes, isLoading, refetch, lastUpdated } = useMarketData(symbols);
-
   if (!activePortfolio) return null;
   const { instruments } = activePortfolio;
+  const symbols = instruments.map((i) => i.symbol);
 
   if (instruments.length === 0) {
     return (
@@ -47,11 +49,10 @@ export function InstrumentsTable() {
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('dashboard.instruments')}
         </h2>
-        <RefreshControl lastUpdated={lastUpdated} isLoading={isLoading} onRefresh={refetch} />
       </div>
 
       {isLoading && symbols.length > 0 ? (

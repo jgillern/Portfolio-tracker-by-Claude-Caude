@@ -45,6 +45,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
     addInstrument(activePortfolio.id, instrument);
     setSelected(null);
     setWeight('');
+    onClose();
   };
 
   const handleClose = () => {
@@ -55,69 +56,70 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={t('portfolio.addInstrument')}>
-      {!selected ? (
+      <div className="space-y-4">
         <InstrumentSearch onSelect={handleSelect} existingSymbols={existingSymbols} />
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-gray-900 dark:text-white">
-                  {selected.symbol}
-                </span>
-                <Badge type={selected.type} label={t(`types.${selected.type}`)} />
+
+        {selected && (
+          <>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                    {selected.symbol}
+                  </span>
+                  <Badge type={selected.type} label={t(`types.${selected.type}`)} />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  {selected.name}
+                </p>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                {selected.name}
-              </p>
+              <button
+                onClick={() => setSelected(null)}
+                className="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <button
-              onClick={() => setSelected(null)}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              {t('portfolio.changeInstrument')}
-            </button>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('portfolio.weightLabel')}
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder={t('portfolio.weightPlaceholder')}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-500">%</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('portfolio.weightLabel')}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder={t('portfolio.weightPlaceholder')}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-500">%</span>
+              </div>
+              {otherInstrumentsHaveWeights && !weight.trim() && (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                  {t('portfolio.weightRequired')}
+                </p>
+              )}
+              {!otherInstrumentsHaveWeights && (
+                <p className="mt-1 text-xs text-gray-400">
+                  {t('portfolio.weightHint')}
+                </p>
+              )}
             </div>
-            {otherInstrumentsHaveWeights && !weight.trim() && (
-              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                {t('portfolio.weightRequired')}
-              </p>
-            )}
-            {!otherInstrumentsHaveWeights && (
-              <p className="mt-1 text-xs text-gray-400">
-                {t('portfolio.weightHint')}
-              </p>
-            )}
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setSelected(null)}>
-              {t('portfolio.back')}
-            </Button>
-            <Button onClick={handleConfirm}>
-              {t('search.add')} {selected.symbol}
-            </Button>
-          </div>
-        </div>
-      )}
+            <div className="flex justify-end">
+              <Button onClick={handleConfirm}>
+                {t('search.add')} {selected.symbol}
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
     </Modal>
   );
 }

@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "Багцын хяналт"
+  },
+  "header": {
+    "dashboard": "Хянах самбар",
+    "news": "Мэдээ",
+    "calendar": "Хуанли",
+    "createPortfolio": "Шинэ багц",
+    "language": "MN",
+    "theme": "Загвар"
+  },
+  "dashboard": {
+    "performance": "Багцын гүйцэтгэл",
+    "instruments": "Хэрэгслүүд",
+    "allocation": "Салбарын хуваарилалт",
+    "name": "Нэр",
+    "type": "Төрөл",
+    "weight": "Жин",
+    "price": "Үнэ",
+    "change24h": "24ц",
+    "change1w": "1Д",
+    "change1m": "1С",
+    "change1y": "1Ж",
+    "changeYtd": "YTD",
+    "actions": "Үйлдлүүд",
+    "noInstruments": "Энэ багцад хэрэгсэл байхгүй байна.",
+    "addSome": "Эхлэхийн тулд нэмнэ үү!",
+    "noPortfolio": "Багц сонгоогүй байна.",
+    "createFirst": "Анхны багцаа үүсгэнэ үү.",
+    "sector": "Салбар",
+    "percentage": "Хувь",
+    "customWeights": "Тусгай жин",
+    "equalWeights": "Тэнцүү жин",
+    "weightsTotal": "Нийт",
+    "weightsWarning": "Жингүүдийн нийлбэр 100% байх ёстой",
+    "remove": "Хасах",
+    "autoRefresh": "Автомат шинэчлэл",
+    "refreshNow": "Одоо шинэчлэх"
+  },
+  "portfolio": {
+    "create": "Үүсгэх",
+    "cancel": "Цуцлах",
+    "close": "Хаах",
+    "save": "Хадгалах",
+    "name": "Багцын нэр",
+    "namePlaceholder": "жнь. Технологийн хувьцаа",
+    "delete": "Багц устгах",
+    "editPortfolio": "Багц засах",
+    "addNewPortfolio": "Шинэ багц нэмэх",
+    "confirmDelete": "Энэ багцыг устгахдаа итгэлтэй байна уу?",
+    "switchPortfolio": "Багц солих",
+    "addInstrument": "Хэрэгсэл нэмэх",
+    "yes": "Тийм",
+    "no": "Үгүй",
+    "changeInstrument": "Солих",
+    "weightLabel": "Багцын жин",
+    "weightPlaceholder": "жнь. 25",
+    "weightRequired": "Бусад хэрэгслүүд жинтэй тул энэ талбар заавал бөглөх ёстой.",
+    "weightHint": "Заавал биш. Нэг хэрэгсэлд тохируулсан бол бүгдэд заавал болно.",
+    "back": "Буцах"
+  },
+  "search": {
+    "placeholder": "Нэр эсвэл тикерээр хайх...",
+    "noResults": "Үр дүн олдсонгүй.",
+    "add": "Нэмэх",
+    "searching": "Хайж байна..."
+  },
+  "news": {
+    "title": "Санхүүгийн мэдээ",
+    "readMore": "Дэлгэрэнгүй",
+    "noNews": "Таны багцын хэрэгслүүдэд холбогдох мэдээ байхгүй.",
+    "noSelection": "Мэдээ харуулахын тулд дор хаяж нэг хэрэгсэл сонгоно уу.",
+    "source": "Эх сурвалж",
+    "filterLabel": "Хэрэгслүүд",
+    "filterAll": "Бүх хэрэгсэл",
+    "filterNone": "Хэрэгсэл сонгоогүй",
+    "filterCount": "{count} хэрэгсэл",
+    "selectAll": "Бүгдийг сонгох",
+    "deselectAll": "Сонголт цуцлах"
+  },
+  "calendar": {
+    "title": "Үйл явдлын хуанли",
+    "noEvents": "Таны багцын хэрэгслүүдэд холбогдох үйл явдал байхгүй.",
+    "upcoming": "Удахгүй",
+    "past": "Саяхан",
+    "today": "Өнөөдөр",
+    "tomorrow": "Маргааш",
+    "yesterday": "Өчигдөр",
+    "inDays": "Дараа",
+    "days": "өдөр",
+    "daysAgo": "өдрийн өмнө",
+    "type": {
+      "earnings": "Тайлан",
+      "dividend": "Ногдол ашиг",
+      "split": "Хуваагдал",
+      "other": "Үйл явдал"
+    }
+  },
+  "periods": {
+    "1d": "1Ө",
+    "1w": "1Д",
+    "1mo": "1С",
+    "1y": "1Ж",
+    "5y": "5Ж",
+    "ytd": "YTD"
+  },
+  "types": {
+    "stock": "Хувьцаа",
+    "etf": "ETF",
+    "crypto": "Крипто",
+    "bond": "Бонд",
+    "commodity": "Түүхий эд"
+  },
+  "errors": {
+    "fetchFailed": "Өгөгдөл ачаалж чадсангүй. Дахин оролдоно уу.",
+    "networkError": "Сүлжээний алдаа. Холболтоо шалгана уу."
+  }
+}

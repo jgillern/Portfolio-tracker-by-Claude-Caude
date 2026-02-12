@@ -19,9 +19,18 @@ export function formatCurrency(value: number, currency = 'USD'): string {
   }).format(value);
 }
 
+const LOCALE_MAP: Record<string, string> = {
+  en: 'en-US',
+  cs: 'cs-CZ',
+  sk: 'sk-SK',
+  uk: 'uk-UA',
+  zh: 'zh-CN',
+  mn: 'mn-MN',
+};
+
 export function formatDate(date: Date | string, locale = 'en'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString(locale === 'cs' ? 'cs-CZ' : 'en-US', {
+  return d.toLocaleDateString(LOCALE_MAP[locale] || 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

@@ -4,11 +4,20 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { getItem, setItem } from '@/lib/localStorage';
 import { STORAGE_KEYS } from '@/config/constants';
 
-type Locale = 'en' | 'cs';
+export type Locale = 'en' | 'cs' | 'sk' | 'uk' | 'zh' | 'mn';
+
+export const LOCALES: { code: Locale; flag: string; label: string }[] = [
+  { code: 'en', flag: '🇬🇧', label: 'EN' },
+  { code: 'cs', flag: '🇨🇿', label: 'CZ' },
+  { code: 'sk', flag: '🇸🇰', label: 'SK' },
+  { code: 'uk', flag: '🇺🇦', label: 'UA' },
+  { code: 'zh', flag: '🇨🇳', label: 'ZH' },
+  { code: 'mn', flag: '🇲🇳', label: 'MN' },
+];
 
 interface LanguageContextValue {
   locale: Locale;
-  toggleLanguage: () => void;
+  setLocale: (locale: Locale) => void;
   t: (key: string) => string;
 }
 
@@ -17,7 +26,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Translations = Record<string, any>;
 
-let cachedTranslations: Record<Locale, Translations | null> = { en: null, cs: null };
+const cachedTranslations: Partial<Record<Locale, Translations>> = {};
 
 async function loadTranslations(locale: Locale): Promise<Translations> {
   if (cachedTranslations[locale]) return cachedTranslations[locale]!;
@@ -41,13 +50,14 @@ function getNestedValue(obj: Translations, path: string): string {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>('en');
+  const [locale, setLocaleState] = useState<Locale>('en');
   const [translations, setTranslations] = useState<Translations>({});
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = getItem<Locale>(STORAGE_KEYS.LANGUAGE, 'en');
-    setLocale(saved);
+    const valid = LOCALES.some((l) => l.code === saved);
+    setLocaleState(valid ? saved : 'en');
     setMounted(true);
   }, []);
 
@@ -58,8 +68,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [locale, mounted]);
 
-  const toggleLanguage = useCallback(() => {
-    setLocale((prev) => (prev === 'en' ? 'cs' : 'en'));
+  const setLocale = useCallback((newLocale: Locale) => {
+    setLocaleState(newLocale);
   }, []);
 
   const t = useCallback(
@@ -70,7 +80,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <LanguageContext.Provider value={{ locale, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}
     </LanguageContext.Provider>
   );

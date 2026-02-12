@@ -1,0 +1,119 @@
+{
+  "app": {
+    "title": "Portfolio Tracker"
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "news": "Správy",
+    "calendar": "Kalendár",
+    "createPortfolio": "Nové portfólio",
+    "language": "SK",
+    "theme": "Režim"
+  },
+  "dashboard": {
+    "performance": "Výkonnosť portfólia",
+    "instruments": "Inštrumenty",
+    "allocation": "Rozdelenie podľa sektorov",
+    "name": "Názov",
+    "type": "Typ",
+    "weight": "Váha",
+    "price": "Cena",
+    "change24h": "24h",
+    "change1w": "1T",
+    "change1m": "1M",
+    "change1y": "1R",
+    "changeYtd": "YTD",
+    "actions": "Akcie",
+    "noInstruments": "V tomto portfóliu zatiaľ nie sú žiadne inštrumenty.",
+    "addSome": "Pridajte nejaké pre začiatok!",
+    "noPortfolio": "Žiadne portfólio nie je vybrané.",
+    "createFirst": "Vytvorte si prvé portfólio.",
+    "sector": "Sektor",
+    "percentage": "Podiel",
+    "customWeights": "Vlastné váhy",
+    "equalWeights": "Rovné zastúpenie",
+    "weightsTotal": "Celkom",
+    "weightsWarning": "Váhy musia spolu dávať 100 %",
+    "remove": "Odstrániť",
+    "autoRefresh": "Automatická aktualizácia za",
+    "refreshNow": "Aktualizovať teraz"
+  },
+  "portfolio": {
+    "create": "Vytvoriť",
+    "cancel": "Zrušiť",
+    "close": "Zavrieť",
+    "save": "Uložiť",
+    "name": "Názov portfólia",
+    "namePlaceholder": "napr. Technologické akcie",
+    "delete": "Zmazať portfólio",
+    "editPortfolio": "Upraviť portfólio",
+    "addNewPortfolio": "Pridať nové portfólio",
+    "confirmDelete": "Naozaj chcete zmazať toto portfólio?",
+    "switchPortfolio": "Prepnúť portfólio",
+    "addInstrument": "Pridať inštrument",
+    "yes": "Áno",
+    "no": "Nie",
+    "changeInstrument": "Zmeniť",
+    "weightLabel": "Zastúpenie v portfóliu",
+    "weightPlaceholder": "napr. 25",
+    "weightRequired": "Ostatné inštrumenty majú nastavené váhy — toto pole je povinné.",
+    "weightHint": "Nepovinné. Ak je vyplnené pri jednom inštrumente, stáva sa povinným pre všetky.",
+    "back": "Späť"
+  },
+  "search": {
+    "placeholder": "Hľadať podľa názvu alebo tickera...",
+    "noResults": "Nič sa nenašlo.",
+    "add": "Pridať",
+    "searching": "Vyhľadávam..."
+  },
+  "news": {
+    "title": "Finančné správy",
+    "readMore": "Čítať viac",
+    "noNews": "Pre inštrumenty vo vašom portfóliu nie sú k dispozícii žiadne správy.",
+    "noSelection": "Vyberte aspoň jeden inštrument pre zobrazenie správ.",
+    "source": "Zdroj",
+    "filterLabel": "Inštrumenty",
+    "filterAll": "Všetky inštrumenty",
+    "filterNone": "Žiadne inštrumenty",
+    "filterCount": "{count} inštrumentov",
+    "selectAll": "Vybrať všetko",
+    "deselectAll": "Zrušiť výber"
+  },
+  "calendar": {
+    "title": "Kalendár udalostí",
+    "noEvents": "Pre inštrumenty vo vašom portfóliu nie sú k dispozícii žiadne udalosti.",
+    "upcoming": "Nadchádzajúce",
+    "past": "Nedávne",
+    "today": "Dnes",
+    "tomorrow": "Zajtra",
+    "yesterday": "Včera",
+    "inDays": "Za",
+    "days": "dní",
+    "daysAgo": "dní späť",
+    "type": {
+      "earnings": "Výsledky",
+      "dividend": "Dividenda",
+      "split": "Split",
+      "other": "Udalosť"
+    }
+  },
+  "periods": {
+    "1d": "1D",
+    "1w": "1T",
+    "1mo": "1M",
+    "1y": "1R",
+    "5y": "5R",
+    "ytd": "YTD"
+  },
+  "types": {
+    "stock": "Akcia",
+    "etf": "ETF",
+    "crypto": "Krypto",
+    "bond": "Dlhopis",
+    "commodity": "Komodita"
+  },
+  "errors": {
+    "fetchFailed": "Nepodarilo sa načítať dáta. Skúste to znova.",
+    "networkError": "Chyba siete. Skontrolujte pripojenie."
+  }
+}
