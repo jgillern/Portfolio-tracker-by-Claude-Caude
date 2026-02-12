@@ -72,11 +72,14 @@ export interface DbPortfolio {
 }
 
 export async function getPortfolios(userId: string): Promise<DbPortfolio[]> {
-  const { data } = await supabase()
+  const { data, error } = await supabase()
     .from('portfolios')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
+  if (error) {
+    console.error('getPortfolios error:', error.message);
+  }
   return data ?? [];
 }
 
@@ -85,11 +88,14 @@ export async function createPortfolio(
   name: string,
   isActive: boolean = false
 ): Promise<DbPortfolio | null> {
-  const { data } = await supabase()
+  const { data, error } = await supabase()
     .from('portfolios')
     .insert({ user_id: userId, name, is_active: isActive })
     .select()
     .single();
+  if (error) {
+    console.error('createPortfolio error:', error.message);
+  }
   return data;
 }
 

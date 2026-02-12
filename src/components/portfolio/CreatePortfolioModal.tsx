@@ -15,13 +15,23 @@ export function CreatePortfolioModal({ isOpen, onClose }: Props) {
   const { t } = useLanguage();
   const { createPortfolio } = usePortfolio();
   const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      createPortfolio(name.trim());
+    if (!name.trim()) return;
+
+    setError(null);
+    setLoading(true);
+    const ok = await createPortfolio(name.trim());
+    setLoading(false);
+
+    if (ok) {
       setName('');
       onClose();
+    } else {
+      setError(t('errors.fetchFailed'));
     }
   };
 
@@ -41,12 +51,17 @@ export function CreatePortfolioModal({ isOpen, onClose }: Props) {
             autoFocus
           />
         </div>
+        {error && (
+          <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3">
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" type="button" onClick={onClose}>
             {t('portfolio.cancel')}
           </Button>
-          <Button type="submit" disabled={!name.trim()}>
-            {t('portfolio.create')}
+          <Button type="submit" disabled={!name.trim() || loading}>
+            {loading ? '...' : t('portfolio.create')}
           </Button>
         </div>
       </form>
