@@ -49,9 +49,10 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                                                  │
 │  ┌──────────────────────────────────────────┐    │
 │  │           API Routes                      │    │
-│  │  /api/search  /api/quote                 │    │
-│  │  /api/chart   /api/news                  │    │
-│  │  /api/calendar /api/logo                 │    │
+│  │  /api/search    /api/quote               │    │
+│  │  /api/chart     /api/news                │    │
+│  │  /api/calendar  /api/logo (image proxy)  │    │
+│  │  /api/countries /api/metrics             │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
@@ -61,7 +62,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
 │  │         In-memory cache (Map)             │    │
-│  │   (TTL: 60s - 24h dle endpointu)        │    │
+│  │   (TTL: 60s - 7 dní dle endpointu)      │    │
 │  └──────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────┘
                         │
@@ -106,16 +107,17 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ### Načtení loga instrumentu
 
 ```
-1. InstrumentLogo se renderuje poprvé pro daný symbol
-2. Zkontroluje module-level cache (klient-side Map)
-3. Pokud cache miss → fetch /api/logo?symbol=X&type=Y
-4. Deduplikace: pokud již probíhá request pro stejný symbol, čeká na stejný Promise
-5. API route → yahooFinance.getLogoUrl()
-   - Krypto: vrátí URL z cryptocurrency-icons CDN
-   - Akcie: quoteSummary → assetProfile → website → Clearbit Logo API
-   - Fallback: hardcoded domény pro ~45 známých tickerů
-6. Výsledek se cachuje server-side (24h) i klient-side (module-level Map)
-7. Pokud se logo nepodaří načíst (HTTP error), onError → zobrazí barevnou iniciálu
+1. InstrumentLogo se renderuje — <img src="/api/logo?symbol=X&type=Y">
+2. Prohlížeč pošle request na API route (s 7denní Cache-Control hlavičkou)
+3. API route → yahooFinance.getLogoImage()
+   - Krypto: stáhne PNG z cryptocurrency-icons CDN
+   - Akcie/ETF: resolveDomain() najde doménu firmy
+     → zkusí apple-touch-icon.png z webu firmy
+     → zkusí apple-touch-icon-precomposed.png
+     → zkusí Google faviconV2 (128px)
+4. Vrátí surové byty obrázku (Content-Type: image/png) s HTTP cache hlavičkami
+5. Výsledek se cachuje server-side (7 dní in-memory)
+6. Pokud se <img> nepodaří načíst, onError → zobrazí barevnou iniciálu
 ```
 
 ### Přepnutí jazyka
@@ -167,6 +169,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 | `portfolio-tracker-state` | `PortfolioState` (JSON) | Při každé změně portfolia |
 | `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` | Při přepnutí jazyka |
 | `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
+| `portfolio-tracker-dashboard-order` | `string[]` (JSON) — pořadí sekcí dashboardu | Při přeřazení sekcí drag-and-drop |
 
 ---
 
@@ -221,20 +224,26 @@ RootLayout
     │   └── ThemeToggle
     │
     ├── DashboardPage (/)
-    │   ├── Portfolio heading + RefreshControl + akce (přidat, upravit, smazat)
+    │   ├── Portfolio heading + RefreshControl + akce (přidat, import CSV, upravit, smazat)
     │   ├── Varovný banner (pokud váhy < 100%)
-    │   ├── PerformanceChart (refreshSignal prop)
-    │   │   └── TimePeriodSelector
-    │   ├── InstrumentsTable (quotes + isLoading props)
-    │   │   └── InstrumentRow × N (logo + váha + ceny)
-    │   ├── AllocationTable
-    │   │   ├── Stacked bar
-    │   │   └── Legend
+    │   ├── DraggableSection × 6 (pořadí řízeno useDashboardOrder)
+    │   │   ├── PerformanceChart (refreshSignal prop)
+    │   │   │   └── TimePeriodSelector
+    │   │   ├── InstrumentsTable (quotes + isLoading props)
+    │   │   │   └── InstrumentRow × N (logo + váha + ceny)
+    │   │   ├── AllocationTable (sektorová alokace)
+    │   │   │   ├── Stacked bar
+    │   │   │   └── Legend
+    │   │   ├── TypeAllocation (alokace dle typu)
+    │   │   ├── CountryAllocation (alokace dle země, vlajky)
+    │   │   └── PortfolioMetrics (6 metrik)
+    │   │       └── MetricGauge × 6 (gradientní osa + tooltip)
     │   ├── AddInstrumentModal
     │   │   ├── InstrumentSearch
     │   │   └── Vybraný instrument + weight input (jeden krok)
     │   ├── EditPortfolioModal (lokální kopie stavu, Save/Cancel)
     │   │   └── InstrumentRow × N (logo + editace váhy + odebrání)
+    │   ├── ImportCsvModal (nahrání souboru, náhled, validace, výsledek)
     │   ├── Empty state + CreatePortfolioModal (pokud žádné portfolio)
     │   └── Delete confirmation dialog
     │
@@ -261,11 +270,12 @@ RootLayout
 | `/api/chart` | 5 min | `chart:{symbols}:{period}:{weights}` |
 | `/api/news` | 15 min | `news:{symbols}` |
 | `/api/calendar` | 30 min | `calendar:{symbols}` |
-| `/api/logo` | 24 h | `logo:{symbol}` |
+| `/api/logo` | 7 dní | `logo-img:{symbol}` |
+| `/api/countries` | 24 h | `countries:{symbol}` |
+| `/api/metrics` | 10 min | `metrics:{symbols}:{weights}` |
 
-**Klient-side cache (InstrumentLogo):**
-- Module-level `Map<string, string | null>` — sdílená mezi všemi instancemi komponenty
-- Deduplikace in-flight requestů přes `Map<string, Promise>` — stejný symbol se nenačítá vícekrát
+**HTTP cache (logo):**
+- `/api/logo` vrací odpovědi s hlavičkou `Cache-Control: public, max-age=604800, immutable` — prohlížeč cachuje obrázky 7 dní
 
 **Poznámky:**
 - Cache žije pouze po dobu běhu serveru (restart = vyčištění)
@@ -318,12 +328,24 @@ RootLayout
 - Zobrazuje se zbývající procento jako informativní text
 - Dashboard zobrazuje varovný banner (amber) pokud `hasCustomWeights && total < 100%`
 
-### 7. Logo resolution s fallback chain
+### 7. Logo resolution — server-side image proxy
 
 **Pro:** Uživatel vidí reálná loga firem místo generických iniciál
-**Realizace:** Tříúrovňový fallback: Clearbit Logo API (ze stránky firmy) → hardcoded domény pro známé tickery → barevná iniciála.
-Krypto má vlastní cestu přes cryptocurrency-icons CDN.
-Client-side: module-level cache + deduplikace requestů zabraňuje opakovaným voláním API.
+**Realizace:** `/api/logo` slouží jako image proxy — stahuje logo server-side a vrací surové byty obrázku s HTTP cache hlavičkami (7 dní).
+- Akcie/ETF: zjistí doménu firmy (COMMON_DOMAINS mapa ~50 tickerů → fallback na Yahoo assetProfile.website), zkusí `apple-touch-icon.png` → `apple-touch-icon-precomposed.png` → Google faviconV2.
+- Krypto: stáhne PNG z cryptocurrency-icons CDN.
+- Klient: `<img src="/api/logo?...">` s `onError` fallback na barevnou iniciálu.
+- Poznámka: Clearbit Logo API (dříve používaný) byl zrušen po akvizici HubSpotem (vrací 403).
+
+### 8. Drag-and-drop pořadí sekcí
+
+**Pro:** Uživatel si přizpůsobí dashboard podle preference
+**Realizace:** HTML5 Drag and Drop API (nativní, bez knihovny). `DraggableSection` wrapper s vizuální zpětnou vazbou. `useDashboardOrder` hook ukládá pořadí do localStorage. Výchozí pořadí se automaticky aktualizuje při přidání/odebrání sekcí.
+
+### 9. CSV import s validací
+
+**Pro:** Hromadné přidání instrumentů bez opakovaného vyhledávání
+**Realizace:** `ImportCsvModal` parsuje CSV soubor (UTF-8, čárka jako oddělovač), zobrazí náhled v tabulce, postupně validuje tickery přes `/api/search`. Kontroluje duplicity a nepřekročení 100% váhy. Zobrazí výsledek: úspěšně přidané + přeskočené s důvody.
 
 ---
 

@@ -99,6 +99,21 @@ interface CalendarEvent {
   title: string;           // Nadpis události
   detail?: string;         // Doplňující informace (EPS odhad atd.)
 }
+
+interface PortfolioMetrics {
+  peRatio: number | null;      // Vážený P/E ratio
+  sharpeRatio: number | null;  // Sharpe ratio (rizikově vážený výnos)
+  beta: number | null;         // Beta vůči S&P 500
+  alpha: number | null;        // Jensenova Alfa
+  sortinoRatio: number | null; // Sortino ratio (jen downside volatilita)
+  treynorRatio: number | null; // Treynor ratio (systematický rizik. výnos)
+}
+
+interface CountryAllocationItem {
+  country: string;         // Název země
+  countryCode: string;     // ISO kód (US, DE, GB...)
+  percentage: number;      // Podíl v portfoliu (%)
+}
 ```
 
 ### `src/types/api.ts`
@@ -129,7 +144,7 @@ interface ApiError {
 | Konstanta | Typ | Popis |
 |---|---|---|
 | `TIME_PERIODS` | `Array<{ key, label }>` | Časová období s bilingválními popisky |
-| `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`) |
+| `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`, `portfolio-tracker-dashboard-order`) |
 | `INSTRUMENT_TYPE_LABELS` | `Record` | Bilingvální názvy typů instrumentů |
 
 ### `src/config/sectors.ts`
@@ -175,13 +190,36 @@ Server-side wrapper nad knihovnou `yahoo-finance2` (v3). Instance `new YahooFina
 | `getChart` | `(symbols: string[], period: TimePeriod, weights?: number[]) => Promise<ChartDataPoint[]>` | 5 min |
 | `getNews` | `(symbols: string[]) => Promise<NewsArticle[]>` | 15 min |
 | `getCalendarEvents` | `(symbols: string[]) => Promise<CalendarEvent[]>` | 30 min |
-| `getLogoUrl` | `(symbol: string, type: InstrumentType) => Promise<string \| null>` | 24 h |
+| `getLogoImage` | `(symbol: string, type: InstrumentType) => Promise<{ buffer: Buffer; contentType: string } \| null>` | 7 dní |
+| `getCountries` | `(symbols: string[], types: InstrumentType[]) => Promise<{ symbol, country, countryCode }[]>` | 24 h |
+| `getPortfolioMetrics` | `(symbols: string[], weights: number[]) => Promise<PortfolioMetrics>` | 10 min |
 
-**Logo resolution (`getLogoUrl`):**
-1. **Krypto:** Vrátí URL z cryptocurrency-icons CDN (`cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons/.../{symbol}.png`), odstraní příponu `-USD` ze symbolu
-2. **Akcie/ETF:** Zavolá `yf.quoteSummary(symbol, { modules: ['assetProfile'] })`, extrahuje doménu z `website` pole a vrátí Clearbit Logo API URL (`logo.clearbit.com/{domain}`)
-3. **Fallback domény:** Pro ~45 nejznámějších tickerů (AAPL, META, TSLA...) je hardcoded mapování symbol→doména, použije se pokud Yahoo nemá website
-4. Vrací `null` pokud logo nelze najít — klient pak zobrazí barevnou iniciálu
+**Logo image proxy (`getLogoImage`):**
+
+Vrací surové byty obrázku (ne URL). Server-side proxy stahuje loga z webu firmy.
+
+1. **Krypto:** Stáhne PNG z cryptocurrency-icons CDN, odstraní příponu `-USD` ze symbolu
+2. **Akcie/ETF/ostatní:** Tříúrovňový fallback:
+   1. Zjistí doménu firmy: `COMMON_DOMAINS` mapa (~50 známých tickerů) → fallback na `yf.quoteSummary(symbol).assetProfile.website`
+   2. Zkusí `https://{domain}/apple-touch-icon.png`
+   3. Zkusí `https://{domain}/apple-touch-icon-precomposed.png`
+   4. Zkusí Google faviconV2: `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=128`
+3. Vrací `null` pokud logo nelze najít — klient pak zobrazí barevnou iniciálu
+
+**Pomocné funkce:**
+- `resolveDomain(symbol)` — najde doménu firmy (COMMON_DOMAINS → Yahoo assetProfile)
+- `tryFetchImage(url)` — stáhne a validuje obrázek (5s timeout, min. 100B, content-type musí být image)
+
+**Výpočet metrik portfolia (`getPortfolioMetrics`):**
+1. Načte 1 rok denních dat pro všechny symboly + S&P 500 (^GSPC) jako benchmark
+2. Spočítá vážené denní výnosy portfolia
+3. Vypočte 6 metrik: P/E (vážený průměr), Sharpe, Beta, Jensenova Alfa, Sortino, Treynor
+4. Risk-free rate: 4,5 % p.a.
+
+**Výpočet zemí (`getCountries`):**
+1. Přeskočí krypto symboly (nemají zemi)
+2. Načte `assetProfile` přes `yf.quoteSummary()`, extrahuje `country`
+3. Vrací `{ symbol, country, countryCode }`
 
 **Cachování:** In-memory `Map` s TTL expirací. Každý záznam má `{ data, expiresAt }`. Při expiraci se záznam smaže a znovu načte.
 
@@ -306,6 +344,34 @@ useCalendar(symbols: string[])
 
 Načítá kalendářní události z `/api/calendar`. Refetchuje při změně seznamu symbolů.
 
+### `src/hooks/useCountries.ts`
+
+```typescript
+useCountries(symbols: string[], types: InstrumentType[], weights: number[])
+→ { countries: CountryAllocationItem[], isLoading: boolean, error: string | null, refetch: () => Promise<void> }
+```
+
+Načítá geografické rozložení z `/api/countries`. Agreguje data podle země s využitím vah portfolia. Vrací seřazeno sestupně dle procenta.
+
+### `src/hooks/useMetrics.ts`
+
+```typescript
+useMetrics(symbols: string[], weights: number[])
+→ { metrics: PortfolioMetrics | null, isLoading: boolean, error: string | null, refetch: () => Promise<void> }
+```
+
+Načítá hodnocení portfolia z `/api/metrics`. Refetchuje při změně symbolů nebo vah.
+
+### `src/hooks/useDashboardOrder.ts`
+
+```typescript
+useDashboardOrder()
+→ { order: string[], draggedId: string | null, dragOverId: string | null,
+    handleDragStart: (id: string) => void, handleDragOver: (id: string) => void, handleDragEnd: () => void }
+```
+
+Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `localStorage["portfolio-tracker-dashboard-order"]`. Výchozí pořadí: `performance`, `instruments`, `sectorAllocation`, `typeAllocation`, `countryAllocation`, `metrics`. Při načtení sloučí uložené pořadí s výchozím (přidá nové sekce, odebere smazané).
+
 ---
 
 ## Komponenty
@@ -318,7 +384,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | `Modal` | `isOpen`, `onClose`, `title`, `children`, `className?` | Modální dialog s overlay, ESC zavření, click-outside |
 | `Spinner` | `className?` | Animovaný loading indikátor |
 | `Badge` | `type: InstrumentType`, `label`, `className?` | Barevný badge podle typu instrumentu |
-| `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu s automatickým načtením — modul-level cache (`Map`), lazy fetch z `/api/logo`, deduplikace in-flight requestů, onError fallback na barevnou iniciálu dle typu |
+| `InstrumentLogo` | `symbol`, `name`, `type`, `logoUrl?`, `size?` | Logo instrumentu — `<img>` tag s `src="/api/logo?symbol=X&type=Y"` (server-side image proxy), onError fallback na barevnou iniciálu dle typu. Lazy loading. |
 | `LanguageToggle` | — | Dropdown pro výběr jazyka (6 jazyků) — obrázky vlajek z flagcdn.com CDN (`<img>` tagy s srcSet pro retina), click-outside zavření, zvýraznění aktivního jazyka |
 | `ThemeToggle` | — | Tlačítko pro přepnutí tématu (ikona slunce/měsíc) |
 
@@ -337,6 +403,7 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | `CreatePortfolioModal` | `isOpen`, `onClose` | Modální formulář pro vytvoření portfolia (vstup: název). |
 | `InstrumentSearch` | `onSelect: (SearchResult) => void`, `existingSymbols: string[]` | Vyhledávací pole s debounced autocomplete. Filtruje již přidané symboly. Zobrazuje symbol, typ badge, název, burzu. |
 | `AddInstrumentModal` | `isOpen`, `onClose` | Jednokrokový modal: vyhledávání, vybraný instrument a zadání váhy (%) na jedné obrazovce. Po přidání se modal zavře. Zobrazuje zbývající % váhy, blokuje přidání při překročení 100%. Pokud jiné instrumenty mají váhy, zobrazí upozornění. |
+| `ImportCsvModal` | `isOpen`, `onClose` | Modal pro hromadný import instrumentů z CSV souboru. Zobrazuje pokyny k formátu, nahrání souboru (.csv/.txt), parsování a náhled v tabulce. Po importu validuje tickery přes `/api/search`, kontroluje nepřekročení 100% váhy. Výsledek: počet úspěšně importovaných + přeskočených s důvody. |
 
 ### Dashboard (`src/components/dashboard/`)
 
@@ -347,6 +414,11 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 | `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). Umístěn na úrovni dashboardu vedle názvu portfolia. Refresh spouští obnovu kotací i grafu (přes refreshSignal prop). |
 | `InstrumentsTable` | `quotes`, `isLoading` | Tabulka instrumentů s logy, cenami, váhami a změnami. Přijímá kotace a stav načítání jako props (nepoužívá vlastní hook). Bez tlačítka odebrání (to je v EditPortfolioModal). Responsive. |
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
+| `TypeAllocation` | — | Alokace dle typu instrumentu (stock, ETF, crypto, bond, commodity). Horizontální bar chart + legenda. Barvy: modrá (stock), fialová (ETF), oranžová (crypto), zelená (bond), žlutá (commodity). Čistě klient-side výpočet z portfolia. |
+| `CountryAllocation` | — | Alokace dle země původu. Načítá data přes `useCountries` hook. Stacked bar chart + legenda s vlajkami (flagcdn.com). Loading spinner, empty state. 12 barev pro země. |
+| `PortfolioMetrics` | — | Hodnocení portfolia — 6 finančních metrik ve 2-sloupcové mřížce. Každá metrika zobrazena přes `MetricGauge`. Načítá data přes `useMetrics` hook. Loading spinner. |
+| `MetricGauge` | `label`, `value`, `tooltip`, `min`, `max`, `inverted?` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. Invertovaná škála pro metriky kde nižší = lepší (P/E, Beta). |
+| `DraggableSection` | `id`, `isDragged`, `isDragOver`, `onDragStart`, `onDragOver`, `onDragEnd`, `children` | Wrapper pro drag-and-drop sekcí. HTML5 DnD API. Vizuální zpětná vazba: opacity při přetahování, modrý ring při hoveru. 6-bodová drag handle ikona v pravém horním rohu. |
 
 ### News (`src/components/news/`)
 
@@ -376,11 +448,13 @@ Načítá kalendářní události z `/api/calendar`. Refetchuje při změně sez
 ### `src/app/page.tsx` — Dashboard
 
 - Zobrazuje název aktivního portfolia
-- Tlačítka: přidat instrument, upravit portfolio, smazat portfolio
+- Tlačítka: přidat instrument, import CSV, upravit portfolio, smazat portfolio
 - `RefreshControl` vedle názvu portfolia (obnoví kotace i graf přes refreshSignal)
 - Varovný banner pokud portfolio používá vlastní váhy a jejich součet < 100% (informuje o možném zkreslení statistik)
-- Komponenty: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`
-- Modaly: `AddInstrumentModal`, `EditPortfolioModal`
+- Sekce dashboardu obaleny v `DraggableSection` — umožňuje přeřazení myší (drag-and-drop)
+- Pořadí sekcí řízeno přes `useDashboardOrder` hook s localStorage persistencí
+- Sekce: `PerformanceChart`, `InstrumentsTable`, `AllocationTable`, `TypeAllocation`, `CountryAllocation`, `PortfolioMetrics`
+- Modaly: `AddInstrumentModal`, `EditPortfolioModal`, `ImportCsvModal`
 - Potvrzovací dialog pro smazání portfolia
 - Empty state s tlačítkem pro vytvoření portfolia pokud žádné neexistuje
 
@@ -425,13 +499,15 @@ Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
 {
   "app":        { ... }     // Název aplikace
   "header":     { ... }     // Navigace, tlačítka v hlavičce
-  "dashboard":  { ... }     // Popisky na dashboardu
-  "portfolio":  { ... }     // Dialogy správy portfolia
+  "dashboard":  { ... }     // Popisky na dashboardu (vč. typeAllocation, countryAllocation, noCountryData)
+  "portfolio":  { ... }     // Dialogy správy portfolia (vč. importCsv)
+  "import":     { ... }     // CSV import — pokyny, chybové hlášky, výsledky
   "search":     { ... }     // Vyhledávání instrumentů
   "news":       { ... }     // Sekce zpráv
   "calendar":   { ... }     // Kalendář událostí
   "periods":    { ... }     // Časová období (1D, 1T, 1M...)
   "types":      { ... }     // Typy instrumentů
+  "metrics":    { ... }     // Finanční metriky portfolia (názvy + tooltips)
   "errors":     { ... }     // Chybové hlášky
 }
 ```

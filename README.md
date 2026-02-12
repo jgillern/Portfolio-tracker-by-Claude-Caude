@@ -12,6 +12,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Vytvoření nového portfolia přímo z dropdownu (položka "+ Přidat nové portfolio")
 - Pokud neexistuje žádné portfolio, tlačítko pro vytvoření je přímo na dashboardu
 - Přidávání instrumentů vyhledáváním podle názvu nebo tickeru (AAPL, BTC-USD, GLD...)
+- Hromadný import instrumentů z CSV souboru (tlačítko "Import CSV" vedle "Přidat instrument")
 - Úprava portfolia přes modální dialog "Upravit portfolio" — změna vah a odebrání instrumentů (editace probíhá na lokální kopii, uložení přes Save, zrušení přes Cancel)
 - Smazání celého portfolia s potvrzovacím dialogem
 
@@ -20,7 +21,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Časová období: 1D, 1T, 1M, 1R, 5L, YTD
   - Zelená/červená barva podle celkového vývoje
 - **Tabulka instrumentů** — přehled všech instrumentů v portfoliu:
-  - Logo instrumentu — automaticky načtené z Clearbit Logo API (akcie/ETF) nebo cryptocurrency-icons CDN (krypto); barevná iniciála jako fallback
+  - Logo instrumentu — automaticky načtené přes server-side image proxy (apple-touch-icon z webu firmy, Google favicon jako fallback) nebo cryptocurrency-icons CDN (krypto); barevná iniciála jako fallback
   - Název, symbol, typ (barevný badge)
   - Sloupec Zastoupení (% váha, pokud je vyplněna)
   - Aktuální cena
@@ -30,6 +31,24 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - **Sektorová alokace** — vizuální rozdělení portfolia dle sektorů (technologie, finance, krypto...)
   - Horizontální stacked bar chart
   - Legenda s procentuálním podílem
+- **Alokace dle typu** — rozdělení portfolia podle typu instrumentu (akcie, ETF, krypto, dluhopisy, komodity)
+  - Barevně odlišené segmenty s legendou
+- **Alokace dle země** — geografické rozložení portfolia podle země původu instrumentů
+  - Obrázky vlajek z flagcdn.com CDN
+  - Stacked bar chart s legendou
+- **Hodnocení portfolia** — 6 finančních metrik s vizuálním ukazatelem:
+  - P/E Ratio, Sharpe Ratio, Beta, Jensenova Alfa, Sortino Ratio, Treynor Ratio
+  - Každá metrika se zobrazuje s hodnotou a gradientní osou (červená → žlutá → zelená)
+  - Tooltip s vysvětlením, co daná metrika měří
+- **Drag-and-drop** — přetahování sekcí dashboardu myší pro změnu pořadí
+  - Pořadí se ukládá do localStorage a přežije zavření prohlížeče
+  - Vizuální zpětná vazba při přetahování (zvýrazněný okraj, změna průhlednosti)
+- **Import CSV** — hromadné přidání instrumentů z CSV souboru
+  - Modal s instrukcemi, nahrání souboru a náhledem
+  - Formát: UTF-8 CSV, sloupce ticker + váha v %
+  - Validace tickerů přes Yahoo Finance API
+  - Kontrola nepřekročení 100% váhy
+  - Výsledek s počtem úspěšně importovaných a přeskočených instrumentů
 
 ### Vlastní váhy
 - Při přidávání instrumentu je možné zadat procentuální zastoupení v portfoliu
@@ -69,7 +88,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Všechny komponenty podporují oba režimy
 
 ### Persistence dat
-- Portfolia, jazyk a téma se ukládají do `localStorage`
+- Portfolia, jazyk, téma a pořadí sekcí dashboardu se ukládají do `localStorage`
 - Data přežijí zavření a znovuotevření prohlížeče
 - Připraveno pro budoucí migraci na databázi + autentizaci
 
@@ -141,12 +160,14 @@ src/
 │       ├── chart/route.ts        # GET /api/chart?symbols=...&range=...
 │       ├── news/route.ts         # GET /api/news?symbols=...
 │       ├── calendar/route.ts     # GET /api/calendar?symbols=...
-│       └── logo/route.ts         # GET /api/logo?symbol=...&type=...
+│       ├── logo/route.ts         # GET /api/logo?symbol=...&type=... (image proxy)
+│       ├── countries/route.ts    # GET /api/countries?symbols=...
+│       └── metrics/route.ts      # GET /api/metrics?symbols=...&weights=...
 ├── components/
 │   ├── ui/                       # Znovupoužitelné UI primitiva (Button, Modal, Badge, InstrumentLogo...)
 │   ├── layout/                   # Header, navigace
-│   ├── portfolio/                # Správa portfolií
-│   ├── dashboard/                # Graf, tabulky, alokace, refresh
+│   ├── portfolio/                # Správa portfolií (modaly, vyhledávání, CSV import)
+│   ├── dashboard/                # Graf, tabulky, alokace, metriky, drag-and-drop, refresh
 │   ├── news/                     # Zprávy
 │   └── calendar/                 # Kalendář událostí
 ├── hooks/                        # Custom React hooks
