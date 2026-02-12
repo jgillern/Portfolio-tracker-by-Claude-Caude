@@ -7,6 +7,9 @@ import { useMarketData } from '@/hooks/useMarketData';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { InstrumentsTable } from '@/components/dashboard/InstrumentsTable';
 import { AllocationTable } from '@/components/dashboard/AllocationTable';
+import { TypeAllocation } from '@/components/dashboard/TypeAllocation';
+import { CountryAllocation } from '@/components/dashboard/CountryAllocation';
+import { PortfolioMetrics } from '@/components/dashboard/PortfolioMetrics';
 import { AddInstrumentModal } from '@/components/portfolio/AddInstrumentModal';
 import { EditPortfolioModal } from '@/components/portfolio/EditPortfolioModal';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
@@ -104,6 +107,9 @@ export default function DashboardPage() {
       <PerformanceChart refreshSignal={chartRefreshSignal} />
       <InstrumentsTable quotes={quotes} isLoading={isLoading} />
       <AllocationTable />
+      <TypeAllocation />
+      <CountryAllocation />
+      <PortfolioMetrics />
 
       <AddInstrumentModal
         isOpen={showAddInstrument}

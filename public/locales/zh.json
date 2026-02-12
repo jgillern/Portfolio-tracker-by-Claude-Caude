@@ -37,7 +37,10 @@
     "remove": "移除",
     "portfolioIncomplete": "投资组合不完整 — 总权重为{total}%。统计数据可能不准确。",
     "autoRefresh": "自动刷新倒计时",
-    "refreshNow": "立即刷新"
+    "refreshNow": "立即刷新",
+    "typeAllocation": "按类型分配",
+    "countryAllocation": "按国家分配",
+    "noCountryData": "投资组合工具没有可用的国家数据。"
   },
   "portfolio": {
     "create": "创建",
@@ -114,6 +117,21 @@
     "crypto": "加密货币",
     "bond": "债券",
     "commodity": "商品"
+  },
+  "metrics": {
+    "title": "投资组合评级",
+    "peRatio": "市盈率 (P/E)",
+    "peRatioTooltip": "市盈率 — 衡量投资组合相对于收益的价格。较低的值可能表示被低估。",
+    "sharpeRatio": "夏普比率",
+    "sharpeRatioTooltip": "风险调整收益 — 衡量每单位总风险（波动率）的超额收益。越高越好；>1 为好，>2 为非常好。",
+    "beta": "贝塔系数",
+    "betaTooltip": "系统性风险 — 衡量投资组合相对于市场（标普500）的波动性。Beta 1 = 与市场相同，<1 = 波动较小，>1 = 波动较大。",
+    "alpha": "詹森阿尔法",
+    "alphaTooltip": "超额收益 — 衡量投资组合在给定风险水平（beta）下超出预期的表现。正阿尔法表示优于预期。",
+    "sortinoRatio": "索提诺比率",
+    "sortinoRatioTooltip": "下行风险调整收益 — 类似于夏普比率，但仅惩罚下行波动。越高越好；>1 为好，>2 为非常好。",
+    "treynorRatio": "特雷诺比率",
+    "treynorRatioTooltip": "系统风险调整收益 — 衡量每单位系统性风险（beta）的超额收益。越高越好。"
   },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",

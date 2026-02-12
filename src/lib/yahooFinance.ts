@@ -416,6 +416,204 @@ export async function getLogoUrl(
   return null;
 }
 
+export async function getCountries(
+  symbols: string[],
+  types: string[]
+): Promise<{ symbol: string; country: string; countryCode: string }[]> {
+  const cacheKey = `countries:${symbols.join(',')}`;
+  const cached = getCached<{ symbol: string; country: string; countryCode: string }[]>(cacheKey);
+  if (cached) return cached;
+
+  const results: { symbol: string; country: string; countryCode: string }[] = [];
+
+  await Promise.allSettled(
+    symbols.map(async (symbol, idx) => {
+      const type = types[idx] || 'stock';
+      if (type === 'crypto') return;
+
+      try {
+        const summary = await yf.quoteSummary(symbol, { modules: ['assetProfile'] });
+        const country = summary.assetProfile?.country;
+        if (country) {
+          results.push({ symbol, country, countryCode: countryToCode(country) });
+        }
+      } catch (error) {
+        console.error(`Country lookup error for ${symbol}:`, error);
+      }
+    })
+  );
+
+  setCache(cacheKey, results, 24 * 60 * 60 * 1000);
+  return results;
+}
+
+const COUNTRY_CODE_MAP: Record<string, string> = {
+  'United States': 'US', 'United Kingdom': 'GB', 'Germany': 'DE', 'France': 'FR',
+  'Japan': 'JP', 'China': 'CN', 'Canada': 'CA', 'Australia': 'AU', 'Switzerland': 'CH',
+  'Netherlands': 'NL', 'South Korea': 'KR', 'Sweden': 'SE', 'Ireland': 'IE', 'India': 'IN',
+  'Brazil': 'BR', 'Taiwan': 'TW', 'Spain': 'ES', 'Italy': 'IT', 'Denmark': 'DK',
+  'Norway': 'NO', 'Finland': 'FI', 'Belgium': 'BE', 'Singapore': 'SG', 'Hong Kong': 'HK',
+  'Israel': 'IL', 'Luxembourg': 'LU', 'Czech Republic': 'CZ', 'Czechia': 'CZ',
+  'Austria': 'AT', 'Poland': 'PL', 'Russia': 'RU', 'Mexico': 'MX', 'South Africa': 'ZA',
+  'New Zealand': 'NZ', 'Portugal': 'PT', 'Greece': 'GR', 'Argentina': 'AR', 'Chile': 'CL',
+  'Colombia': 'CO', 'Turkey': 'TR', 'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE',
+  'Indonesia': 'ID', 'Malaysia': 'MY', 'Thailand': 'TH', 'Philippines': 'PH',
+  'Vietnam': 'VN', 'Mongolia': 'MN', 'Ukraine': 'UA', 'Slovakia': 'SK',
+};
+
+function countryToCode(country: string): string {
+  return COUNTRY_CODE_MAP[country] || country.substring(0, 2).toUpperCase();
+}
+
+export async function getPortfolioMetrics(
+  symbols: string[],
+  weights: number[]
+): Promise<{
+  peRatio: number | null;
+  sharpeRatio: number | null;
+  beta: number | null;
+  alpha: number | null;
+  sortinoRatio: number | null;
+  treynorRatio: number | null;
+}> {
+  const cacheKey = `metrics:${symbols.join(',')}:${weights.join(',')}`;
+  const cached = getCached<{
+    peRatio: number | null; sharpeRatio: number | null; beta: number | null;
+    alpha: number | null; sortinoRatio: number | null; treynorRatio: number | null;
+  }>(cacheKey);
+  if (cached) return cached;
+
+  const RISK_FREE_RATE = 0.045;
+  const now = new Date();
+  const oneYearAgo = subYears(now, 1);
+
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const normWeights = weights.map((w) => (totalWeight > 0 ? w / totalWeight : 1 / symbols.length));
+
+  const symbolData: { pe: number | null; beta: number | null; dailyReturns: number[] }[] = [];
+
+  await Promise.allSettled(
+    symbols.map(async (symbol) => {
+      try {
+        const [quote, summary, chart] = await Promise.all([
+          yf.quote(symbol),
+          yf.quoteSummary(symbol, { modules: ['defaultKeyStatistics'] }).catch(() => null),
+          yf.chart(symbol, { period1: oneYearAgo, period2: now, interval: '1d' }).catch(() => null),
+        ]);
+
+        const pe = quote.trailingPE ?? null;
+        const beta = summary?.defaultKeyStatistics?.beta ?? null;
+
+        const dailyReturns: number[] = [];
+        const quotes = chart?.quotes || [];
+        for (let i = 1; i < quotes.length; i++) {
+          const prev = quotes[i - 1].close;
+          const curr = quotes[i].close;
+          if (prev != null && curr != null && prev > 0) {
+            dailyReturns.push((curr - prev) / prev);
+          }
+        }
+
+        symbolData.push({ pe, beta, dailyReturns });
+      } catch (error) {
+        console.error(`Metrics error for ${symbol}:`, error);
+        symbolData.push({ pe: null, beta: null, dailyReturns: [] });
+      }
+    })
+  );
+
+  // Weighted P/E
+  let peRatio: number | null = null;
+  {
+    let weightedPe = 0, peWeight = 0;
+    symbolData.forEach((d, i) => {
+      if (d.pe != null && d.pe > 0) { weightedPe += d.pe * normWeights[i]; peWeight += normWeights[i]; }
+    });
+    if (peWeight > 0) peRatio = weightedPe / peWeight;
+  }
+
+  // Weighted Beta
+  let portfolioBeta: number | null = null;
+  {
+    let weightedBeta = 0, betaWeight = 0;
+    symbolData.forEach((d, i) => {
+      if (d.beta != null) { weightedBeta += d.beta * normWeights[i]; betaWeight += normWeights[i]; }
+    });
+    if (betaWeight > 0) portfolioBeta = weightedBeta / betaWeight;
+  }
+
+  // Portfolio daily returns
+  const maxLen = Math.max(...symbolData.map((d) => d.dailyReturns.length), 0);
+  let sharpeRatio: number | null = null;
+  let alpha: number | null = null;
+  let sortinoRatio: number | null = null;
+  let treynorRatio: number | null = null;
+
+  if (maxLen > 20) {
+    const portfolioReturns: number[] = [];
+    for (let day = 0; day < maxLen; day++) {
+      let dayReturn = 0;
+      for (let i = 0; i < symbolData.length; i++) {
+        const returns = symbolData[i].dailyReturns;
+        if (returns.length > 0) {
+          dayReturn += returns[Math.min(day, returns.length - 1)] * normWeights[i];
+        }
+      }
+      portfolioReturns.push(dayReturn);
+    }
+
+    const avgDailyReturn = portfolioReturns.reduce((a, b) => a + b, 0) / portfolioReturns.length;
+    const annualizedReturn = avgDailyReturn * 252;
+
+    const variance = portfolioReturns.reduce((sum, r) => sum + (r - avgDailyReturn) ** 2, 0) / (portfolioReturns.length - 1);
+    const annualizedStdDev = Math.sqrt(variance) * Math.sqrt(252);
+
+    if (annualizedStdDev > 0) {
+      sharpeRatio = (annualizedReturn - RISK_FREE_RATE) / annualizedStdDev;
+    }
+
+    const downsideReturns = portfolioReturns.filter((r) => r < RISK_FREE_RATE / 252);
+    if (downsideReturns.length > 0) {
+      const downsideVariance = downsideReturns.reduce(
+        (sum, r) => sum + (r - RISK_FREE_RATE / 252) ** 2, 0
+      ) / downsideReturns.length;
+      const downsideDeviation = Math.sqrt(downsideVariance) * Math.sqrt(252);
+      if (downsideDeviation > 0) {
+        sortinoRatio = (annualizedReturn - RISK_FREE_RATE) / downsideDeviation;
+      }
+    }
+
+    if (portfolioBeta != null && portfolioBeta !== 0) {
+      treynorRatio = (annualizedReturn - RISK_FREE_RATE) / portfolioBeta;
+    }
+
+    try {
+      const spyChart = await yf.chart('^GSPC', { period1: oneYearAgo, period2: now, interval: '1d' });
+      const spyQuotes = spyChart.quotes || [];
+      if (spyQuotes.length > 1) {
+        const firstClose = spyQuotes[0].close ?? 1;
+        const lastClose = spyQuotes[spyQuotes.length - 1].close ?? 1;
+        const marketReturn = (lastClose - firstClose) / firstClose;
+        if (portfolioBeta != null) {
+          alpha = annualizedReturn - (RISK_FREE_RATE + portfolioBeta * (marketReturn - RISK_FREE_RATE));
+        }
+      }
+    } catch { /* Market data unavailable */ }
+  }
+
+  const result = {
+    peRatio: peRatio != null ? Math.round(peRatio * 100) / 100 : null,
+    sharpeRatio: sharpeRatio != null ? Math.round(sharpeRatio * 100) / 100 : null,
+    beta: portfolioBeta != null ? Math.round(portfolioBeta * 100) / 100 : null,
+    alpha: alpha != null ? Math.round(alpha * 10000) / 100 : null,
+    sortinoRatio: sortinoRatio != null ? Math.round(sortinoRatio * 100) / 100 : null,
+    treynorRatio: treynorRatio != null ? Math.round(treynorRatio * 100) / 100 : null,
+  };
+
+  setCache(cacheKey, result, 10 * 60 * 1000);
+  return result;
+}
+
 export async function getCalendarEvents(symbols: string[]): Promise<CalendarEvent[]> {
   const cacheKey = `calendar:${symbols.join(',')}`;
   const cached = getCached<CalendarEvent[]>(cacheKey);

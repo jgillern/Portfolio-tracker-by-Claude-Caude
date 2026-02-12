@@ -37,7 +37,10 @@
     "remove": "Odebrat",
     "portfolioIncomplete": "Portfolio není kompletní — celková váha je {total} %. Statistiky mohou být zkreslené.",
     "autoRefresh": "Automatické obnovení za",
-    "refreshNow": "Obnovit nyní"
+    "refreshNow": "Obnovit nyní",
+    "typeAllocation": "Rozdělení dle typu",
+    "countryAllocation": "Rozdělení dle země",
+    "noCountryData": "Pro instrumenty v portfoliu nejsou k dispozici údaje o zemi původu."
   },
   "portfolio": {
     "create": "Vytvořit",
@@ -114,6 +117,21 @@
     "crypto": "Krypto",
     "bond": "Dluhopis",
     "commodity": "Komodita"
+  },
+  "metrics": {
+    "title": "Hodnocení portfolia",
+    "peRatio": "P/E Ratio",
+    "peRatioTooltip": "Poměr ceny k zisku — měří, jak drahé je portfolio vzhledem k ziskům. Nižší hodnoty mohou znamenat podhodnocení.",
+    "sharpeRatio": "Sharpe Ratio",
+    "sharpeRatioTooltip": "Rizikově vážený výnos — měří přebytkový výnos na jednotku celkového rizika (volatility). Čím vyšší, tím lepší; >1 je dobré, >2 je velmi dobré.",
+    "beta": "Beta",
+    "betaTooltip": "Systematické riziko — měří volatilitu portfolia vůči trhu (S&P 500). Beta 1 = jako trh, <1 = méně volatilní, >1 = více volatilní.",
+    "alpha": "Jensenova Alfa",
+    "alphaTooltip": "Přebytkový výnos — měří výkonnost portfolia nad rámec očekávání daných jeho úrovní rizika (beta). Kladná alfa znamená nadvýkonnost.",
+    "sortinoRatio": "Sortino Ratio",
+    "sortinoRatioTooltip": "Rizikově vážený výnos (jen pokles) — podobné Sharpe, ale penalizuje pouze negativní volatilitu. Čím vyšší, tím lepší; >1 je dobré, >2 je velmi dobré.",
+    "treynorRatio": "Treynor Ratio",
+    "treynorRatioTooltip": "Systematicky rizikově vážený výnos — měří přebytkový výnos na jednotku systematického rizika (beta). Čím vyšší, tím lepší."
   },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",

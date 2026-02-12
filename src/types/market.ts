@@ -38,3 +38,18 @@ export interface CalendarEvent {
   title: string;
   detail?: string;
 }
+
+export interface PortfolioMetrics {
+  peRatio: number | null;
+  sharpeRatio: number | null;
+  beta: number | null;
+  alpha: number | null;
+  sortinoRatio: number | null;
+  treynorRatio: number | null;
+}
+
+export interface CountryAllocationItem {
+  country: string;
+  countryCode: string;
+  percentage: number;
+}

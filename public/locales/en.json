@@ -37,7 +37,10 @@
     "remove": "Remove",
     "portfolioIncomplete": "Portfolio is incomplete — total weight is {total}%. Statistics may be inaccurate.",
     "autoRefresh": "Auto refresh in",
-    "refreshNow": "Refresh now"
+    "refreshNow": "Refresh now",
+    "typeAllocation": "Allocation by Type",
+    "countryAllocation": "Allocation by Country",
+    "noCountryData": "No country data available for portfolio instruments."
   },
   "portfolio": {
     "create": "Create",
@@ -114,6 +117,21 @@
     "crypto": "Crypto",
     "bond": "Bond",
     "commodity": "Commodity"
+  },
+  "metrics": {
+    "title": "Portfolio Rating",
+    "peRatio": "P/E Ratio",
+    "peRatioTooltip": "Price-to-Earnings ratio — measures how expensive the portfolio is relative to earnings. Lower values may indicate undervaluation.",
+    "sharpeRatio": "Sharpe Ratio",
+    "sharpeRatioTooltip": "Risk-adjusted return — measures excess return per unit of total risk (volatility). Higher is better; >1 is good, >2 is very good.",
+    "beta": "Beta",
+    "betaTooltip": "Systematic risk — measures portfolio volatility relative to the market (S&P 500). Beta 1 = same as market, <1 = less volatile, >1 = more volatile.",
+    "alpha": "Jensen's Alpha",
+    "alphaTooltip": "Excess return — measures portfolio performance beyond what is expected given its risk level (beta). Positive alpha means outperformance.",
+    "sortinoRatio": "Sortino Ratio",
+    "sortinoRatioTooltip": "Downside risk-adjusted return — similar to Sharpe but only penalizes downside volatility. Higher is better; >1 is good, >2 is very good.",
+    "treynorRatio": "Treynor Ratio",
+    "treynorRatioTooltip": "Systematic risk-adjusted return — measures excess return per unit of systematic risk (beta). Higher is better."
   },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",
