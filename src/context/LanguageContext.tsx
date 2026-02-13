@@ -51,14 +51,14 @@ function getNestedValue(obj: Translations, path: string): string {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
+  const [locale, setLocaleState] = useState<Locale>('cs');
   const [translations, setTranslations] = useState<Translations>({});
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = getItem<Locale>(STORAGE_KEYS.LANGUAGE, 'en');
+    const saved = getItem<Locale>(STORAGE_KEYS.LANGUAGE, 'cs');
     const valid = LOCALES.some((l) => l.code === saved);
-    setLocaleState(valid ? saved : 'en');
+    setLocaleState(valid ? saved : 'cs');
     setMounted(true);
 
     // Listen for auth state to load language from Supabase
