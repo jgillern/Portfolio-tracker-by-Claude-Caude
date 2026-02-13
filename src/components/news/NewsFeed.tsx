@@ -8,7 +8,7 @@ import { NewsCard } from './NewsCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 export function NewsFeed() {
   const { t } = useLanguage();
