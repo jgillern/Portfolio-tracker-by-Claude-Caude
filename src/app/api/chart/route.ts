@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getChart } from '@/lib/yahooFinance';
 import { TimePeriod } from '@/types/market';
 
-const VALID_PERIODS: TimePeriod[] = ['1d', '1w', '1mo', '1y', '5y', 'ytd'];
+const VALID_PERIODS: TimePeriod[] = ['1d', '1w', '1mo', '1y', '5y', 'ytd', 'max'];
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');

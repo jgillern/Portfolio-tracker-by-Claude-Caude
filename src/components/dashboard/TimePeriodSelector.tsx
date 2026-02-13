@@ -5,7 +5,7 @@ import { TimePeriod } from '@/types/market';
 import { useLanguage } from '@/context/LanguageContext';
 import { cn } from '@/lib/utils';
 
-const periods: TimePeriod[] = ['1d', '1w', '1mo', '1y', '5y', 'ytd'];
+const periods: TimePeriod[] = ['1d', '1w', '1mo', '1y', '5y', 'ytd', 'max'];
 
 interface Props {
   selected: TimePeriod;

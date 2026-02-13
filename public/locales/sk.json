@@ -139,7 +139,8 @@
     "1mo": "1M",
     "1y": "1R",
     "5y": "5R",
-    "ytd": "YTD"
+    "ytd": "YTD",
+    "max": "MAX"
   },
   "types": {
     "stock": "Akcia",

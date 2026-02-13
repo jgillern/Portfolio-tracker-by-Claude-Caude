@@ -148,6 +148,12 @@ export function PerformanceChart({ refreshSignal }: Props) {
         minute: '2-digit',
       });
     }
+    if (period === 'max' || period === '5y') {
+      return date.toLocaleDateString(dateLocale, {
+        month: 'short',
+        year: '2-digit',
+      });
+    }
     return date.toLocaleDateString(dateLocale, {
       month: 'short',
       day: 'numeric',

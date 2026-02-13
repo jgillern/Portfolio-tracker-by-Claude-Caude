@@ -2,7 +2,7 @@ import YahooFinance from 'yahoo-finance2';
 import { SearchResult } from '@/types/api';
 import { InstrumentType } from '@/types/portfolio';
 import { Quote, ChartDataPoint, NewsArticle, TimePeriod, CalendarEvent, CalendarEventType } from '@/types/market';
-import { subDays, subMonths, subYears, startOfYear } from 'date-fns';
+import { subDays, subMonths, subYears, startOfYear, differenceInDays } from 'date-fns';
 
 const yf = new YahooFinance();
 
@@ -155,13 +155,19 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
 export async function getChart(
   symbols: string[],
   period: TimePeriod,
-  weights?: number[]
+  weights?: number[],
 ): Promise<ChartDataPoint[]> {
   const cacheKey = `chart:${symbols.join(',')}:${period}:${weights?.join(',')}`;
   const cached = getCached<ChartDataPoint[]>(cacheKey);
   if (cached) return cached;
 
   const now = new Date();
+
+  // For 'max' period: fetch full history, then find the common start date
+  if (period === 'max') {
+    return getChartMax(symbols, weights);
+  }
+
   let period1: Date;
   let interval: '1m' | '5m' | '15m' | '1d' | '1wk' | '1mo';
 
@@ -252,6 +258,151 @@ export async function getChart(
     return result;
   } catch (error) {
     console.error('Chart error:', error);
+    return [];
+  }
+}
+
+/**
+ * MAX period: fetch full available history for each symbol from Yahoo Finance,
+ * find the latest "first data point" across all symbols (= the common start),
+ * then trim and re-normalize all series from that common start date.
+ */
+async function getChartMax(
+  symbols: string[],
+  weights?: number[],
+): Promise<ChartDataPoint[]> {
+  const cacheKey = `chart:${symbols.join(',')}:max:${weights?.join(',')}`;
+  const cached = getCached<ChartDataPoint[]>(cacheKey);
+  if (cached) return cached;
+
+  const now = new Date();
+  // Fetch from a very old date to get the full available history
+  const veryOldDate = new Date('1970-01-01');
+
+  try {
+    // Step 1: Fetch full monthly history for each symbol
+    const rawSeries: { timestamp: number; close: number }[][] = [];
+
+    await Promise.allSettled(
+      symbols.map(async (symbol) => {
+        try {
+          const chart = await yf.chart(symbol, {
+            period1: veryOldDate,
+            period2: now,
+            interval: '1mo',
+          });
+
+          const chartQuotes = chart.quotes || [];
+          if (chartQuotes.length === 0) return;
+
+          const series = chartQuotes
+            .filter((cq) => cq.date && cq.close != null)
+            .map((cq) => ({
+              timestamp: cq.date.getTime(),
+              close: cq.close!,
+            }));
+
+          rawSeries.push(series);
+        } catch (error) {
+          console.error(`Chart MAX error for ${symbol}:`, error);
+        }
+      })
+    );
+
+    if (rawSeries.length === 0) return [];
+
+    // Step 2: Find the latest "first data point" — the common start
+    const latestFirstTimestamp = Math.max(
+      ...rawSeries.map((s) => s[0].timestamp)
+    );
+
+    // Step 3: Determine the appropriate interval based on actual range
+    const days = differenceInDays(now, new Date(latestFirstTimestamp));
+    let interval: '1d' | '1wk' | '1mo';
+    if (days <= 365) {
+      interval = '1d';
+    } else if (days <= 365 * 3) {
+      interval = '1wk';
+    } else {
+      interval = '1mo';
+    }
+
+    // Step 4: If monthly is fine, trim and normalize existing data
+    // Otherwise re-fetch with the appropriate interval from the common start
+    let allSeries: { timestamp: number; normalizedPrice: number }[][] = [];
+
+    if (interval === '1mo') {
+      // Use already fetched monthly data, just trim to common start
+      for (const series of rawSeries) {
+        const trimmed = series.filter((p) => p.timestamp >= latestFirstTimestamp);
+        if (trimmed.length === 0) continue;
+        const basePrice = trimmed[0].close;
+        allSeries.push(
+          trimmed.map((p) => ({
+            timestamp: p.timestamp,
+            normalizedPrice: (p.close / basePrice) * 100,
+          }))
+        );
+      }
+    } else {
+      // Re-fetch with finer interval from common start date
+      const commonStart = new Date(latestFirstTimestamp);
+      await Promise.allSettled(
+        symbols.map(async (symbol) => {
+          try {
+            const chart = await yf.chart(symbol, {
+              period1: commonStart,
+              period2: now,
+              interval,
+            });
+
+            const chartQuotes = chart.quotes || [];
+            if (chartQuotes.length === 0) return;
+
+            const basePrice = chartQuotes[0].close ?? chartQuotes[0].open ?? 1;
+            const series = chartQuotes
+              .filter((cq) => cq.date && cq.close != null)
+              .map((cq) => ({
+                timestamp: cq.date.getTime(),
+                normalizedPrice: (cq.close! / basePrice) * 100,
+              }));
+
+            allSeries.push(series);
+          } catch (error) {
+            console.error(`Chart MAX refetch error for ${symbol}:`, error);
+          }
+        })
+      );
+    }
+
+    if (allSeries.length === 0) return [];
+
+    // Step 5: Aggregate into weighted portfolio line
+    const baseSeries = allSeries.reduce((a, b) => (a.length > b.length ? a : b));
+    const effectiveWeights = weights ?? Array(allSeries.length).fill(100 / allSeries.length) as number[];
+
+    const result: ChartDataPoint[] = baseSeries.map((point, idx) => {
+      let weightedSum = 0;
+      let totalWeight = 0;
+
+      for (let i = 0; i < allSeries.length; i++) {
+        const series = allSeries[i];
+        const seriesPoint = series[Math.min(idx, series.length - 1)];
+        const w = effectiveWeights[i] ?? 100 / allSeries.length;
+        weightedSum += seriesPoint.normalizedPrice * w;
+        totalWeight += w;
+      }
+
+      return {
+        timestamp: point.timestamp,
+        value: totalWeight > 0 ? weightedSum / totalWeight : 0,
+      };
+    });
+
+    setCache(cacheKey, result, 5 * 60 * 1000);
+    return result;
+  } catch (error) {
+    console.error('Chart MAX error:', error);
     return [];
   }
 }

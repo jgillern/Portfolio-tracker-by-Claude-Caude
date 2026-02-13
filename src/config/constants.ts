@@ -7,6 +7,7 @@ export const TIME_PERIODS: { key: TimePeriod; label: { en: string; cs: string } 
   { key: '1y', label: { en: '1Y', cs: '1R' } },
   { key: '5y', label: { en: '5Y', cs: '5L' } },
   { key: 'ytd', label: { en: 'YTD', cs: 'YTD' } },
+  { key: 'max', label: { en: 'MAX', cs: 'MAX' } },
 ];
 
 export const STORAGE_KEYS = {
