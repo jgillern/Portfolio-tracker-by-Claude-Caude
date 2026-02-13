@@ -15,7 +15,6 @@ import {
   AlesMichl,
   WarrenBuffett,
   SatoshiNakamoto,
-  JamieDimon,
   ChristineLagarde,
 } from '@/components/login/BusinessmanAvatars';
 
@@ -133,12 +132,9 @@ export default function LoginPage() {
             <AlesMichl className="w-25 h-33 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
           </div>
 
-          {/* Bottom corners */}
-          <div className="absolute bottom-[8%] left-[5%] animate-peek-bottom" style={{ animationDelay: '3.5s' }}>
-            <JamieDimon className="w-22 h-30 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
-          </div>
-          <div className="absolute bottom-[8%] right-[5%] animate-peek-bottom" style={{ animationDelay: '4s' }}>
-            <ChristineLagarde className="w-22 h-30 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
+          {/* Bottom right corner */}
+          <div className="absolute bottom-[8%] right-[5%] animate-peek-bottom" style={{ animationDelay: '3.5s' }}>
+            <ChristineLagarde className="w-24 h-32 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
           </div>
 
           {/* Mysterious Satoshi - top center, floating */}
