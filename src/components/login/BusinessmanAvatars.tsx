@@ -780,3 +780,191 @@ export const SatoshiNakamoto: React.FC<AvatarProps> = ({ className = '' }) => (
     <text x="80" y="30" fontSize="28" fill="#00FF88" textAnchor="middle" fontWeight="bold" opacity="0.3">?</text>
   </svg>
 );
+
+// Babiš & Trump scheming together — leaning in, sly smirks, plotting
+export const BabisAndTrump: React.FC<AvatarProps> = ({ className = '' }) => (
+  <svg className={className} viewBox="0 0 340 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* === ANDREJ BABIŠ — left side, leaning right === */}
+    <g transform="rotate(5, 90, 100)">
+      {/* Long, narrow gaunt face */}
+      <path d="M 52 62 Q 50 38 62 28 Q 72 20 82 19 Q 92 20 102 28 Q 114 38 112 62 L 110 88 Q 108 104 100 112 L 94 120 Q 88 124 82 124 Q 76 124 70 120 L 64 112 Q 56 104 54 88 Z" fill="#F0C8A0"/>
+
+      {/* Gray/silver hair — swept back, thinning */}
+      <path d="M 64 28 Q 74 14 82 12 Q 90 14 100 28 Q 92 16 82 14 Q 72 16 64 28 Z" fill="#B0B0B0"/>
+      <path d="M 60 32 Q 68 12 82 10 Q 96 12 104 32 Q 94 16 82 13 Q 70 16 60 32 Z" fill="#A8A8A8"/>
+      {/* Side hair — gray */}
+      <path d="M 48 42 L 48 65 Q 50 54 54 42 Z" fill="#A0A0A0"/>
+      <path d="M 116 42 L 116 65 Q 114 54 110 42 Z" fill="#A0A0A0"/>
+      {/* Hair texture */}
+      <path d="M 66 20 Q 74 12 82 11" stroke="#C0C0C0" strokeWidth="1.5" fill="none" opacity="0.6"/>
+      <path d="M 98 20 Q 90 12 82 11" stroke="#C0C0C0" strokeWidth="1.5" fill="none" opacity="0.6"/>
+
+      {/* Ears */}
+      <ellipse cx="48" cy="70" rx="7" ry="12" fill="#F0C8A0"/>
+      <ellipse cx="116" cy="70" rx="7" ry="12" fill="#F0C8A0"/>
+
+      {/* Deep-set eyes — calculating, sly */}
+      <ellipse cx="70" cy="62" rx="8" ry="5.5" fill="#FFFFFF"/>
+      <ellipse cx="94" cy="62" rx="8" ry="5.5" fill="#FFFFFF"/>
+      <circle cx="72" cy="62" r="4" fill="#5A7A6A"/>
+      <circle cx="96" cy="62" r="4" fill="#5A7A6A"/>
+      <circle cx="73" cy="61" r="2" fill="#1A1A1A"/>
+      <circle cx="97" cy="61" r="2" fill="#1A1A1A"/>
+      <circle cx="74" cy="60" r="0.7" fill="#FFFFFF"/>
+      <circle cx="98" cy="60" r="0.7" fill="#FFFFFF"/>
+      {/* Heavy, slightly lowered lids — scheming look */}
+      <path d="M 62 60 Q 70 56 78 60" fill="#E0B888" opacity="0.5"/>
+      <path d="M 86 60 Q 94 56 102 60" fill="#E0B888" opacity="0.5"/>
+
+      {/* Heavy brow — slightly furrowed */}
+      <path d="M 60 54 Q 66 50 72 52 Q 76 53 78 55" stroke="#8A8A8A" strokeWidth="2.5" fill="none"/>
+      <path d="M 104 54 Q 98 50 92 52 Q 88 53 86 55" stroke="#8A8A8A" strokeWidth="2.5" fill="none"/>
+
+      {/* Nose — long, prominent */}
+      <path d="M 82 60 L 82 82" stroke="#D0A878" strokeWidth="2"/>
+      <path d="M 76 84 Q 79 88 82 89 Q 85 88 88 84" fill="#D8B080"/>
+
+      {/* Deep nasolabial folds */}
+      <path d="M 72 84 Q 68 94 66 102" stroke="#D0A878" strokeWidth="1.2" opacity="0.5"/>
+      <path d="M 92 84 Q 96 94 98 102" stroke="#D0A878" strokeWidth="1.2" opacity="0.5"/>
+
+      {/* Sly, one-sided smirk — scheming */}
+      <path d="M 68 104 Q 76 110 82 110 Q 90 109 98 104" stroke="#906060" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M 98 103 Q 102 100 104 97" stroke="#906060" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+
+      {/* Slight stubble */}
+      <path d="M 60 108 Q 72 120 82 122 Q 92 120 104 108" fill="#C0B0A0" opacity="0.15"/>
+
+      {/* Chin — prominent, long */}
+      <ellipse cx="82" cy="120" rx="3" ry="2" fill="#D0A878" opacity="0.3"/>
+
+      {/* Forehead wrinkles */}
+      <path d="M 62 40 Q 72 38 82 38 Q 92 38 102 40" stroke="#D0A878" strokeWidth="0.8" opacity="0.35"/>
+      <path d="M 64 44 Q 73 42 82 42 Q 91 42 100 44" stroke="#D0A878" strokeWidth="0.8" opacity="0.3"/>
+
+      {/* Neck */}
+      <rect x="72" y="124" width="20" height="16" fill="#F0C8A0" rx="2"/>
+
+      {/* Dark coat/suit */}
+      <path d="M 44 138 Q 56 130 72 136 L 82 128 L 92 136 Q 108 130 120 138 L 120 200 L 44 200 Z" fill="#2A2A2A"/>
+      {/* Lapels */}
+      <path d="M 72 136 L 76 144 L 82 128 L 88 144 L 92 136" fill="#222222"/>
+      {/* White shirt */}
+      <path d="M 76 144 L 82 128 L 88 144 L 86 152 L 82 160 L 78 152 Z" fill="#FFFFFF"/>
+
+      {/* Pink/paisley patterned tie */}
+      <path d="M 80 140 L 82 136 L 84 140 L 82 168 Z" fill="#C87090"/>
+      <path d="M 79 144 L 82 140 L 85 144" fill="#D88098"/>
+      {/* Tie pattern */}
+      <circle cx="82" cy="150" r="1" fill="#E8A0B0" opacity="0.5"/>
+      <circle cx="82" cy="156" r="1" fill="#E8A0B0" opacity="0.5"/>
+      <circle cx="82" cy="162" r="1" fill="#E8A0B0" opacity="0.5"/>
+
+      {/* AGROFERT badge hint */}
+      <text x="58" y="160" fontSize="6" fill="#8AB040" textAnchor="middle" fontWeight="bold" opacity="0.6">AGF</text>
+    </g>
+
+    {/* === DONALD TRUMP — right side, leaning left === */}
+    <g transform="rotate(-5, 250, 100)">
+      {/* Wide, round face — orange/tan tone */}
+      <path d="M 210 62 Q 208 38 220 28 Q 232 20 244 19 Q 256 20 268 28 Q 280 38 278 62 L 276 88 Q 274 106 266 114 Q 258 122 250 124 L 244 125 Q 238 124 232 122 Q 222 116 218 106 L 214 88 Z" fill="#F0B070"/>
+
+      {/* ICONIC blonde/orange hair — voluminous, swept over */}
+      <path d="M 218 30 Q 228 8 244 6 Q 260 8 270 30" fill="none"/>
+      {/* Main hair mass — tall, dramatic, swept to the right */}
+      <path d="M 206 38 Q 210 10 230 4 Q 244 2 258 4 Q 282 10 284 38 Q 280 18 258 8 Q 244 6 230 8 Q 212 18 206 38 Z" fill="#E8C040"/>
+      {/* Extra volume on top — the signature poof */}
+      <path d="M 210 34 Q 220 8 240 3 Q 250 2 260 4 Q 278 10 282 34" fill="#DDB838"/>
+      {/* Swept back texture */}
+      <path d="M 216 28 Q 228 10 244 6" stroke="#D0A828" strokeWidth="2" fill="none"/>
+      <path d="M 220 32 Q 232 14 244 8" stroke="#D0A828" strokeWidth="1.5" fill="none" opacity="0.7"/>
+      <path d="M 272 28 Q 260 10 244 6" stroke="#D0A828" strokeWidth="2" fill="none"/>
+      {/* Side hair — covering ears partially */}
+      <path d="M 206 38 L 204 58 Q 208 48 212 38 Z" fill="#DDB838"/>
+      <path d="M 282 38 L 284 58 Q 280 48 276 38 Z" fill="#DDB838"/>
+      {/* Front wave/swoop */}
+      <path d="M 212 36 Q 218 24 232 18 Q 240 16 244 16" stroke="#F0D050" strokeWidth="3" fill="none"/>
+
+      {/* Ears — partially hidden by hair */}
+      <ellipse cx="208" cy="68" rx="6" ry="11" fill="#F0B070"/>
+      <ellipse cx="280" cy="68" rx="6" ry="11" fill="#F0B070"/>
+
+      {/* Eyes — small, squinting, under heavy orange brow */}
+      <ellipse cx="232" cy="62" rx="7" ry="5" fill="#FFFFFF"/>
+      <ellipse cx="256" cy="62" rx="7" ry="5" fill="#FFFFFF"/>
+      <circle cx="233" cy="62" r="4" fill="#5A8AB0"/>
+      <circle cx="257" cy="62" r="4" fill="#5A8AB0"/>
+      <circle cx="234" cy="61" r="2" fill="#1A1A1A"/>
+      <circle cx="258" cy="61" r="2" fill="#1A1A1A"/>
+      <circle cx="235" cy="60" r="0.7" fill="#FFFFFF"/>
+      <circle cx="259" cy="60" r="0.7" fill="#FFFFFF"/>
+      {/* White under-eye area — pale around eyes */}
+      <ellipse cx="232" cy="62" rx="10" ry="8" fill="#FCE8D0" opacity="0.25"/>
+      <ellipse cx="256" cy="62" rx="10" ry="8" fill="#FCE8D0" opacity="0.25"/>
+      {/* Heavy lids */}
+      <path d="M 224 60 Q 232 55 240 60" fill="#E0A060" opacity="0.5"/>
+      <path d="M 248 60 Q 256 55 264 60" fill="#E0A060" opacity="0.5"/>
+
+      {/* Blonde/light eyebrows */}
+      <path d="M 222 54 Q 228 50 234 52 Q 238 53 240 55" stroke="#D0A828" strokeWidth="2.5" fill="none"/>
+      <path d="M 266 54 Q 260 50 254 52 Q 250 53 248 55" stroke="#D0A828" strokeWidth="2.5" fill="none"/>
+
+      {/* Nose — wide, slightly upturned */}
+      <path d="M 244 60 L 244 80" stroke="#D09858" strokeWidth="2"/>
+      <path d="M 238 82 Q 241 86 244 87 Q 247 86 250 82" fill="#D8A060"/>
+      <circle cx="239" cy="81" r="2.5" fill="#D8A060"/>
+      <circle cx="249" cy="81" r="2.5" fill="#D8A060"/>
+
+      {/* Pursed/pouty lips — classic Trump expression */}
+      <ellipse cx="244" cy="98" rx="12" ry="4" fill="#D08060"/>
+      <path d="M 234 98 Q 244 104 254 98" fill="#C07050"/>
+      <path d="M 236 97 Q 244 93 252 97" fill="#D88868"/>
+
+      {/* Double chin */}
+      <path d="M 226 118 Q 236 126 244 127 Q 252 126 262 118" fill="#E8A868" opacity="0.25"/>
+      <path d="M 228 120 Q 238 128 244 128 Q 250 128 260 120" stroke="#D09050" strokeWidth="0.8" fill="none" opacity="0.3"/>
+
+      {/* Jowls */}
+      <path d="M 214 100 Q 218 112 224 118" stroke="#D09858" strokeWidth="1" opacity="0.3"/>
+      <path d="M 274 100 Q 270 112 264 118" stroke="#D09858" strokeWidth="1" opacity="0.3"/>
+
+      {/* Neck — thick */}
+      <rect x="232" y="124" width="24" height="16" fill="#F0B070" rx="2"/>
+
+      {/* Blue suit */}
+      <path d="M 204 138 Q 216 130 232 136 L 244 128 L 256 136 Q 272 130 284 138 L 284 200 L 204 200 Z" fill="#1A3A6E"/>
+      {/* Lapels */}
+      <path d="M 232 136 L 237 144 L 244 128 L 251 144 L 256 136" fill="#163060"/>
+      {/* White shirt */}
+      <path d="M 237 144 L 244 128 L 251 144 L 248 152 L 244 160 L 240 152 Z" fill="#FFFFFF"/>
+
+      {/* RED power tie — signature */}
+      <path d="M 242 140 L 244 136 L 246 140 L 244 170 Z" fill="#CC2020"/>
+      <path d="M 241 144 L 244 140 L 247 144" fill="#DD3030"/>
+
+      {/* American flag pin */}
+      <rect x="260" y="142" width="8" height="5" rx="0.5" fill="#B22234"/>
+      <rect x="260" y="142" width="3" height="3" fill="#3C3B6E"/>
+      <line x1="260" y1="143.5" x2="268" y2="143.5" stroke="#FFFFFF" strokeWidth="0.5"/>
+      <line x1="260" y1="145" x2="268" y2="145" stroke="#FFFFFF" strokeWidth="0.5"/>
+      <circle cx="261.5" cy="143" r="0.3" fill="#FFFFFF"/>
+    </g>
+
+    {/* === SCHEMING ELEMENTS between them === */}
+    {/* Shared devious thought bubble */}
+    <ellipse cx="170" cy="30" rx="30" ry="16" fill="#FFFFFF" opacity="0.85"/>
+    <ellipse cx="170" cy="30" rx="28" ry="14" fill="#FFFFFF" opacity="0.95"/>
+    <circle cx="155" cy="48" r="5" fill="#FFFFFF" opacity="0.7"/>
+    <circle cx="148" cy="56" r="3" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="185" cy="48" r="5" fill="#FFFFFF" opacity="0.7"/>
+    <circle cx="192" cy="56" r="3" fill="#FFFFFF" opacity="0.5"/>
+    {/* Dollar and money signs in thought bubble */}
+    <text x="158" y="35" fontSize="14" fill="#2A8A2A" textAnchor="middle" fontWeight="bold" opacity="0.8">$</text>
+    <text x="170" y="35" fontSize="14" fill="#2A8A2A" textAnchor="middle" fontWeight="bold" opacity="0.8">$</text>
+    <text x="182" y="35" fontSize="14" fill="#2A8A2A" textAnchor="middle" fontWeight="bold" opacity="0.8">$</text>
+
+    {/* Sneaky "hands rubbing" gesture lines between them */}
+    <path d="M 120 140 Q 135 135 145 140" stroke="#F0C8A0" strokeWidth="1.5" opacity="0.4"/>
+    <path d="M 195 140 Q 210 135 220 140" stroke="#F0B070" strokeWidth="1.5" opacity="0.4"/>
+  </svg>
+);
