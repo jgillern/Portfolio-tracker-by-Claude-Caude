@@ -16,6 +16,7 @@ import {
   SatyaNadella,
   SatoshiNakamoto,
   ChristineLagarde,
+  BabisAndTrump,
 } from '@/components/login/BusinessmanAvatars';
 
 type Tab = 'login' | 'register';
@@ -142,6 +143,11 @@ export default function LoginPage() {
           {/* Mysterious Satoshi - top center, floating */}
           <div className="absolute top-[5%] left-1/2 -translate-x-1/2 animate-float-slow pointer-events-auto" style={{ animationDelay: '4.5s' }}>
             <SatoshiNakamoto className="w-28 h-38 drop-shadow-2xl opacity-70 hover:opacity-95 businessman-avatar satoshi-hover cursor-pointer" />
+          </div>
+
+          {/* Babiš & Trump scheming together - bottom center */}
+          <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 animate-peek-bottom pointer-events-auto" style={{ animationDelay: '5s' }}>
+            <BabisAndTrump className="w-72 h-44 drop-shadow-2xl opacity-85 hover:opacity-100 businessman-avatar scheming-hover cursor-pointer" />
           </div>
         </div>
 
