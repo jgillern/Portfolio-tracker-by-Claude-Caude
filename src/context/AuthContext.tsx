@@ -11,9 +11,11 @@ interface AuthContextValue {
   user: User | null;
   profile: UserProfile | null;
   isLoading: boolean;
+  isSigningOut: boolean;
   signIn: (data: SignInData) => Promise<{ error: string | null }>;
   signUp: (data: SignUpData) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -22,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Track whether profile loading is in progress to avoid duplicate loads
   const profileLoadRef = useRef<string | null>(null);
@@ -124,7 +127,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: null };
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    const p = await getProfile(user.id);
+    if (p) setProfile(p);
+  }, [user]);
+
   const signOut = useCallback(async () => {
+    setIsSigningOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     // Clear server-side cookies via API route
@@ -135,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, profile, isLoading, isSigningOut, signIn, signUp, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

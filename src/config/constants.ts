@@ -13,7 +13,32 @@ export const STORAGE_KEYS = {
   PORTFOLIO_STATE: 'portfolio-tracker-state',
   LANGUAGE: 'portfolio-tracker-lang',
   THEME: 'portfolio-tracker-theme',
+  AVATAR: 'portfolio-tracker-avatar',
 } as const;
+
+export type Skin = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest' | 'cyberpunk';
+
+export const SKINS: { key: Skin; isDark: boolean; label: { en: string; cs: string }; emoji: string }[] = [
+  { key: 'light', isDark: false, label: { en: 'Light', cs: 'Svetly' }, emoji: '☀️' },
+  { key: 'dark', isDark: true, label: { en: 'Dark', cs: 'Tmavy' }, emoji: '🌙' },
+  { key: 'ocean', isDark: true, label: { en: 'Ocean', cs: 'Ocean' }, emoji: '🌊' },
+  { key: 'sunset', isDark: false, label: { en: 'Sunset', cs: 'Zapad slunce' }, emoji: '🌅' },
+  { key: 'forest', isDark: true, label: { en: 'Forest', cs: 'Les' }, emoji: '🌲' },
+  { key: 'cyberpunk', isDark: true, label: { en: 'Cyberpunk', cs: 'Cyberpunk' }, emoji: '🔮' },
+];
+
+export type AvatarId = 'ninja' | 'astronaut' | 'robot' | 'pirate' | 'wizard' | 'alien' | 'cat' | 'bear';
+
+export const AVATARS: { id: AvatarId; label: { en: string; cs: string } }[] = [
+  { id: 'ninja', label: { en: 'Ninja', cs: 'Ninja' } },
+  { id: 'astronaut', label: { en: 'Astronaut', cs: 'Astronaut' } },
+  { id: 'robot', label: { en: 'Robot', cs: 'Robot' } },
+  { id: 'pirate', label: { en: 'Pirate', cs: 'Pirat' } },
+  { id: 'wizard', label: { en: 'Wizard', cs: 'Carodeji' } },
+  { id: 'alien', label: { en: 'Alien', cs: 'Mimozemstan' } },
+  { id: 'cat', label: { en: 'Cool Cat', cs: 'Cool kocka' } },
+  { id: 'bear', label: { en: 'Bear', cs: 'Medved' } },
+];
 
 export const INSTRUMENT_TYPE_LABELS = {
   en: {
