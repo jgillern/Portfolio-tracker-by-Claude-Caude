@@ -89,7 +89,7 @@ interface NewsArticle {
   relatedSymbols: string[]; // Symboly, ke kterým se zpráva vztahuje
 }
 
-type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd';
+type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd' | 'max';
 
 type CalendarEventType = 'earnings' | 'dividend' | 'split' | 'other';
 
@@ -280,7 +280,7 @@ CREATE TRIGGER on_auth_user_created
 
 | Konstanta | Typ | Popis |
 |---|---|---|
-| `TIME_PERIODS` | `Array<{ key, label }>` | Časová období s bilingválními popisky |
+| `TIME_PERIODS` | `Array<{ key, label }>` | Časová období s bilingválními popisky (1D, 1W, 1M, 1Y, 5Y, YTD, MAX) |
 | `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`, `portfolio-tracker-avatar`) |
 | `SKINS` | `Array<{ key: Skin, isDark, label, emoji }>` | 7 skinů: light, dark, ocean, sunset, forest, cyberpunk, water (animovaný) |
 | `AVATARS` | `Array<{ id: AvatarId, label }>` | 8 avatarů: ninja, astronaut, robot, pirate, wizard, alien, cat, bear |
@@ -322,7 +322,12 @@ Všechny funkce kontrolují `typeof window !== 'undefined'` pro bezpečné použ
 
 ### `src/lib/yahooFinance.ts`
 
-Server-side wrapper nad knihovnou `yahoo-finance2` (v3). Instance `new YahooFinance()` sdílená napříč požadavky.
+Server-side wrapper nad knihovnou `yahoo-finance2` (v3) s integrací Finnhub API pro zprávy. Instance `new YahooFinance()` sdílená napříč požadavky.
+
+**Env proměnné:**
+| Proměnná | Povinná | Popis |
+|---|---|---|
+| `FINNHUB_API_KEY` | Ne | API klíč pro Finnhub (zprávy). Bez něj se používá pouze Yahoo Finance. |
 
 | Funkce | Podpis | Cache TTL |
 |---|---|---|
@@ -369,10 +374,20 @@ Vrací surové byty obrázku (ne URL). Server-side proxy stahuje loga z webu fir
 2. Načte historická data za 1 rok přes `yf.chart(symbol, { period1, interval: '1d' })`
 3. Pro každé období (1W, 1M, 1Y, YTD) najde nejbližší historický bod a vypočte procentuální změnu
 
+**Zprávy (`getNews`) — dva zdroje:**
+1. **Yahoo Finance:** Pro každý symbol volá `yf.search()` s `newsCount: 100`. Filtruje články striktně podle `relatedTickers` (článek musí mít symbol v poli `relatedTickers`)
+2. **Finnhub** (volitelný): Pokud je nastavena env `FINNHUB_API_KEY`, stahuje zprávy za posledních 7 dní přes REST API. UUID mají prefix `finnhub-`
+3. **Cross-source deduplikace:** URL se normalizují přes `normalizeUrl()` (odstranění protokolu, www, trailing slash). Při shodě se sloučí `relatedSymbols` a doplní chybějící shrnutí z Finnhub
+
+**Pomocné funkce pro zprávy:**
+- `fetchFinnhubNews(symbol)` — stáhne zprávy z Finnhub pro jeden symbol (posledních 7 dní, timeout 10s)
+- `normalizeUrl(url)` — normalizuje URL pro deduplikaci (lowercase, bez protokolu/www/trailing slash)
+
 **Výpočet grafu portfolia (getChart):**
 1. Pro každý symbol načte historická data s příslušným intervalem
 2. Každou řadu normalizuje na base = 100 (první bod)
 3. Vypočte vážený průměr napříč řadami (custom váhy nebo rovné)
+4. **MAX period:** Nejprve načte celou historii (od 1970, měsíční interval), najde společné počáteční datum, pak renormalizuje od tohoto data
 
 ---
 
@@ -634,7 +649,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 | Komponenta | Props | Popis |
 |---|---|---|
-| `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období. Lokalizované popisky. |
+| `TimePeriodSelector` | `selected: TimePeriod`, `onChange: (TimePeriod) => void` | Skupina tlačítek pro výběr časového období (1D, 1W, 1M, 1Y, 5Y, YTD, MAX). Lokalizované popisky. |
 | `KeyStats` | — | Zobrazuje 5 klíčových statistik výkonnosti portfolia (5 let, 1 rok, YTD, měsíc, týden). Načítá data paralelně pro všechna období přes `/api/chart`. Grid layout (2-3-5 sloupců dle breakpointu). |
 | `PerformanceChart` | `refreshSignal?: number` | Recharts `LineChart` zobrazující výkonnost portfolia. Podporuje vlastní váhy. Zelená/červená barva podle trendu. **Nové:** Možnost porovnání s až 5 dalšími instrumenty. Vyhledávání přes `InstrumentSearch`. Procentuální zhodnocení na konci každé čáry (custom `CustomDot` komponenta). Barevně odlišené čáry pro srovnávací instrumenty. Data srovnání se neukládají (lokální state). Responsive container. |
 | `RefreshControl` | `lastUpdated`, `isLoading`, `onRefresh` | Odpočítávání do automatického obnovení (10 min) + tlačítko pro manuální refresh (ikona otáčení). Umístěn na úrovni dashboardu vedle názvu portfolia. Refresh spouští obnovu kotací i grafu (přes refreshSignal prop). |
@@ -663,8 +678,8 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 | Komponenta | Props | Popis |
 |---|---|---|
-| `NewsCard` | `article: NewsArticle` | Karta zprávy: thumbnail (nebo placeholder), nadpis, shrnutí (2 řádky), vydavatel, datum, související symboly, odkaz. |
-| `NewsFeed` | — | Seznam zpráv z aktivního portfolia s multi-select filtrem instrumentů. Dropdown s checkboxy, logy a názvy instrumentů. Defaultně všechny vybrány. Loading, empty a no-selection stavy. |
+| `NewsCard` | `article: NewsArticle` | Karta zprávy s tříúrovňovým fallbackem obrázku: 1) API thumbnail, 2) logo vydavatele přes Clearbit Logo API (`https://logo.clearbit.com/{domain}?size=96`, doména z URL článku), 3) SVG ikona novin. Dále: nadpis, shrnutí (2 řádky), vydavatel, datum, související symboly, odkaz. |
+| `NewsFeed` | — | Seznam zpráv z aktivního portfolia s multi-select filtrem instrumentů. Dropdown s checkboxy, logy a názvy instrumentů. Defaultně všechny vybrány. Stránkování po 20 článcích s tlačítkem „Zobrazit další". Loading, empty a no-selection stavy. |
 
 ### Calendar (`src/components/calendar/`)
 

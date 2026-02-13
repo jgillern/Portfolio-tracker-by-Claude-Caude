@@ -62,7 +62,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
 │  │     lib/yahooFinance.ts                   │    │
-│  │     (yahoo-finance2 wrapper + cache)     │    │
+│  │  (yahoo-finance2 + Finnhub + cache)     │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
@@ -75,6 +75,11 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ┌──────────────────────────────────────────────────┐
 │              Yahoo Finance API                    │
 │  (neoficiální, přes yahoo-finance2 knihovnu)     │
+└──────────────────────────────────────────────────┘
+                        │
+┌──────────────────────────────────────────────────┐
+│              Finnhub API (volitelný)              │
+│  (zprávy — vyžaduje FINNHUB_API_KEY)            │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -223,9 +228,9 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 
 Knihovna `yahoo-finance2` nemůže běžet v prohlížeči (CORS, cookie požadavky). Next.js API routes běží server-side a řeší:
 
-1. **CORS** — požadavky na Yahoo API jdou ze serveru, ne z browseru
-2. **Cachování** — in-memory cache snižuje počet požadavků na Yahoo
-3. **Transformace dat** — normalizace, výpočty změn, agregace zpráv
+1. **CORS** — požadavky na Yahoo/Finnhub API jdou ze serveru, ne z browseru
+2. **Cachování** — in-memory cache snižuje počet požadavků na externí API
+3. **Transformace dat** — normalizace, výpočty změn, agregace a deduplikace zpráv z více zdrojů
 4. **Budoucí middleware** — autentizace, rate limiting bez změny klientského kódu
 
 ### Výpočet grafu portfolia
@@ -313,7 +318,8 @@ RootLayout (ThemeProvider → LanguageProvider)
     ├── NewsPage (/news)
     │   └── NewsFeed
     │       ├── InstrumentFilter (multi-select dropdown s checkboxy)
-    │       └── NewsCard × N
+    │       ├── NewsCard × N (thumbnail → Clearbit logo → SVG fallback)
+    │       └── "Zobrazit další" tlačítko (stránkování po 20)
     │
     └── CalendarPage (/calendar)
         └── CalendarFeed
@@ -429,7 +435,27 @@ RootLayout (ThemeProvider → LanguageProvider)
 - `parseThemeValue()` dekóduje kombinovaný formát, `encodeThemeValue()` kóduje
 - CSS skiny: atribut `[data-skin="X"]` na `<html>` elementu s `!important` overrides v `globals.css`
 
-### 13. Ochrana proti flash při odhlášení
+### 13. Finnhub jako sekundární zdroj zpráv
+
+**Pro:** Lepší pokrytí zpráv — Yahoo Finance občas nevrací relevantní články; Finnhub doplňuje chybějící shrnutí.
+**Realizace:** `FINNHUB_API_KEY` je volitelná env proměnná — pokud není nastavena, aplikace funguje pouze s Yahoo Finance. Zprávy z obou zdrojů se deduplikují podle normalizované URL (`normalizeUrl()` odstraní protokol, www a trailing slash). Finnhub stahuje zprávy za posledních 7 dní pro každý symbol (timeout 10s).
+**Graceful degradation:** Selhání Finnhub nerozbije celý endpoint — `Promise.allSettled()` zajišťuje, že Yahoo články se vrátí i při chybě Finnhub.
+
+### 14. Tříúrovňový fallback náhledových obrázků zpráv
+
+**Pro:** Články bez thumbnailů mají vizuální identitu vydavatele místo generické ikony.
+**Realizace:** Klientská komponenta `NewsCard` implementuje fallback chain:
+1. API thumbnail (Finnhub/Yahoo) — pokud je k dispozici
+2. Logo vydavatele přes Clearbit Logo API (`https://logo.clearbit.com/{domain}?size=96`) — doména extrahována z URL článku
+3. SVG ikona novin jako poslední fallback
+**Poznámka:** Na rozdíl od instrumentových log (server-side proxy), loga vydavatelů zpráv se načítají přímo z Clearbit CDN klientem.
+
+### 15. MAX period pro graf výkonnosti
+
+**Pro:** Uživatel vidí celou dostupnou historii portfolia, nejen posledních 5 let.
+**Realizace:** Pro `range=max` se nejprve načte celá historie (od 1970, měsíční interval) pro nalezení společného počátečního data. Poté se znovu načtou data od tohoto společného data. Měsíční interval zajišťuje efektivitu i pro velmi dlouhou historii.
+
+### 16. Ochrana proti flash při odhlášení
 
 **Pro:** Při odhlášení se krátce nezobrazí "žádné portfolio" ani jiný nechtěný stav.
 **Realizace:** `AuthContext` vystavuje `isSigningOut` boolean, který se nastaví na `true` před zahájením async odhlášení. Dashboard ho kontroluje spolu s `authLoading` a zobrazí loading spinner.
