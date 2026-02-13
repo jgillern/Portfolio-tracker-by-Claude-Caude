@@ -454,7 +454,7 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   await Promise.allSettled(
     symbols.slice(0, 10).map(async (symbol) => {
       try {
-        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 5 });
+        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 20 });
         const news = result.news || [];
 
         for (const article of news) {
