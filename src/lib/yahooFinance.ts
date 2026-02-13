@@ -412,6 +412,7 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   const cached = getCached<NewsArticle[]>(cacheKey);
   if (cached) return cached;
 
+  const symbolSet = new Set(symbols.map((s) => s.toUpperCase()));
   const allArticles = new Map<string, NewsArticle>();
 
   await Promise.allSettled(
@@ -422,6 +423,16 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
 
         for (const article of news) {
           const uuid = article.uuid || article.link;
+
+          // Use Yahoo Finance's relatedTickers to determine which portfolio
+          // symbols this article actually relates to. If relatedTickers is
+          // missing/empty, skip the article — the search API often returns
+          // unrelated results, especially for non-US symbols.
+          const apiTickers = article.relatedTickers ?? [];
+          const matchedSymbols = apiTickers.filter((t) => symbolSet.has(t.toUpperCase()));
+
+          if (matchedSymbols.length === 0) continue;
+
           if (!allArticles.has(uuid)) {
             allArticles.set(uuid, {
               uuid,
@@ -433,12 +444,14 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
               publishedAt: article.providerPublishTime
                 ? new Date(article.providerPublishTime).toISOString()
                 : new Date().toISOString(),
-              relatedSymbols: [symbol],
+              relatedSymbols: matchedSymbols,
             });
           } else {
             const existing = allArticles.get(uuid)!;
-            if (!existing.relatedSymbols.includes(symbol)) {
-              existing.relatedSymbols.push(symbol);
+            for (const s of matchedSymbols) {
+              if (!existing.relatedSymbols.includes(s)) {
+                existing.relatedSymbols.push(s);
+              }
             }
           }
         }
