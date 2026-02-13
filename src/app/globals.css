@@ -139,3 +139,104 @@ body {
 .animate-float-slow {
   animation: float-slow 8s ease-in-out infinite;
 }
+
+/* Businessman avatar hover animations */
+@keyframes bounce-excited {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.05); }
+}
+
+@keyframes shake-head {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-5deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.05); }
+}
+
+@keyframes nod-head {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(6px) scale(1.05); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-3deg) translateX(-3px) scale(1.08); }
+  75% { transform: rotate(3deg) translateX(3px) scale(1.08); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(247, 147, 26, 0));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 15px rgba(247, 147, 26, 0.8));
+  }
+}
+
+@keyframes lean-in {
+  0%, 100% { transform: scale(1) translateX(0); }
+  50% { transform: scale(1.1) translateX(10px); }
+}
+
+@keyframes lean-back {
+  0%, 100% { transform: scale(1) translateX(0); }
+  50% { transform: scale(1.1) translateX(-10px); }
+}
+
+@keyframes mysterious-float {
+  0%, 100% {
+    transform: translate(-50%, 0) rotate(0deg) scale(1);
+    filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3));
+  }
+  50% {
+    transform: translate(-50%, -10px) rotate(5deg) scale(1.15);
+    filter: drop-shadow(0 0 25px rgba(0, 255, 136, 0.7));
+  }
+}
+
+/* Apply hover animations to specific avatars */
+.businessman-avatar {
+  transition: all 0.3s ease;
+}
+
+.businessman-avatar:hover.elon-hover {
+  animation: shake-head 0.6s ease-in-out;
+}
+
+.businessman-avatar:hover.bezos-hover {
+  animation: bounce-excited 0.6s ease-in-out;
+}
+
+.businessman-avatar:hover.saylor-hover {
+  animation: pulse-glow 0.8s ease-in-out;
+}
+
+.businessman-avatar:hover.powell-hover {
+  animation: nod-head 0.8s ease-in-out;
+}
+
+.businessman-avatar:hover.michl-hover {
+  animation: wave 0.7s ease-in-out;
+}
+
+.businessman-avatar:hover.buffett-hover {
+  animation: wave 0.8s ease-in-out;
+}
+
+.businessman-avatar:hover.lagarde-hover {
+  animation: nod-head 0.7s ease-in-out;
+}
+
+.businessman-avatar:hover.satoshi-hover {
+  animation: mysterious-float 1s ease-in-out infinite;
+}
+
+/* Side-specific lean animations */
+.businessman-left:hover {
+  animation: lean-in 0.5s ease-in-out;
+}
+
+.businessman-right:hover {
+  animation: lean-back 0.5s ease-in-out;
+}

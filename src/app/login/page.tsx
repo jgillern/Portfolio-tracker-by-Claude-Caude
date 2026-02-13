@@ -109,37 +109,37 @@ export default function LoginPage() {
         </div>
 
         {/* Businessman avatars peeking from sides */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
+        <div className="absolute inset-0 overflow-hidden pointer-events-auto hidden lg:block">
           {/* Left side - peeking from left */}
-          <div className="absolute top-[10%] -left-8 animate-peek-left" style={{ animationDelay: '0.5s' }}>
-            <ElonMusk className="w-24 h-32 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[10%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '0.5s' }}>
+            <ElonMusk className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left elon-hover cursor-pointer" />
           </div>
-          <div className="absolute top-[35%] -left-10 animate-peek-left" style={{ animationDelay: '1.5s' }}>
-            <MichaelSaylor className="w-28 h-36 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[35%] -left-12 animate-peek-left pointer-events-auto" style={{ animationDelay: '1.5s' }}>
+            <MichaelSaylor className="w-36 h-48 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left saylor-hover cursor-pointer" />
           </div>
-          <div className="absolute top-[60%] -left-6 animate-peek-left" style={{ animationDelay: '2.5s' }}>
-            <WarrenBuffett className="w-26 h-34 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[62%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '2.5s' }}>
+            <WarrenBuffett className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left buffett-hover cursor-pointer" />
           </div>
 
           {/* Right side - peeking from right */}
-          <div className="absolute top-[15%] -right-8 animate-peek-right" style={{ animationDelay: '1s' }}>
-            <JeffBezos className="w-26 h-34 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[15%] -right-8 animate-peek-right pointer-events-auto" style={{ animationDelay: '1s' }}>
+            <JeffBezos className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-right bezos-hover cursor-pointer" />
           </div>
-          <div className="absolute top-[40%] -right-10 animate-peek-right" style={{ animationDelay: '2s' }}>
-            <JeromePowell className="w-24 h-32 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[42%] -right-12 animate-peek-right pointer-events-auto" style={{ animationDelay: '2s' }}>
+            <JeromePowell className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-right powell-hover cursor-pointer" />
           </div>
-          <div className="absolute top-[65%] -right-6 animate-peek-right" style={{ animationDelay: '3s' }}>
-            <AlesMichl className="w-25 h-33 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          <div className="absolute top-[68%] -right-8 animate-peek-right pointer-events-auto" style={{ animationDelay: '3s' }}>
+            <AlesMichl className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-right michl-hover cursor-pointer" />
           </div>
 
           {/* Bottom right corner */}
-          <div className="absolute bottom-[8%] right-[5%] animate-peek-bottom" style={{ animationDelay: '3.5s' }}>
-            <ChristineLagarde className="w-24 h-32 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
+          <div className="absolute bottom-[8%] right-[5%] animate-peek-bottom pointer-events-auto" style={{ animationDelay: '3.5s' }}>
+            <ChristineLagarde className="w-30 h-42 drop-shadow-2xl opacity-85 hover:opacity-100 businessman-avatar lagarde-hover cursor-pointer" />
           </div>
 
           {/* Mysterious Satoshi - top center, floating */}
-          <div className="absolute top-[5%] left-1/2 -translate-x-1/2 animate-float-slow" style={{ animationDelay: '4.5s' }}>
-            <SatoshiNakamoto className="w-20 h-28 drop-shadow-2xl opacity-70 hover:opacity-90 transition-opacity" />
+          <div className="absolute top-[5%] left-1/2 -translate-x-1/2 animate-float-slow pointer-events-auto" style={{ animationDelay: '4.5s' }}>
+            <SatoshiNakamoto className="w-28 h-38 drop-shadow-2xl opacity-70 hover:opacity-95 businessman-avatar satoshi-hover cursor-pointer" />
           </div>
         </div>
 
