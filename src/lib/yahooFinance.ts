@@ -502,10 +502,13 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   const cached = getCached<NewsArticle[]>(cacheKey);
   if (cached) return cached;
 
+  const finnhubKey = process.env.FINNHUB_API_KEY;
   const symbolSet = new Set(symbols.map((s) => s.toUpperCase()));
   const allArticles = new Map<string, NewsArticle>();
   // Track URLs for cross-source deduplication
   const seenUrls = new Map<string, string>(); // normalizedUrl -> uuid
+
+  console.log(`[News] Fetching for symbols: ${symbols.join(', ')}. Finnhub key: ${finnhubKey ? 'SET' : 'NOT SET'}`);
 
   // --- Source 1: Yahoo Finance ---
   await Promise.allSettled(
@@ -553,10 +556,15 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   );
 
   // --- Source 2: Finnhub (if API key configured) ---
-  if (process.env.FINNHUB_API_KEY) {
+  if (finnhubKey) {
+    console.log(`[News] Finnhub enabled, fetching for ${symbols.length} symbols...`);
     const finnhubResults = await Promise.allSettled(
       symbols.map((symbol) => fetchFinnhubNews(symbol))
     );
+    const finnhubTotal = finnhubResults
+      .filter((r) => r.status === 'fulfilled')
+      .reduce((sum, r) => sum + (r as PromiseFulfilledResult<NewsArticle[]>).value.length, 0);
+    console.log(`[News] Finnhub returned ${finnhubTotal} articles total`);
 
     for (const result of finnhubResults) {
       if (result.status !== 'fulfilled') continue;
