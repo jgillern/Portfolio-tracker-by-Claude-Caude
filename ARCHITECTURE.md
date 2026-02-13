@@ -308,7 +308,7 @@ RootLayout (ThemeProvider → LanguageProvider)
     │   ├── Tab: Osobní údaje (jméno, příjmení, e-mail, změna hesla)
     │   └── Tab: Personalizace
     │       ├── Avatar picker (FunAvatar × 8, živý náhled)
-    │       └── Skin picker (6 skinů s preview barvami, živý náhled)
+    │       └── Skin picker (7 skinů s preview barvami, živý náhled)
     │
     ├── NewsPage (/news)
     │   └── NewsFeed
@@ -422,7 +422,7 @@ RootLayout (ThemeProvider → LanguageProvider)
 
 ### 12. Skin + Avatar systém bez migrace DB
 
-**Pro:** Personalizace aplikace (6 skinů + 8 avatarů) bez nutnosti přidávat nové sloupce do databáze.
+**Pro:** Personalizace aplikace (7 skinů + 8 avatarů) bez nutnosti přidávat nové sloupce do databáze.
 **Realizace:** Skin a avatar se ukládají jako kombinovaný řetězec `"skin|avatar"` (např. `"ocean|ninja"`) do stávajícího sloupce `user_preferences.theme`. Zpětně kompatibilní s plain hodnotami `"light"` / `"dark"`.
 - `ThemeContext` je single source of truth pro skin + avatar
 - `setSkin()` / `setAvatar()` — živý náhled (localStorage), `persistPreferences()` — uložení do DB
@@ -488,7 +488,7 @@ Stav před:                         Stav po:
 8. User menu v Header s avatarem, celým jménem a dropdown nabídkou (nastavení + odhlášení)
 9. Automatická migrace localStorage → Supabase
 10. SettingsModal — úprava profilu, hesla, avatara a skinu s persistencí do DB
-11. 6 barevných skinů aplikace (Light, Dark, Ocean, Sunset, Forest, Cyberpunk)
+11. 7 barevných skinů aplikace (Light, Dark, Ocean, Sunset, Forest, Cyberpunk, Water)
 12. 8 SVG avatarů s živým náhledem v nastavení
 13. ThemeContext přepsán na single source of truth pro skin + avatar (formát `skin|avatar` v DB)
 14. Ochrana proti flash při odhlášení (`isSigningOut`)

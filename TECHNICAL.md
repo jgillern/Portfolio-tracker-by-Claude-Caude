@@ -282,9 +282,9 @@ CREATE TRIGGER on_auth_user_created
 |---|---|---|
 | `TIME_PERIODS` | `Array<{ key, label }>` | Časová období s bilingválními popisky |
 | `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`, `portfolio-tracker-avatar`) |
-| `SKINS` | `Array<{ key: Skin, isDark, label, emoji }>` | 6 skinů: light, dark, ocean, sunset, forest, cyberpunk |
+| `SKINS` | `Array<{ key: Skin, isDark, label, emoji }>` | 7 skinů: light, dark, ocean, sunset, forest, cyberpunk, water (animovaný) |
 | `AVATARS` | `Array<{ id: AvatarId, label }>` | 8 avatarů: ninja, astronaut, robot, pirate, wizard, alien, cat, bear |
-| `Skin` | Type alias | `'light' \| 'dark' \| 'ocean' \| 'sunset' \| 'forest' \| 'cyberpunk'` |
+| `Skin` | Type alias | `'light' \| 'dark' \| 'ocean' \| 'sunset' \| 'forest' \| 'cyberpunk' \| 'water'` |
 | `AvatarId` | Type alias | `'ninja' \| 'astronaut' \| 'robot' \| 'pirate' \| 'wizard' \| 'alien' \| 'cat' \| 'bear'` |
 | `INSTRUMENT_TYPE_LABELS` | `Record` | Bilingvální názvy typů instrumentů |
 
@@ -490,14 +490,14 @@ Vícejazyčný i18n systém (6 jazyků).
 
 ### `src/context/ThemeContext.tsx`
 
-Single source of truth pro skin, avatar a theme (light/dark). Spravuje 6 skinů a 8 avatarů.
+Single source of truth pro skin, avatar a theme (light/dark). Spravuje 7 skinů a 8 avatarů.
 
 **Hook:** `useTheme()`
 
 | Vlastnost / metoda | Typ | Popis |
 |---|---|---|
 | `theme` | `'light' \| 'dark'` | Odvozeno ze skinu (`skinIsDark()`) |
-| `skin` | `Skin` | Aktuální skin (light, dark, ocean, sunset, forest, cyberpunk) |
+| `skin` | `Skin` | Aktuální skin (light, dark, ocean, sunset, forest, cyberpunk, water) |
 | `avatar` | `AvatarId` | Aktuální avatar (ninja, astronaut, robot, pirate, wizard, alien, cat, bear) |
 | `toggleTheme()` | `() => void` | Přepne mezi light/dark (persistuje okamžitě) |
 | `setTheme(theme)` | `('light' \| 'dark') => void` | Nastaví light nebo dark skin |
@@ -510,7 +510,7 @@ Single source of truth pro skin, avatar a theme (light/dark). Spravuje 6 skinů 
 **Klíčové funkce:**
 - `parseThemeValue(raw)` — dekóduje `"ocean|ninja"` na `{ skin: 'ocean', avatar: 'ninja' }`, fallback na `light` + `ninja`
 - `encodeThemeValue(skin, avatar)` — zakóduje na `"ocean|ninja"`
-- `skinIsDark(skin)` — vrací `true` pro dark, ocean, forest, cyberpunk
+- `skinIsDark(skin)` — vrací `true` pro dark, ocean, forest, cyberpunk, water
 
 **Chování:**
 - Při mountu: zjistí uložené hodnoty z localStorage, jinak respektuje `prefers-color-scheme`
@@ -650,7 +650,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 | Komponenta | Props | Popis |
 |---|---|---|
-| `SettingsModal` | `isOpen`, `onClose` | Modální dialog nastavení se dvěma záložkami. **Osobní údaje:** úprava jména, příjmení, e-mailu a změna hesla (s ověřením aktuálního). **Personalizace:** výběr avatara (8 SVG avatarů v mřížce 4×2) a skinu aplikace (6 skinů v mřížce 3×2 s barevnými preview). Živý náhled — změny jsou viditelné okamžitě při výběru (snapshot/revert pattern: `originalSkinRef` + `originalAvatarRef`). Patička: "Zavřít" (revert na uložené hodnoty) a "Uložit" (batch save: profil → e-mail → heslo → `persistPreferences()` → `refreshProfile()`). Úspěch/chyba zobrazeny v patičce. |
+| `SettingsModal` | `isOpen`, `onClose` | Modální dialog nastavení se dvěma záložkami. **Osobní údaje:** úprava jména, příjmení, e-mailu a změna hesla (s ověřením aktuálního). **Personalizace:** výběr avatara (8 SVG avatarů v mřížce 4×2) a skinu aplikace (7 skinů v mřížce s barevnými preview). Živý náhled — změny jsou viditelné okamžitě při výběru (snapshot/revert pattern: `originalSkinRef` + `originalAvatarRef`). Patička: "Zavřít" (revert na uložené hodnoty) a "Uložit" (batch save: profil → e-mail → heslo → `persistPreferences()` → `refreshProfile()`). Úspěch/chyba zobrazeny v patičce. |
 | `FunAvatar` | `avatarId: AvatarId`, `className?` | Vykreslí jeden z 8 vtipných SVG avatarů (Ninja, Astronaut, Robot, Pirát, Čaroděj, Mimozemšťan, Cool Kočka, Medvěd). ViewBox 0 0 40 40. Používá se v Header (user menu pill + dropdown) a v SettingsModal (picker). |
 
 ### Login (`src/components/login/`)
@@ -732,11 +732,12 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 - Custom utilita `.line-clamp-2` pro ořezání textu na 2 řádky
 - Login animace: `@keyframes gradient-shift` (pozadí), `bounce-gentle` (nadpis), `fade-in-up` (karta), `float` (dekorace)
 - CSS třídy: `.login-bg`, `.login-title`, `.login-card`, `.login-float` — podpora dark mode
-- **Skin CSS overrides:** `[data-skin="ocean"]`, `[data-skin="sunset"]`, `[data-skin="forest"]`, `[data-skin="cyberpunk"]` — přepisují hlavičku, akcentní barvy (bg-blue-600, text-blue-600), pozadí stránky atd. pomocí `!important`
+- **Skin CSS overrides:** `[data-skin="ocean"]`, `[data-skin="sunset"]`, `[data-skin="forest"]`, `[data-skin="cyberpunk"]`, `[data-skin="water"]` — přepisují hlavičku, akcentní barvy (bg-blue-600, text-blue-600), pozadí stránky atd. pomocí `!important`
+- **Water skin animace:** `@keyframes water-wave-1` (vlnící se pozadí), `water-wave-2` (jemný posun gridu), `water-shimmer` (pulzující průhlednost), `water-caustics` (pohyblivé kaustiky). Používá `::before` (vlnový overlay) a `::after` (kaustické světelné vzory) pseudoelementy na `<html>`
 
 ### Dark mode a skin strategie
 
-Třída `dark` na `<html>` elementu + atribut `data-skin` (spravováno přes `ThemeContext`). Všechny komponenty používají Tailwind `dark:` varianty. Skiny přepisují barvy pomocí `[data-skin="X"]` selektorů s `!important` v `globals.css`. Tmavé skiny (ocean, forest, cyberpunk) automaticky aktivují `dark` třídu.
+Třída `dark` na `<html>` elementu + atribut `data-skin` (spravováno přes `ThemeContext`). Všechny komponenty používají Tailwind `dark:` varianty. Skiny přepisují barvy pomocí `[data-skin="X"]` selektorů s `!important` v `globals.css`. Tmavé skiny (ocean, forest, cyberpunk, water) automaticky aktivují `dark` třídu.
 
 ### Responsive breakpointy
 

@@ -364,6 +364,7 @@ function getSkinPreviewStyle(s: Skin): React.CSSProperties {
     case 'sunset': return { background: '#fff7ed', border: '1px solid #fed7aa' };
     case 'forest': return { background: '#14532d', border: '1px solid #166534' };
     case 'cyberpunk': return { background: '#2e1065', border: '1px solid #581c87' };
+    case 'water': return { background: 'linear-gradient(180deg, #021a36 0%, #0a3252 50%, #0c3d5f 100%)', border: '1px solid #0e4d7a' };
   }
 }
 
@@ -375,5 +376,6 @@ function getSkinPreviewTextStyle(s: Skin): React.CSSProperties {
     case 'sunset': return { color: '#ea580c' };
     case 'forest': return { color: '#86efac' };
     case 'cyberpunk': return { color: '#d8b4fe' };
+    case 'water': return { color: '#7dd3fc' };
   }
 }

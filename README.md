@@ -95,9 +95,10 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Všechny popisky, tlačítka, chybové hlášky ve všech podporovaných jazycích
 
 ### Vzhled a personalizace
-- **6 skinů aplikace:** Light, Dark, Ocean, Sunset, Forest, Cyberpunk
+- **7 skinů aplikace:** Light, Dark, Ocean, Sunset, Forest, Cyberpunk, Water
   - Každý skin má vlastní barevné schéma (přebarví hlavičku, akcentní barvy, pozadí)
-  - 4 tmavé skiny (Dark, Ocean, Forest, Cyberpunk), 2 světlé (Light, Sunset)
+  - 5 tmavých skinů (Dark, Ocean, Forest, Cyberpunk, Water), 2 světlé (Light, Sunset)
+  - **Water** — animovaný skin s vlnící se vodní hladinou (CSS animace kaustik a vln)
 - Automatická detekce systémové preference (light/dark) při prvním spuštění
 - **8 vtipných avatarů** na výběr: Ninja, Astronaut, Robot, Pirát, Čaroděj, Mimozemšťan, Cool Kočka, Medvěd
   - SVG avatary zobrazené v hlavičce vedle jména uživatele
