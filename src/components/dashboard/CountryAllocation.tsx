@@ -58,15 +58,21 @@ export function CountryAllocation() {
               <div key={item.country} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`h-3 w-3 rounded-full ${COUNTRY_COLORS[i % COUNTRY_COLORS.length]}`} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://flagcdn.com/16x12/${item.countryCode.toLowerCase()}.png`}
-                    srcSet={`https://flagcdn.com/32x24/${item.countryCode.toLowerCase()}.png 2x`}
-                    width={16}
-                    height={12}
-                    alt={item.country}
-                    className="inline-block"
-                  />
+                  {item.countryCode === 'N/A' ? (
+                    <div className="flex items-center justify-center w-4 h-3 bg-gray-300 dark:bg-gray-600 rounded">
+                      <span className="text-[8px] font-bold text-gray-600 dark:text-gray-300">?</span>
+                    </div>
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={`https://flagcdn.com/16x12/${item.countryCode.toLowerCase()}.png`}
+                      srcSet={`https://flagcdn.com/32x24/${item.countryCode.toLowerCase()}.png 2x`}
+                      width={16}
+                      height={12}
+                      alt={item.country}
+                      className="inline-block"
+                    />
+                  )}
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {item.country}
                   </span>

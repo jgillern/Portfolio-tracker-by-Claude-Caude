@@ -445,7 +445,7 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   'Israel': 'IL', 'Luxembourg': 'LU', 'Czech Republic': 'CZ', 'Czechia': 'CZ',
   'Austria': 'AT', 'Poland': 'PL', 'Russia': 'RU', 'Mexico': 'MX', 'South Africa': 'ZA',
   'New Zealand': 'NZ', 'Portugal': 'PT', 'Greece': 'GR', 'Argentina': 'AR', 'Chile': 'CL',
-  'Colombia': 'CO', 'Turkey': 'TR', 'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE',
+  'Colombia': 'CO', 'Uruguay': 'UY', 'Turkey': 'TR', 'Saudi Arabia': 'SA', 'United Arab Emirates': 'AE',
   'Indonesia': 'ID', 'Malaysia': 'MY', 'Thailand': 'TH', 'Philippines': 'PH',
   'Vietnam': 'VN', 'Mongolia': 'MN', 'Ukraine': 'UA', 'Slovakia': 'SK',
 };
