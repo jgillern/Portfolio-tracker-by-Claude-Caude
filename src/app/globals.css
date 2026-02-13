@@ -388,8 +388,13 @@ body {
 [data-skin="water"] .dark\:bg-gray-900 { background-color: #021a36 !important; }
 [data-skin="water"] .dark\:border-gray-700 { border-color: #0e4d7a !important; }
 
-/* Body: deep water base + 3 large drifting glow blobs */
+/* Body: deep water base + 3 large drifting glow blobs.
+   position:relative + z-index:0 creates a stacking context so that
+   body::before/::after with z-index:-1 sit ABOVE the body background
+   but BELOW all body content — no z-index hacks on children needed. */
 [data-skin="water"] body {
+  position: relative !important;
+  z-index: 0 !important;
   background-color: #011627 !important;
   background-image:
     radial-gradient(ellipse 800px 500px, rgba(14, 77, 122, 0.45) 0%, transparent 70%),
@@ -400,11 +405,11 @@ body {
 }
 
 /* Layer 1: scrolling diagonal wave lines (subtle grid that moves) */
-[data-skin="water"]::before {
+[data-skin="water"] body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-image:
     repeating-linear-gradient(
@@ -426,11 +431,11 @@ body {
 }
 
 /* Layer 2: caustic light blobs — the dancing pool-bottom lights */
-[data-skin="water"]::after {
+[data-skin="water"] body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-image:
     radial-gradient(ellipse 180px 120px, rgba(125, 211, 252, 0.12) 0%, transparent 100%),
@@ -442,10 +447,4 @@ body {
   animation:
     water-caustics-dance 25s ease-in-out infinite,
     water-caustics-pulse 8s ease-in-out infinite;
-}
-
-/* Ensure content stays above the water effects */
-[data-skin="water"] body > * {
-  position: relative;
-  z-index: 1;
 }
