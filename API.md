@@ -1,6 +1,6 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-side proxy pro Yahoo Finance, finanční metriky a loga) a 1 autentizační. Běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-side proxy pro Yahoo Finance + Finnhub, finanční metriky a loga) a 1 autentizační. Běží na straně serveru (Next.js API Routes).
 
 ---
 
@@ -198,6 +198,7 @@ GET /api/chart?symbols={symbol1},{symbol2}&range={period}&weights={w1},{w2}
 | `1y` | 1 rok | 1 týden |
 | `5y` | 5 let | 1 měsíc |
 | `ytd` | Od začátku roku | 1 den |
+| `max` | Celá dostupná historie | 1 měsíc |
 
 ### Response — 200 OK
 
@@ -223,6 +224,11 @@ GET /api/chart?symbols={symbol1},{symbol2}&range={period}&weights={w1},{w2}
    - S custom váhami: `Σ(normalized_i × weight_i) / Σ(weight_i)`
    - Bez vah: rovný průměr všech řad
 
+**MAX period specifika:**
+- Nejprve načte celou dostupnou historii (od 1970) s měsíčním intervalem
+- Najde společné počáteční datum pro všechny symboly
+- Renormalizuje data od tohoto společného data
+
 ### Příklady
 
 Rovné váhy (2 instrumenty):
@@ -239,7 +245,7 @@ GET /api/chart?symbols=AAPL,MSFT&range=1mo&weights=60,40
 
 ## GET /api/news
 
-Vrátí finanční zprávy relevantní k zadaným symbolům.
+Vrátí finanční zprávy relevantní k zadaným symbolům. Agreguje data ze dvou zdrojů: Yahoo Finance a Finnhub API.
 
 ### Request
 
@@ -258,7 +264,7 @@ GET /api/news?symbols={symbol1},{symbol2},...
   {
     "uuid": "abc-123-def",
     "title": "Apple Reports Record Q4 Revenue",
-    "summary": "",
+    "summary": "Apple announced...",
     "thumbnailUrl": "https://example.com/thumb.jpg",
     "link": "https://finance.yahoo.com/news/...",
     "publisher": "Reuters",
@@ -270,22 +276,40 @@ GET /api/news?symbols={symbol1},{symbol2},...
 
 | Pole | Typ | Popis |
 |---|---|---|
-| `uuid` | string | Unikátní identifikátor zprávy |
+| `uuid` | string | Unikátní identifikátor zprávy (prefix `finnhub-` u Finnhub článků) |
 | `title` | string | Nadpis zprávy |
-| `summary` | string | Krátký popis (může být prázdný) |
+| `summary` | string | Krátký popis (Finnhub často doplní shrnutí, které Yahoo neposkytuje) |
 | `thumbnailUrl` | string? | URL náhledového obrázku (nebo null) |
 | `link` | string | URL na plný článek |
 | `publisher` | string | Název vydavatele (Reuters, Bloomberg...) |
 | `publishedAt` | string | ISO 8601 datum publikace |
 | `relatedSymbols` | string[] | Symboly, ke kterým se zpráva vztahuje |
 
+### Zdroje dat
+
+1. **Yahoo Finance** (primární) — pro každý symbol hledá až 100 článků přes `yf.search()`, filtruje podle `relatedTickers` (striktní — článek musí mít symbol v `relatedTickers`)
+2. **Finnhub** (sekundární, volitelný) — vyžaduje env proměnnou `FINNHUB_API_KEY`. Stahuje zprávy za posledních 7 dní pro každý symbol
+
+### Deduplikace
+
+- **Uvnitř Yahoo:** Podle UUID článku — při výskytu u více symbolů se slučují `relatedSymbols`
+- **Cross-source (Yahoo ↔ Finnhub):** Podle normalizované URL (bez protokolu, www, trailing slash). Pokud Finnhub najde článek, který Yahoo už má, sloučí se symboly a doplní se chybějící shrnutí
+
+### Náhledové obrázky (klient)
+
+Klientská komponenta `NewsCard` používá tříúrovňový fallback:
+1. **API thumbnail** — obrázek vrácený Yahoo Finance nebo Finnhub
+2. **Logo vydavatele** — Clearbit Logo API (`https://logo.clearbit.com/{domain}?size=96`), doména extrahována z URL článku
+3. **SVG ikona** — generická ikona novin
+
 ### Poznámky
 
-- Zpracovává max 10 symbolů (pro omezení API volání)
-- Pro každý symbol hledá max 5 zpráv
-- Deduplikace: pokud se stejná zpráva vztahuje k více symbolům, slučuje `relatedSymbols`
+- Zpracovává všechny symboly v portfoliu (bez limitu)
+- Pro každý symbol hledá až 100 článků z Yahoo Finance
+- Finnhub: stahuje zprávy za posledních 7 dní (timeout 10s per symbol)
 - Seřazeno od nejnovějších
-- Vrací max 20 zpráv celkem
+- Klient zobrazuje 20 článků na stránku s tlačítkem „Zobrazit další"
+- Pokud `FINNHUB_API_KEY` není nastavený, používá se pouze Yahoo Finance
 
 ---
 
@@ -496,8 +520,8 @@ Všechny endpointy využívají server-side in-memory cache.
 
 ```
 Request → Cache hit?
-  ├── Ano → Vrať cached data (bez Yahoo API volání)
-  └── Ne  → Zavolej Yahoo API → Ulož do cache → Vrať data
+  ├── Ano → Vrať cached data (bez API volání)
+  └── Ne  → Zavolej Yahoo/Finnhub API → Ulož do cache → Vrať data
 ```
 
 | Endpoint | Cache TTL | Klíč formát |

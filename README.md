@@ -22,7 +22,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
   - Všechny hodnoty vedle sebe pro okamžitý přehled
   - Zelená/červená barva podle zhodnocení
 - **Graf výkonnosti** — interaktivní čárový graf (Recharts) zobrazující vážený vývoj portfolia
-  - Časová období: 1D, 1T, 1M, 1R, 5L, YTD
+  - Časová období: 1D, 1T, 1M, 1R, 5L, YTD, MAX
   - Zelená/červená barva podle celkového vývoje
   - **Porovnání s jinými instrumenty** — možnost přidat až 5 srovnávacích instrumentů
     - Tlačítko "+ Porovnat" pro vyhledání a přidání instrumentu
@@ -72,12 +72,20 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 
 ### Zprávy
 - Sekce s finančními zprávami relevantními k instrumentům v portfoliu
+- **Dva zdroje zpráv:** Yahoo Finance + Finnhub API (volitelné, vyžaduje `FINNHUB_API_KEY`)
+  - Články z obou zdrojů se deduplikují podle URL
+  - Finnhub obohacuje shrnutí článků, které Yahoo neposkytuje
 - **Multi-select filtr instrumentů** — dropdown v hlavičce sekce umožňuje filtrovat zprávy podle konkrétních instrumentů
   - Defaultně vybrány všechny instrumenty v portfoliu
   - Checkboxy s logem a názvem instrumentu
   - Tlačítko „Vybrat vše" / „Zrušit výběr"
   - Dynamický popisek: „Všechny instrumenty", „2 instrumentů", konkrétní symboly (1-2)
-- Každá zpráva: náhledový obrázek, nadpis, krátký text, vydavatel, datum
+- Každá zpráva: náhledový obrázek (nebo logo vydavatele přes Clearbit), nadpis, krátký text, vydavatel, datum
+- **Fallback náhledových obrázků:**
+  1. Thumbnail z API (Finnhub / Yahoo Finance)
+  2. Logo vydavatele přes Clearbit Logo API (doména extrahována z URL článku)
+  3. SVG ikona novin jako poslední fallback
+- Stránkování po 20 článcích s tlačítkem „Zobrazit další"
 - Proklik na zdrojový článek (nová karta)
 - Aktualizace při změně portfolia nebo filtru
 
@@ -241,7 +249,10 @@ Vytvořte soubor `.env.local` v kořenu projektu:
 ```
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+FINNHUB_API_KEY=your-finnhub-api-key          # volitelné — zapne Finnhub jako druhý zdroj zpráv
 ```
+
+**Finnhub API klíč** je volitelný — bez něj aplikace používá pouze Yahoo Finance jako zdroj zpráv. Pro získání klíče se zaregistrujte na [finnhub.io](https://finnhub.io/register) (free tier postačuje).
 
 ### 3. Vytvořte databázové tabulky
 V Supabase Dashboard → SQL Editor spusťte SQL schema (viz `TECHNICAL.md` sekce "Databázové schéma").
