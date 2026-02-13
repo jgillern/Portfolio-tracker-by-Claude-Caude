@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChartDataPoint, TimePeriod } from '@/types/market';
 
-export function useChart(symbols: string[], period: TimePeriod, weights?: number[], sinceDate?: string) {
+export function useChart(symbols: string[], period: TimePeriod, weights?: number[]) {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +25,6 @@ export function useChart(symbols: string[], period: TimePeriod, weights?: number
       if (weights && weights.length > 0) {
         url += `&weights=${weightsKey}`;
       }
-      if (period === 'max' && sinceDate) {
-        url += `&since=${encodeURIComponent(sinceDate)}`;
-      }
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch chart data');
       const chartData = await res.json();
@@ -37,7 +34,7 @@ export function useChart(symbols: string[], period: TimePeriod, weights?: number
     } finally {
       setIsLoading(false);
     }
-  }, [symbolsKey, period, weightsKey, sinceDate]);
+  }, [symbolsKey, period, weightsKey]);
 
   useEffect(() => {
     fetchChart();

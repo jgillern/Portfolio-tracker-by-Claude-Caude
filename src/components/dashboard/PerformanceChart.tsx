@@ -55,20 +55,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
     ? getPortfolioWeights(activePortfolio)
     : [];
 
-  // For MAX period: find the latest addedAt among all instruments (newest holding)
-  const maxSinceDate = React.useMemo(() => {
-    if (!activePortfolio || activePortfolio.instruments.length === 0) return undefined;
-    const dates = activePortfolio.instruments
-      .map((i) => i.addedAt)
-      .filter(Boolean)
-      .map((d) => new Date(d).getTime());
-    if (dates.length === 0) return undefined;
-    return new Date(Math.max(...dates)).toISOString();
-  }, [activePortfolio]);
-
-  const sinceDate = period === 'max' ? maxSinceDate : undefined;
-
-  const { data: portfolioData, isLoading: portfolioLoading, refetch } = useChart(symbols, period, weights, sinceDate);
+  const { data: portfolioData, isLoading: portfolioLoading, refetch } = useChart(symbols, period, weights);
 
   // Fetch comparison data
   const [comparisonData, setComparisonData] = useState<Record<string, ChartDataPoint[]>>({});
@@ -86,11 +73,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
 
       for (const instrument of comparisonInstruments) {
         try {
-          let compUrl = `/api/chart?symbols=${instrument.symbol}&range=${period}`;
-          if (period === 'max' && sinceDate) {
-            compUrl += `&since=${encodeURIComponent(sinceDate)}`;
-          }
-          const res = await fetch(compUrl);
+          const res = await fetch(`/api/chart?symbols=${instrument.symbol}&range=${period}`);
           if (res.ok) {
             const data = await res.json();
             results[instrument.symbol] = data;
@@ -105,7 +88,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
     };
 
     fetchComparisonData();
-  }, [comparisonInstruments, period, sinceDate]);
+  }, [comparisonInstruments, period]);
 
   // Refetch chart when refreshSignal changes (manual refresh from parent)
   const prevSignal = useRef(refreshSignal);
