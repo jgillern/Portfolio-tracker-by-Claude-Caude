@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Spinner } from '@/components/ui/Spinner';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -93,10 +92,9 @@ export default function LoginPage() {
 
   return (
     <div className="login-bg min-h-screen flex flex-col">
-      {/* Top controls */}
-      <div className="flex justify-end items-center gap-2 p-4">
+      {/* Top controls – z-20 keeps the language dropdown above the avatar overlay */}
+      <div className="relative z-20 flex justify-end items-center gap-2 p-4">
         <LanguageToggle />
-        <ThemeToggle />
       </div>
 
       {/* Center content */}
@@ -109,7 +107,7 @@ export default function LoginPage() {
         </div>
 
         {/* Businessman avatars peeking from sides */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-auto hidden lg:block">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
           {/* Left side - peeking from left */}
           <div className="absolute top-[10%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '0.5s' }}>
             <ElonMusk className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left elon-hover cursor-pointer" />

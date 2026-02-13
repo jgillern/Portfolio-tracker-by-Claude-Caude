@@ -8,7 +8,6 @@ import { usePortfolio } from '@/context/PortfolioContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { SettingsModal } from '@/components/settings/SettingsModal';
@@ -79,7 +78,6 @@ export function Header() {
                 <PortfolioSwitcher onCreateNew={() => setShowCreate(true)} />
               )}
               <LanguageToggle />
-              <ThemeToggle />
 
               {/* User menu with avatar + name */}
               <div className="relative" ref={menuRef}>

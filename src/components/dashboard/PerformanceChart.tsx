@@ -9,7 +9,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Label,
+  ReferenceLine,
 } from 'recharts';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
@@ -121,16 +121,16 @@ export function PerformanceChart({ refreshSignal }: Props) {
 
     const dataMap = new Map<number, any>();
 
-    // Add portfolio data
+    // Add portfolio data (convert from index-100 to percentage change)
     portfolioData.forEach((d) => {
-      dataMap.set(d.timestamp, { time: d.timestamp, portfolio: d.value });
+      dataMap.set(d.timestamp, { time: d.timestamp, portfolio: d.value - 100 });
     });
 
-    // Add comparison data
+    // Add comparison data (convert from index-100 to percentage change)
     Object.entries(comparisonData).forEach(([symbol, data]) => {
       data.forEach((d) => {
         const existing = dataMap.get(d.timestamp) || { time: d.timestamp };
-        existing[symbol] = d.value;
+        existing[symbol] = d.value - 100;
         dataMap.set(d.timestamp, existing);
       });
     });
@@ -154,13 +154,11 @@ export function PerformanceChart({ refreshSignal }: Props) {
     });
   };
 
-  // Calculate performance percentages
+  // Get final performance percentage (data is already in % change from 0)
   const calculatePerformance = (data: any[], key: string) => {
     const values = data.filter(d => d[key] != null).map(d => d[key]);
     if (values.length < 2) return null;
-    const first = values[0];
-    const last = values[values.length - 1];
-    return ((last - first) / first) * 100;
+    return values[values.length - 1];
   };
 
   const portfolioPerformance = calculatePerformance(mergedChartData, 'portfolio');
@@ -283,8 +281,8 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 tick={{ fontSize: 11, fill: '#9CA3AF' }}
                 axisLine={false}
                 tickLine={false}
-                domain={['auto', 'auto']}
-                tickFormatter={(v: number) => v.toFixed(1)}
+                domain={[(min: number) => Math.min(min, 0), (max: number) => Math.max(max, 0)]}
+                tickFormatter={(v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`}
               />
               <Tooltip
                 contentStyle={{
@@ -296,9 +294,11 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 labelFormatter={(label) => formatTime(Number(label))}
                 formatter={(value: any, name?: string) => {
                   const displayName = name === 'portfolio' ? t('dashboard.portfolio') : (name || '');
-                  return [Number(value).toFixed(2), displayName];
+                  const v = Number(value);
+                  return [`${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, displayName];
                 }}
               />
+              <ReferenceLine y={0} stroke="#6B7280" strokeDasharray="3 3" opacity={0.5} />
               <Line
                 type="monotone"
                 dataKey="portfolio"
