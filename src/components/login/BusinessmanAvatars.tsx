@@ -88,90 +88,78 @@ export const ElonMusk: React.FC<AvatarProps> = ({ className = '' }) => (
   </svg>
 );
 
-// Jeff Bezos - Polished bald dome, tanned, muscular, intense eyes, mega-laugh, villain energy
+// Jeff Bezos - Smooth bald head, light skin, narrow face, friendly warm smile, suit & tie
 export const JeffBezos: React.FC<AvatarProps> = ({ className = '' }) => (
   <svg className={className} viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Egg/bullet-shaped bald head — wider top, tapers to strong jaw */}
-    <path d="M 28 78 Q 26 40 50 24 Q 65 14 80 13 Q 95 14 110 24 Q 134 40 132 78 L 130 105 Q 126 125 112 136 Q 96 146 80 147 Q 64 146 48 136 Q 34 125 30 105 Z" fill="#D4A56A"/>
+    {/* Narrow, elongated bald head — smooth, elegant shape */}
+    <path d="M 36 78 Q 34 45 52 30 Q 66 20 80 19 Q 94 20 108 30 Q 126 45 124 78 L 122 105 Q 118 125 108 135 Q 94 145 80 146 Q 66 145 52 135 Q 42 125 38 105 Z" fill="#F5D0A8"/>
 
-    {/* MASSIVE shine on bald dome — his trademark */}
-    <ellipse cx="72" cy="32" rx="32" ry="18" fill="#FFFFFF" opacity="0.45"/>
-    <ellipse cx="68" cy="27" rx="20" ry="13" fill="#FFFFFF" opacity="0.65"/>
-    <ellipse cx="64" cy="23" rx="10" ry="7" fill="#FFFFFF" opacity="0.85"/>
-    {/* Secondary highlight */}
-    <ellipse cx="95" cy="38" rx="12" ry="8" fill="#FFFFFF" opacity="0.25"/>
+    {/* Smooth bald dome shine — clean, polished */}
+    <ellipse cx="74" cy="32" rx="28" ry="14" fill="#FFFFFF" opacity="0.35"/>
+    <ellipse cx="70" cy="28" rx="16" ry="10" fill="#FFFFFF" opacity="0.5"/>
+    <ellipse cx="67" cy="25" rx="7" ry="5" fill="#FFFFFF" opacity="0.7"/>
 
-    {/* Big sticking-out ears */}
-    <ellipse cx="24" cy="84" rx="13" ry="19" fill="#D4A56A"/>
-    <ellipse cx="136" cy="84" rx="13" ry="19" fill="#D4A56A"/>
-    <ellipse cx="24" cy="84" rx="6" ry="11" fill="#C09050" opacity="0.35"/>
-    <ellipse cx="136" cy="84" rx="6" ry="11" fill="#C09050" opacity="0.35"/>
+    {/* Ears — proportional, not too big */}
+    <ellipse cx="32" cy="84" rx="9" ry="15" fill="#F5D0A8"/>
+    <ellipse cx="128" cy="84" rx="9" ry="15" fill="#F5D0A8"/>
+    <ellipse cx="32" cy="84" rx="4" ry="8" fill="#E0B888" opacity="0.3"/>
+    <ellipse cx="128" cy="84" rx="4" ry="8" fill="#E0B888" opacity="0.3"/>
 
-    {/* Eyes — squinted, intense, almost villainous */}
-    <ellipse cx="60" cy="76" rx="10" ry="5.5" fill="#FFFFFF"/>
-    <ellipse cx="100" cy="76" rx="10" ry="5.5" fill="#FFFFFF"/>
-    <circle cx="62" cy="76" r="4.5" fill="#3A2510"/>
-    <circle cx="102" cy="76" r="4.5" fill="#3A2510"/>
-    <circle cx="63" cy="75" r="2.2" fill="#000"/>
-    <circle cx="103" cy="75" r="2.2" fill="#000"/>
-    <circle cx="64" cy="74" r="0.8" fill="#FFFFFF"/>
-    <circle cx="104" cy="74" r="0.8" fill="#FFFFFF"/>
-    {/* Deep crow's-feet laugh lines */}
-    <path d="M 48 72 Q 45 75 46 79" stroke="#B88A50" strokeWidth="1.2" fill="none"/>
-    <path d="M 46 73 Q 43 76 44 80" stroke="#B88A50" strokeWidth="1" fill="none"/>
-    <path d="M 45 74 Q 42 77 42 81" stroke="#B88A50" strokeWidth="0.8" fill="none"/>
-    <path d="M 112 72 Q 115 75 114 79" stroke="#B88A50" strokeWidth="1.2" fill="none"/>
-    <path d="M 114 73 Q 117 76 116 80" stroke="#B88A50" strokeWidth="1" fill="none"/>
-    <path d="M 115 74 Q 118 77 118 81" stroke="#B88A50" strokeWidth="0.8" fill="none"/>
+    {/* Eyes — friendly, warm, open */}
+    <ellipse cx="62" cy="78" rx="9" ry="7" fill="#FFFFFF"/>
+    <ellipse cx="98" cy="78" rx="9" ry="7" fill="#FFFFFF"/>
+    <circle cx="63" cy="79" r="5" fill="#4A3520"/>
+    <circle cx="99" cy="79" r="5" fill="#4A3520"/>
+    <circle cx="64" cy="78" r="2.5" fill="#1A1A1A"/>
+    <circle cx="100" cy="78" r="2.5" fill="#1A1A1A"/>
+    <circle cx="65" cy="77" r="0.8" fill="#FFFFFF"/>
+    <circle cx="101" cy="77" r="0.8" fill="#FFFFFF"/>
+    {/* Light crow's feet — friendly wrinkles */}
+    <path d="M 50 76 Q 48 78 49 81" stroke="#D8B888" strokeWidth="1" fill="none" opacity="0.4"/>
+    <path d="M 110 76 Q 112 78 111 81" stroke="#D8B888" strokeWidth="1" fill="none" opacity="0.4"/>
 
-    {/* Bold arched brows — expressive */}
-    <path d="M 46 62 Q 54 55 62 57 Q 68 58 73 63" stroke="#3A2510" strokeWidth="4" fill="none" strokeLinecap="round"/>
-    <path d="M 114 62 Q 106 55 98 57 Q 92 58 87 63" stroke="#3A2510" strokeWidth="4" fill="none" strokeLinecap="round"/>
+    {/* Thin, neat eyebrows */}
+    <path d="M 50 68 Q 57 64 64 66 Q 70 67 73 70" stroke="#8A7A6A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    <path d="M 110 68 Q 103 64 96 66 Q 90 67 87 70" stroke="#8A7A6A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
 
-    {/* Nose — broad, flared nostrils */}
-    <path d="M 80 72 L 80 95" stroke="#B88A50" strokeWidth="2.5"/>
-    <path d="M 71 98 Q 76 103 80 104 Q 84 103 89 98" fill="#C89860"/>
-    <circle cx="73" cy="97" r="4" fill="#C89860"/>
-    <circle cx="87" cy="97" r="4" fill="#C89860"/>
+    {/* Nose — refined, straight */}
+    <path d="M 80 76 L 80 96" stroke="#D8B888" strokeWidth="2"/>
+    <path d="M 74 98 Q 77 102 80 103 Q 83 102 86 98" fill="#E0B888"/>
 
-    {/* HUGE open-mouth Bezos LAUGH — ear to ear */}
-    <path d="M 44 108 Q 80 145 116 108" fill="#7A2020"/>
-    <path d="M 44 108 Q 80 140 116 108" fill="#3A0A0A"/>
-    {/* Top teeth — big, white, perfect */}
-    <rect x="54" y="110" width="8" height="8" rx="1" fill="#FFFFFF"/>
-    <rect x="63" y="109" width="9" height="10" rx="1" fill="#FFFFFF"/>
-    <rect x="73" y="108" width="8" height="11" rx="1" fill="#FFFFFF"/>
-    <rect x="82" y="108" width="8" height="11" rx="1" fill="#FFFFFF"/>
-    <rect x="91" y="109" width="9" height="10" rx="1" fill="#FFFFFF"/>
-    <rect x="101" y="110" width="8" height="8" rx="1" fill="#FFFFFF"/>
-    {/* Tongue */}
-    <ellipse cx="80" cy="132" rx="16" ry="9" fill="#D04040"/>
+    {/* Nasolabial folds — subtle */}
+    <path d="M 66 98 Q 62 108 60 116" stroke="#D8B888" strokeWidth="1" opacity="0.4"/>
+    <path d="M 94 98 Q 98 108 100 116" stroke="#D8B888" strokeWidth="1" opacity="0.4"/>
 
-    {/* Strong angular jaw */}
-    <path d="M 48 134 Q 64 148 80 150 Q 96 148 112 134" stroke="#B88A50" strokeWidth="1.5" fill="none" opacity="0.3"/>
+    {/* Warm, friendly closed-mouth smile — slight smirk */}
+    <path d="M 58 115 Q 68 122 80 122 Q 92 122 102 115" stroke="#A06060" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    {/* Slight smile dimples */}
+    <circle cx="56" cy="116" r="2" fill="#D8B888" opacity="0.3"/>
+    <circle cx="104" cy="116" r="2" fill="#D8B888" opacity="0.3"/>
 
-    {/* THICK muscular neck */}
-    <path d="M 54 148 L 50 175 Q 50 175 80 180 Q 110 175 110 175 L 106 148" fill="#D4A56A"/>
-    {/* Neck tendons / veins */}
-    <path d="M 64 150 L 62 172" stroke="#B88A50" strokeWidth="1.5" opacity="0.3"/>
-    <path d="M 96 150 L 98 172" stroke="#B88A50" strokeWidth="1.5" opacity="0.3"/>
-    {/* Trapezius muscles hint */}
-    <path d="M 50 175 Q 40 178 30 180" stroke="#B88A50" strokeWidth="2" opacity="0.2"/>
-    <path d="M 110 175 Q 120 178 130 180" stroke="#B88A50" strokeWidth="2" opacity="0.2"/>
+    {/* Clean chin */}
+    <path d="M 60 138 Q 70 146 80 147 Q 90 146 100 138" stroke="#D8B888" strokeWidth="1" fill="none" opacity="0.2"/>
 
-    {/* Tight blue polo shirt — casual billionaire */}
-    <path d="M 30 175 Q 44 165 54 170 L 80 162 L 106 170 Q 116 165 130 175 L 130 220 L 30 220 Z" fill="#2C5AA0"/>
-    {/* Polo collar */}
-    <path d="M 62 170 Q 72 162 80 160 Q 88 162 98 170" fill="#2468B8"/>
-    <path d="M 76 160 L 76 172" stroke="#1A4888" strokeWidth="1"/>
-    <path d="M 84 160 L 84 172" stroke="#1A4888" strokeWidth="1"/>
-    {/* Short sleeve hems — showing biceps */}
-    <path d="M 30 178 Q 38 175 44 178" stroke="#2468B8" strokeWidth="2"/>
-    <path d="M 130 178 Q 122 175 116 178" stroke="#2468B8" strokeWidth="2"/>
+    {/* Neck */}
+    <rect x="66" y="145" width="28" height="22" fill="#F5D0A8" rx="3"/>
 
-    {/* Amazon smile arrow — VERY PROMINENT */}
-    <path d="M 46 197 Q 80 215 114 197" stroke="#FF9900" strokeWidth="5" fill="none" strokeLinecap="round"/>
-    <path d="M 107 195 L 114 197 L 110 204" stroke="#FF9900" strokeWidth="4" fill="none" strokeLinecap="round"/>
+    {/* Blue-gray suit with lapels */}
+    <path d="M 34 165 Q 48 156 66 162 L 80 154 L 94 162 Q 112 156 126 165 L 126 220 L 34 220 Z" fill="#3A4A5E"/>
+    {/* Suit lapels */}
+    <path d="M 66 162 L 73 173 L 80 154 L 87 173 L 94 162" fill="#334458"/>
+    {/* White shirt */}
+    <path d="M 73 173 L 80 154 L 87 173 L 84 182 L 80 192 L 76 182 Z" fill="#FFFFFF"/>
+
+    {/* Patterned tie — dark blue */}
+    <path d="M 78 168 L 80 164 L 82 168 L 80 198 Z" fill="#1A2A5E"/>
+    <path d="M 77 172 L 80 168 L 83 172" fill="#243470"/>
+    {/* Tie pattern dots */}
+    <circle cx="80" cy="178" r="0.8" fill="#5A7ABE" opacity="0.6"/>
+    <circle cx="80" cy="184" r="0.8" fill="#5A7ABE" opacity="0.6"/>
+    <circle cx="80" cy="190" r="0.8" fill="#5A7ABE" opacity="0.6"/>
+
+    {/* Amazon smile arrow */}
+    <path d="M 48 205 Q 80 218 112 205" stroke="#FF9900" strokeWidth="4" fill="none" strokeLinecap="round"/>
+    <path d="M 106 203 L 112 205 L 109 211" stroke="#FF9900" strokeWidth="3" fill="none" strokeLinecap="round"/>
   </svg>
 );
 
@@ -340,79 +328,106 @@ export const JeromePowell: React.FC<AvatarProps> = ({ className = '' }) => (
   </svg>
 );
 
-// Aleš Michl - ČNB governor, young, hipster glasses, sharp features
+// Aleš Michl - ČNB governor, stocky build, wide round face, buzzcut, full thick beard, no glasses, serious
 export const AlesMichl: React.FC<AvatarProps> = ({ className = '' }) => (
   <svg className={className} viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Lean, angular face - younger looking */}
-    <path d="M 42 75 Q 40 50 55 36 Q 68 27 80 26 Q 92 27 105 36 Q 120 50 118 75 L 116 100 Q 114 118 106 128 L 98 138 Q 88 144 80 144 Q 72 144 62 138 L 54 128 Q 46 118 44 100 Z" fill="#F5D4B0"/>
+    {/* Wide, round face — stocky guy */}
+    <path d="M 34 78 Q 32 48 50 34 Q 64 24 80 23 Q 96 24 110 34 Q 128 48 126 78 L 124 106 Q 122 124 112 134 Q 98 146 80 147 Q 62 146 48 134 Q 38 124 36 106 Z" fill="#F0C8A0"/>
 
-    {/* Dark neat hair - modern cut */}
-    <path d="M 50 36 Q 68 16 80 15 Q 92 16 110 36 Q 100 20 80 17 Q 60 20 50 36 Z" fill="#2A1A0A"/>
-    {/* Volume on top - neat, modern */}
-    <path d="M 46 40 Q 55 18 70 14 Q 76 13 80 13 Q 84 13 90 14 Q 105 18 114 40 Q 105 24 80 18 Q 55 24 46 40 Z" fill="#2A1A0A"/>
-    {/* Clean sides */}
-    <path d="M 38 50 L 38 78 Q 40 62 44 50 Z" fill="#2A1A0A"/>
-    <path d="M 122 50 L 122 78 Q 120 62 116 50 Z" fill="#2A1A0A"/>
-    {/* Slightly textured top */}
-    <path d="M 56 22 Q 68 14 80 13 Q 92 14 104 22" stroke="#1A0A00" strokeWidth="3" fill="none"/>
+    {/* Short buzzcut hair — fade on sides, slightly longer on top */}
+    <path d="M 50 34 Q 64 20 80 18 Q 96 20 110 34 Q 100 22 80 20 Q 60 22 50 34 Z" fill="#3A2A1A"/>
+    {/* Very short top — texture lines */}
+    <path d="M 52 32 Q 66 18 80 16 Q 94 18 108 32 Q 96 20 80 18 Q 64 20 52 32 Z" fill="#3A2A1A"/>
+    <path d="M 58 26 Q 68 20 80 19" stroke="#2A1A0A" strokeWidth="2" fill="none" opacity="0.5"/>
+    <path d="M 102 26 Q 92 20 80 19" stroke="#2A1A0A" strokeWidth="2" fill="none" opacity="0.5"/>
+    {/* Fade on sides — very short, skin showing through */}
+    <path d="M 32 52 Q 34 42 40 36" fill="#3A2A1A" opacity="0.3"/>
+    <path d="M 128 52 Q 126 42 120 36" fill="#3A2A1A" opacity="0.3"/>
 
-    {/* Ears */}
-    <ellipse cx="36" cy="80" rx="8" ry="13" fill="#F5D4B0"/>
-    <ellipse cx="124" cy="80" rx="8" ry="13" fill="#F5D4B0"/>
+    {/* Ears — not too big */}
+    <ellipse cx="30" cy="82" rx="8" ry="14" fill="#F0C8A0"/>
+    <ellipse cx="130" cy="82" rx="8" ry="14" fill="#F0C8A0"/>
+    <ellipse cx="30" cy="82" rx="4" ry="8" fill="#D8B080" opacity="0.3"/>
+    <ellipse cx="130" cy="82" rx="4" ry="8" fill="#D8B080" opacity="0.3"/>
 
-    {/* THICK-RIMMED HIPSTER GLASSES - his most distinctive feature */}
-    <rect x="44" y="70" width="28" height="22" rx="4" fill="none" stroke="#1A1A1A" strokeWidth="5"/>
-    <rect x="88" y="70" width="28" height="22" rx="4" fill="none" stroke="#1A1A1A" strokeWidth="5"/>
-    <path d="M 72 81 Q 80 85 88 81" stroke="#1A1A1A" strokeWidth="4" fill="none"/>
-    <line x1="44" y1="80" x2="36" y2="78" stroke="#1A1A1A" strokeWidth="3"/>
-    <line x1="116" y1="80" x2="124" y2="78" stroke="#1A1A1A" strokeWidth="3"/>
+    {/* Eyes — serious, slightly narrowed, NO glasses */}
+    <ellipse cx="62" cy="78" rx="9" ry="6.5" fill="#FFFFFF"/>
+    <ellipse cx="98" cy="78" rx="9" ry="6.5" fill="#FFFFFF"/>
+    <circle cx="63" cy="78" r="5" fill="#5A7A6A"/>
+    <circle cx="99" cy="78" r="5" fill="#5A7A6A"/>
+    <circle cx="64" cy="77" r="2.5" fill="#1A1A1A"/>
+    <circle cx="100" cy="77" r="2.5" fill="#1A1A1A"/>
+    <circle cx="65" cy="76" r="0.8" fill="#FFFFFF"/>
+    <circle cx="101" cy="76" r="0.8" fill="#FFFFFF"/>
+    {/* Slightly heavy lids — serious expression */}
+    <path d="M 52 76 Q 62 72 72 76" fill="#E0B888" opacity="0.4"/>
+    <path d="M 88 76 Q 98 72 108 76" fill="#E0B888" opacity="0.4"/>
 
-    {/* Eyes behind glasses - sharp, intelligent */}
-    <ellipse cx="58" cy="81" rx="8" ry="7" fill="#FFFFFF"/>
-    <ellipse cx="102" cy="81" rx="8" ry="7" fill="#FFFFFF"/>
-    <circle cx="59" cy="82" r="5" fill="#4A6A7A"/>
-    <circle cx="103" cy="82" r="5" fill="#4A6A7A"/>
-    <circle cx="60" cy="81" r="2.5" fill="#1A1A1A"/>
-    <circle cx="104" cy="81" r="2.5" fill="#1A1A1A"/>
-    <circle cx="61" cy="80" r="1" fill="#FFFFFF"/>
-    <circle cx="105" cy="80" r="1" fill="#FFFFFF"/>
+    {/* Thick, dark, straight eyebrows — stern */}
+    <path d="M 48 67 Q 56 63 64 65 Q 70 66 74 69" stroke="#2A1A0A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    <path d="M 112 67 Q 104 63 96 65 Q 90 66 86 69" stroke="#2A1A0A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    {/* Slight furrow between brows */}
+    <path d="M 76 66 L 75 72" stroke="#D0B080" strokeWidth="1" opacity="0.4"/>
+    <path d="M 84 66 L 85 72" stroke="#D0B080" strokeWidth="1" opacity="0.4"/>
 
-    {/* Clean eyebrows */}
-    <path d="M 47 65 Q 55 60 63 62" stroke="#2A1A0A" strokeWidth="3" fill="none"/>
-    <path d="M 113 65 Q 105 60 97 62" stroke="#2A1A0A" strokeWidth="3" fill="none"/>
+    {/* Nose — broad, strong */}
+    <path d="M 80 76 L 80 97" stroke="#D8B080" strokeWidth="2.5"/>
+    <path d="M 73 99 Q 77 103 80 104 Q 83 103 87 99" fill="#E0B888"/>
+    <circle cx="75" cy="98" r="3" fill="#E0B888"/>
+    <circle cx="85" cy="98" r="3" fill="#E0B888"/>
 
-    {/* Nose - refined */}
-    <path d="M 80 78 L 80 98" stroke="#D8B890" strokeWidth="2"/>
-    <path d="M 74 100 Q 77 103 80 104 Q 83 103 86 100" fill="#E0BE90"/>
+    {/* FULL THICK BEARD — his most distinctive feature */}
+    {/* Beard mass — covers lower cheeks, jaw and chin */}
+    <path d="M 40 95 Q 38 108 42 122 Q 48 138 60 148 Q 70 154 80 155 Q 90 154 100 148 Q 112 138 118 122 Q 122 108 120 95" fill="#2A1A0A" opacity="0.7"/>
+    {/* Beard texture — thick, somewhat unkempt */}
+    <path d="M 44 100 Q 42 112 46 126" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 52 102 Q 50 115 52 130" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 60 104 Q 58 118 60 138" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 70 106 Q 68 120 70 145" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 80 106 Q 80 122 80 150" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 90 106 Q 92 120 90 145" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 100 104 Q 102 118 100 138" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 108 102 Q 110 115 108 130" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    <path d="M 116 100 Q 118 112 114 126" stroke="#1A0A00" strokeWidth="1" opacity="0.3"/>
+    {/* Beard edge — slightly wavy */}
+    <path d="M 42 122 Q 50 140 60 148 Q 70 154 80 155 Q 90 154 100 148 Q 110 140 118 122" stroke="#2A1A0A" strokeWidth="2" fill="none" opacity="0.4"/>
+    {/* Thick mustache */}
+    <path d="M 62 102 Q 70 108 80 109 Q 90 108 98 102" fill="#2A1A0A" opacity="0.8"/>
+    <path d="M 64 103 Q 72 107 80 108 Q 88 107 96 103" fill="#1A0A00" opacity="0.5"/>
 
-    {/* Professional, slight smile */}
-    <path d="M 64 115 Q 72 120 80 120 Q 88 120 96 115" stroke="#906060" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    {/* Stern, tight-lipped mouth — barely visible through beard */}
+    <path d="M 65 114 Q 73 118 80 118 Q 87 118 95 114" stroke="#7A4040" strokeWidth="2" fill="none" strokeLinecap="round"/>
 
-    {/* Clean-shaven, sharp jawline */}
-    <path d="M 54 128 Q 67 142 80 144 Q 93 142 106 128" fill="#E8C8A0" opacity="0.15"/>
+    {/* Slight double chin hint below beard */}
+    <path d="M 60 148 Q 70 156 80 157 Q 90 156 100 148" stroke="#D8B080" strokeWidth="1" fill="none" opacity="0.15"/>
 
-    {/* Neck */}
-    <rect x="68" y="144" width="24" height="22" fill="#F5D4B0" rx="3"/>
+    {/* Thick, stocky neck */}
+    <path d="M 58 150 L 56 170 Q 56 170 80 175 Q 104 170 104 170 L 102 150" fill="#F0C8A0"/>
+    {/* Neck width shows stocky build */}
+    <path d="M 62 152 L 60 168" stroke="#D8B080" strokeWidth="1" opacity="0.2"/>
+    <path d="M 98 152 L 100 168" stroke="#D8B080" strokeWidth="1" opacity="0.2"/>
 
-    {/* Dark modern suit */}
-    <path d="M 38 164 Q 50 156 68 162 L 80 154 L 92 162 Q 110 156 122 164 L 122 220 L 38 220 Z" fill="#1A1A2E"/>
-    {/* Lapels */}
-    <path d="M 68 162 L 74 172 L 80 154 L 86 172 L 92 162" fill="#141428"/>
+    {/* Dark suit — serious, formal */}
+    <path d="M 32 168 Q 46 158 58 164 L 80 155 L 102 164 Q 114 158 128 168 L 128 220 L 32 220 Z" fill="#1A1A2E"/>
+    {/* Suit lapels */}
+    <path d="M 58 164 L 68 175 L 80 155 L 92 175 L 102 164" fill="#141428"/>
     {/* White shirt */}
-    <path d="M 74 172 L 80 154 L 86 172 L 83 180 L 80 190 L 77 180 Z" fill="#FFFFFF"/>
+    <path d="M 68 175 L 80 155 L 92 175 L 88 184 L 80 194 L 72 184 Z" fill="#FFFFFF"/>
 
-    {/* Czech flag tie - red, white, blue */}
-    <path d="M 78 168 L 80 164 L 82 168 L 80 198 Z" fill="#D7141A"/>
-    <rect x="78.5" y="178" width="3" height="8" fill="#FFFFFF"/>
-    <rect x="78.5" y="186" width="3" height="8" fill="#11457E"/>
+    {/* Dark tie */}
+    <path d="M 78 170 L 80 166 L 82 170 L 80 200 Z" fill="#1A1A3E"/>
+    <path d="M 77 174 L 80 170 L 83 174" fill="#222248"/>
 
     {/* ČNB badge */}
-    <circle cx="55" cy="180" r="9" fill="#11457E" stroke="#C0A050" strokeWidth="1"/>
-    <text x="55" y="183" fontSize="7" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">ČNB</text>
+    <circle cx="52" cy="185" r="9" fill="#11457E" stroke="#C0A050" strokeWidth="1"/>
+    <text x="52" y="188" fontSize="7" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">ČNB</text>
 
-    {/* Czech lion hint */}
-    <circle cx="105" cy="180" r="8" fill="#D7141A" opacity="0.6"/>
-    <text x="105" y="184" fontSize="9" fill="#FFFFFF" textAnchor="middle">CZ</text>
+    {/* Czech flag colors - subtle stripe */}
+    <rect x="108" y="180" width="12" height="3" fill="#D7141A"/>
+    <rect x="108" y="183" width="12" height="3" fill="#FFFFFF"/>
+    <rect x="108" y="186" width="6" height="6" fill="#11457E"/>
+    <rect x="114" y="186" width="6" height="3" fill="#FFFFFF"/>
+    <rect x="114" y="183" width="6" height="3" fill="#D7141A"/>
   </svg>
 );
 
