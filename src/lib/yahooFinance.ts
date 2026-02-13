@@ -454,20 +454,21 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   await Promise.allSettled(
     symbols.slice(0, 10).map(async (symbol) => {
       try {
-        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 20 });
+        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 50 });
         const news = result.news || [];
 
         for (const article of news) {
           const uuid = article.uuid || article.link;
 
-          // Use Yahoo Finance's relatedTickers to determine which portfolio
-          // symbols this article actually relates to. If relatedTickers is
-          // missing/empty, skip the article — the search API often returns
-          // unrelated results, especially for non-US symbols.
+          // Use Yahoo Finance's relatedTickers when available to match
+          // portfolio symbols. If relatedTickers is empty/missing (common
+          // for non-US symbols), fall back to the queried symbol — Yahoo
+          // returned this article for that search query.
           const apiTickers = article.relatedTickers ?? [];
           const matchedSymbols = apiTickers.filter((t) => symbolSet.has(t.toUpperCase()));
-
-          if (matchedSymbols.length === 0) continue;
+          const articleSymbols = matchedSymbols.length > 0
+            ? matchedSymbols
+            : [symbol];
 
           if (!allArticles.has(uuid)) {
             allArticles.set(uuid, {
@@ -480,11 +481,11 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
               publishedAt: article.providerPublishTime
                 ? new Date(article.providerPublishTime).toISOString()
                 : new Date().toISOString(),
-              relatedSymbols: matchedSymbols,
+              relatedSymbols: articleSymbols,
             });
           } else {
             const existing = allArticles.get(uuid)!;
-            for (const s of matchedSymbols) {
+            for (const s of articleSymbols) {
               if (!existing.relatedSymbols.includes(s)) {
                 existing.relatedSymbols.push(s);
               }
