@@ -145,22 +145,13 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { user, isLoading: authLoading } = useAuth();
 
-  // Load portfolios + instruments from Supabase on mount / user change
+  // Load portfolios + instruments from Supabase on mount / user change.
+  // Wait for auth to finish (authLoading === false) before loading,
+  // to avoid making DB queries while the auth lock is still held.
   useEffect(() => {
-    console.log('[PortfolioContext] useEffect triggered:', {
-      authLoading,
-      hasUser: !!user,
-      userId: user?.id
-    });
-
-    // Don't reset state while auth is still loading
-    if (authLoading) {
-      console.log('[PortfolioContext] Auth still loading, skipping');
-      return;
-    }
+    if (authLoading) return;
 
     if (!user) {
-      console.log('[PortfolioContext] No user, resetting to initial state');
       dispatch({ type: 'SET_STATE', payload: initialState });
       setIsLoading(false);
       return;
@@ -169,23 +160,14 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function load() {
+      setIsLoading(true);
       try {
-        console.log('[PortfolioContext] Starting to load portfolios for user:', user!.id);
-        setIsLoading(true);
         const portfolios = await db.getPortfolios(user!.id);
-        console.log('[PortfolioContext] Loaded portfolios:', portfolios.length);
-        if (cancelled) {
-          console.log('[PortfolioContext] Load cancelled after getPortfolios');
-          return;
-        }
+        if (cancelled) return;
 
         const portfolioIds = portfolios.map((p) => p.id);
         const allInstruments = await db.getAllInstruments(portfolioIds);
-        console.log('[PortfolioContext] Loaded instruments:', allInstruments.length);
-        if (cancelled) {
-          console.log('[PortfolioContext] Load cancelled after getAllInstruments');
-          return;
-        }
+        if (cancelled) return;
 
         const localPortfolios: Portfolio[] = portfolios.map((p) => ({
           id: p.id,
@@ -205,19 +187,14 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
             activePortfolioId: activePortfolio?.id ?? localPortfolios[0]?.id ?? null,
           },
         });
-        console.log('[PortfolioContext] Portfolios set in state');
-        setIsLoading(false);
-      } catch (error) {
-        console.error('[PortfolioContext] Load failed:', error);
-        setIsLoading(false);
+      } catch (e) {
+        console.error('Failed to load portfolios:', e);
       }
+      setIsLoading(false);
     }
 
     load();
-    return () => {
-      console.log('[PortfolioContext] Cleanup: setting cancelled=true');
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
 

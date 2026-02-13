@@ -31,23 +31,28 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(getInitialTheme());
     setMounted(true);
 
-    // Load from Supabase if logged in
+    // Listen for auth state to load theme from Supabase
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase
-          .from('user_preferences')
-          .select('theme')
-          .eq('id', user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.theme) {
-              setThemeState(data.theme as Theme);
-              setItem(STORAGE_KEYS.THEME, data.theme);
-            }
-          });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        const user = session?.user;
+        if (user) {
+          supabase
+            .from('user_preferences')
+            .select('theme')
+            .eq('id', user.id)
+            .single()
+            .then(({ data }) => {
+              if (data?.theme) {
+                setThemeState(data.theme as Theme);
+                setItem(STORAGE_KEYS.THEME, data.theme);
+              }
+            });
+        }
       }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -65,9 +70,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(newTheme);
     // Sync to Supabase
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from('user_preferences').update({ theme: newTheme }).eq('id', user.id).then(() => {});
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from('user_preferences').update({ theme: newTheme }).eq('id', session.user.id).then(() => {});
       }
     });
   }, []);
@@ -77,9 +82,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const newTheme = prev === 'light' ? 'dark' : 'light';
       // Sync to Supabase
       const supabase = createClient();
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user) {
-          supabase.from('user_preferences').update({ theme: newTheme }).eq('id', user.id).then(() => {});
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          supabase.from('user_preferences').update({ theme: newTheme }).eq('id', session.user.id).then(() => {});
         }
       });
       return newTheme;
