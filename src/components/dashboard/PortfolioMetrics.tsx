@@ -20,13 +20,15 @@ export function PortfolioMetrics() {
 
   if (!activePortfolio || instruments.length === 0) return null;
 
+  // Gauge ranges: neutral value (0) sits at ~40% of the bar so that
+  // mildly negative values appear in the lower-third, not at the far left.
   const metricConfigs = [
     {
       key: 'sharpeRatio',
       name: t('metrics.sharpeRatio'),
       tooltip: t('metrics.sharpeRatioTooltip'),
       value: metrics?.sharpeRatio ?? null,
-      min: -1,
+      min: -2,
       max: 3,
     },
     {
@@ -42,8 +44,8 @@ export function PortfolioMetrics() {
       name: t('metrics.alpha'),
       tooltip: t('metrics.alphaTooltip'),
       value: metrics?.alpha ?? null,
-      min: -10,
-      max: 10,
+      min: -20,
+      max: 30,
       format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
     },
     {
@@ -51,15 +53,15 @@ export function PortfolioMetrics() {
       name: t('metrics.sortinoRatio'),
       tooltip: t('metrics.sortinoRatioTooltip'),
       value: metrics?.sortinoRatio ?? null,
-      min: -1,
-      max: 3,
+      min: -2,
+      max: 4,
     },
     {
       key: 'treynorRatio',
       name: t('metrics.treynorRatio'),
       tooltip: t('metrics.treynorRatioTooltip'),
       value: metrics?.treynorRatio ?? null,
-      min: -0.1,
+      min: -0.2,
       max: 0.3,
     },
     {
@@ -67,8 +69,8 @@ export function PortfolioMetrics() {
       name: t('metrics.calmarRatio'),
       tooltip: t('metrics.calmarRatioTooltip'),
       value: metrics?.calmarRatio ?? null,
-      min: -1,
-      max: 5,
+      min: -2,
+      max: 3,
       format: (v: number) => v.toFixed(2),
     },
   ];
