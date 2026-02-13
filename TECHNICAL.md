@@ -384,7 +384,7 @@ Server-side Supabase klient pro Server Components a API Routes. Čte cookies př
 Server-side API route pro odhlášení. Volá `supabase.auth.signOut()` přes server-side klient, čímž správně vyčistí httpOnly auth cookies. Voláno z `AuthContext.signOut()` před redirectem na `/login`.
 
 ### `src/lib/supabase/middleware.ts`
-Middleware helper — refreshuje session tokeny a vynucuje autentizaci. Nepřihlášení uživatelé jsou přesměrováni na `/login`, přihlášení na `/login` jsou přesměrováni na `/`.
+Middleware helper — refreshuje session tokeny a vynucuje autentizaci. Používá `getUser()` (ne `getSession()`) pro server-side validaci JWT — `getSession()` pouze čte z cookies bez ověření, takže podvržený JWT by mohl obejít ochranu routes. Nepřihlášení uživatelé jsou přesměrováni na `/login`, přihlášení na `/login` jsou přesměrováni na `/`.
 
 ### `src/lib/supabase/database.ts`
 Centrální datová vrstva — CRUD operace pro profily, preference, portfolia a instrumenty. Všechny komponenty přistupují k DB přes tento modul.
@@ -431,10 +431,16 @@ Autentizační kontext — spravuje přihlášení, registraci a odhlášení p�
 | `signUp(data)` | `(SignUpData) => Promise<{ error }>` | Registrace s metadaty (jméno, příjmení) |
 | `signOut()` | `() => Promise<void>` | Odhlášení a přesměrování na `/login` |
 
-**Chování:**
-- Při mountu: načte session přes `getUser()`, načte profil, spustí migraci z localStorage
-- Naslouchá `onAuthStateChange` — reaguje pouze na `SIGNED_OUT` (vymaže user state), `SIGNED_IN` a `USER_UPDATED` (načte/aktualizuje profil). Token refresh události jsou ignorovány, aby nedocházelo ke zbytečným re-renderům a ztrátě stavu.
+**Chování (2-efektová architektura):**
+
+AuthContext používá dva oddělené efekty, aby se zabránilo deadlocku Supabase auth locku:
+
+- **Effect 1 (synchronní):** Registruje `onAuthStateChange` listener. Callback NESMÍ být async pro `INITIAL_SESSION` event, protože ten se spouští UVNITŘ Supabase auth locku. Pokud by callback čekal na DB dotazy (které potřebují `getSession()` → stejný lock), došlo by k deadlocku. Nastaví `user` state a `isLoading` (false pouze pro odhlášení/null user).
+- **Effect 2 (async):** Reaguje na změnu `user?.id`. Načte profil z DB a spustí migraci z localStorage. Tento efekt běží AŽ PO uvolnění auth locku, takže DB dotazy fungují normálně. Používá `profileLoadRef` pro zamezení duplicitních načtení.
 - Při odhlášení: klientský signOut + server-side `POST /api/auth/signout` (vyčistí cookies) + redirect na `/login`
+
+**Proč ne jeden efekt s async callbackem?**
+Supabase v2.x drží interní auth lock při emitování `INITIAL_SESSION`. Jakýkoli `await` uvnitř callbacku, který nepřímo volá `getSession()` (a to dělají i DB dotazy přes Supabase klient), způsobí deadlock — stránka se zasekne v loading stavu a portfolia se nikdy nenačtou.
 
 ### `src/context/PortfolioContext.tsx`
 
@@ -456,7 +462,7 @@ Centrální state management pro portfolia. Používá `useReducer` s Supabase j
 
 **Reducer akce:** `SET_STATE`, `SET_PORTFOLIOS`, `ADD_PORTFOLIO`, `REMOVE_PORTFOLIO`, `UPDATE_PORTFOLIO_NAME`, `SET_ACTIVE`, `ADD_INSTRUMENT`, `REMOVE_INSTRUMENT`, `UPDATE_INSTRUMENT_WEIGHT`
 
-**Persistence:** Při mountu načte data z Supabase (portfolia + instrumenty). Každá akce (CRUD) volá příslušnou funkci z `database.ts` a současně aktualizuje lokální reducer state. Závisí na `user?.id` z `AuthContext` — reload z DB se spustí pouze při skutečné změně uživatele (login/logout), nikoliv při token refresh.
+**Persistence:** Při mountu načte data z Supabase (portfolia + instrumenty). Čeká na dokončení autentizace (`authLoading === false`) — tím se zabrání DB dotazům v době, kdy je ještě držen Supabase auth lock. Každá akce (CRUD) volá příslušnou funkci z `database.ts` a současně aktualizuje lokální reducer state. Závisí na `user?.id` a `authLoading` z `AuthContext` — reload z DB se spustí pouze při skutečné změně uživatele (login/logout), nikoliv při token refresh.
 
 ### `src/context/LanguageContext.tsx`
 
@@ -487,7 +493,7 @@ Světlý / tmavý režim.
 
 **Chování:**
 - Při mountu: zjistí uložené téma z localStorage, jinak respektuje `prefers-color-scheme`
-- Pokud je uživatel přihlášen, načte preferenci z Supabase (má přednost)
+- Registruje `onAuthStateChange` listener — při `INITIAL_SESSION` nebo `SIGNED_IN` načte preferenci z Supabase (má přednost nad localStorage). Tím se zabrání volání `getUser()`, které by mohlo způsobit deadlock uvnitř auth locku.
 - Přidává/odebírá třídu `dark` na `<html>` elementu
 - Ukládá preferenci do localStorage (cache) + Supabase (persistent)
 

@@ -107,15 +107,18 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 
 ```
 1. Uživatel otevře stránku (přihlášen)
-2. AuthContext načte session, profil a spustí migraci z localStorage
-3. PortfolioContext načte portfolia + instrumenty z Supabase
-4. Komponenty získají activePortfolio z kontextu
-4. useMarketData hook → fetch /api/quote?symbols=AAPL,MSFT,...
-5. API route → yahooFinance.getQuotes() → yahoo-finance2 → Yahoo API
-6. Odpověď se cachuje server-side (60s) a vrátí klientovi
-7. Komponenty renderují tabulku s daty
-8. Paralelně: useChart hook → fetch /api/chart (obdobný flow)
+2. AuthContext Effect 1: onAuthStateChange INITIAL_SESSION → nastaví user (synchronně, bez async)
+3. AuthContext Effect 2: reaguje na user?.id → načte profil + spustí migraci (async, mimo auth lock)
+4. PortfolioContext: čeká na authLoading === false → načte portfolia + instrumenty z Supabase
+5. Komponenty získají activePortfolio z kontextu
+6. useMarketData hook → fetch /api/quote?symbols=AAPL,MSFT,...
+7. API route → yahooFinance.getQuotes() → yahoo-finance2 → Yahoo API
+8. Odpověď se cachuje server-side (60s) a vrátí klientovi
+9. Komponenty renderují tabulku s daty
+10. Paralelně: useChart hook → fetch /api/chart (obdobný flow)
 ```
+
+**Poznámka k auth locku:** Supabase v2.x drží interní auth lock při emitování `INITIAL_SESSION`. AuthContext proto používá 2-efektovou architekturu — Effect 1 je synchronní (nastaví user state), Effect 2 je async (načte profil z DB). Tím se zabrání deadlocku, kdy by async DB dotazy čekaly na uvolnění auth locku, který sám čeká na dokončení callbacku.
 
 ### Přidání instrumentu
 
