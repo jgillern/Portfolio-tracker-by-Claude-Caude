@@ -190,6 +190,23 @@
     "invalidEmail": "Zadej platnou e-mailovou adresu.",
     "dbError": "Chyba databáze. Ověř, že SQL schéma bylo správně spuštěno v Supabase."
   },
+  "settings": {
+    "title": "Nastavení",
+    "personalInfo": "Osobní údaje",
+    "personalization": "Personalizace",
+    "profileSection": "Profil",
+    "changePassword": "Změnit heslo",
+    "currentPassword": "Aktuální heslo",
+    "newPassword": "Nové heslo",
+    "confirmPassword": "Potvrzení nového hesla",
+    "saved": "Změny byly úspěšně uloženy!",
+    "error": "Nepodařilo se uložit změny.",
+    "passwordChanged": "Heslo bylo úspěšně změněno!",
+    "passwordMismatch": "Hesla se neshodují.",
+    "wrongPassword": "Aktuální heslo je nesprávné.",
+    "avatar": "Vyber si avatara",
+    "appSkin": "Vzhled aplikace"
+  },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",
     "networkError": "Chyba sítě. Zkontrolujte připojení."

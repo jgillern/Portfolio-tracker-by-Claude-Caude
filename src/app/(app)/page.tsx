@@ -26,7 +26,7 @@ import { hasCustomWeights } from '@/types/portfolio';
 export default function DashboardPage() {
   const { t } = useLanguage();
   const { activePortfolio, deletePortfolio, isLoading: portfolioLoading } = usePortfolio();
-  const { isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading, isSigningOut } = useAuth();
   const [showAddInstrument, setShowAddInstrument] = useState(false);
   const [showEditPortfolio, setShowEditPortfolio] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -58,7 +58,7 @@ export default function DashboardPage() {
     [chartRefreshSignal, quotes, isLoading]
   );
 
-  if (authLoading || portfolioLoading) {
+  if (authLoading || portfolioLoading || isSigningOut) {
     return (
       <div className="flex items-center justify-center py-24">
         <Spinner className="h-8 w-8" />
