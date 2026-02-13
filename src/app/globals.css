@@ -228,6 +228,10 @@ body {
   animation: nod-head 0.7s ease-in-out;
 }
 
+.businessman-avatar:hover.nadella-hover {
+  animation: nod-head 0.7s ease-in-out;
+}
+
 .businessman-avatar:hover.satoshi-hover {
   animation: mysterious-float 1s ease-in-out infinite;
 }

@@ -4,159 +4,174 @@ interface AvatarProps {
   className?: string;
 }
 
-// Elon Musk - Angular jaw, transplant hairline, smirk, Tesla/SpaceX/X
+// Elon Musk - Very angular/blocky jaw, long rectangular face, transplant hairline, smirk
 export const ElonMusk: React.FC<AvatarProps> = ({ className = '' }) => (
   <svg className={className} viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Angular face shape - distinctive long face with strong jaw */}
-    <path d="M 40 75 Q 38 50 55 35 Q 70 28 80 27 Q 90 28 105 35 Q 122 50 120 75 L 118 105 Q 115 125 105 135 L 95 145 Q 80 150 65 145 L 55 135 Q 45 125 42 105 Z" fill="#F5D4A8"/>
+    {/* VERY angular rectangular face - long, blocky jaw with sharp angles */}
+    <path d="M 42 70 L 40 55 Q 42 38 58 30 Q 70 25 80 24 Q 90 25 102 30 Q 118 38 120 55 L 122 70 L 122 100 L 118 120 L 108 138 L 98 148 L 80 152 L 62 148 L 52 138 L 42 120 L 42 100 Z" fill="#F5D4A8"/>
+    {/* Sharp cheekbone highlights */}
+    <path d="M 42 90 L 50 85 L 48 95" fill="#FDDCB5" opacity="0.6"/>
+    <path d="M 122 90 L 114 85 L 116 95" fill="#FDDCB5" opacity="0.6"/>
 
-    {/* Hair - distinctive receding hairline with transplant look */}
-    <path d="M 42 72 Q 42 48 58 34 Q 72 26 80 25 Q 88 26 102 34 Q 118 48 118 72" fill="none"/>
-    <path d="M 55 34 Q 70 26 80 25 Q 90 26 105 34 Q 115 42 118 55 L 115 40 Q 105 30 80 25 Q 55 30 45 40 L 42 55 Q 45 42 55 34 Z" fill="#3A2A1A"/>
-    {/* Hair volume on top */}
-    <path d="M 50 38 Q 65 20 80 18 Q 95 20 110 38 Q 100 25 80 22 Q 60 25 50 38 Z" fill="#3A2A1A"/>
+    {/* Hair - transplant hairline, dark, swept back */}
+    <path d="M 58 30 Q 70 24 80 23 Q 90 24 102 30 Q 112 36 118 48 L 114 38 Q 102 28 80 23 Q 58 28 46 38 L 42 48 Q 48 36 58 30 Z" fill="#3A2A1A"/>
+    {/* Volume on top - swept back */}
+    <path d="M 48 34 Q 64 16 80 14 Q 96 16 112 34 Q 100 20 80 17 Q 60 20 48 34 Z" fill="#3A2A1A"/>
     {/* Side hair */}
-    <path d="M 38 55 L 38 80 Q 40 68 44 55 Z" fill="#3A2A1A"/>
-    <path d="M 122 55 L 122 80 Q 120 68 116 55 Z" fill="#3A2A1A"/>
+    <path d="M 38 52 L 38 78 Q 40 65 44 52 Z" fill="#3A2A1A"/>
+    <path d="M 122 52 L 122 78 Q 120 65 118 52 Z" fill="#3A2A1A"/>
 
-    {/* Ears - slightly prominent */}
+    {/* Ears */}
     <ellipse cx="36" cy="82" rx="8" ry="14" fill="#F5D4A8"/>
-    <ellipse cx="124" cy="82" rx="8" ry="14" fill="#F5D4A8"/>
-    <ellipse cx="36" cy="82" rx="4" ry="8" fill="#E8C090" opacity="0.5"/>
-    <ellipse cx="124" cy="82" rx="4" ry="8" fill="#E8C090" opacity="0.5"/>
+    <ellipse cx="126" cy="82" rx="8" ry="14" fill="#F5D4A8"/>
+    <ellipse cx="36" cy="82" rx="4" ry="8" fill="#E8C090" opacity="0.4"/>
+    <ellipse cx="126" cy="82" rx="4" ry="8" fill="#E8C090" opacity="0.4"/>
 
-    {/* Brow ridge - prominent */}
-    <path d="M 50 68 Q 65 62 80 65 Q 95 62 110 68" fill="#E8C090" opacity="0.3"/>
+    {/* Heavy brow ridge */}
+    <path d="M 48 68 Q 65 60 80 63 Q 95 60 114 68" fill="#E8C090" opacity="0.4"/>
 
-    {/* Eyes - intense, slightly narrow */}
-    <ellipse cx="62" cy="78" rx="10" ry="8" fill="#FFFFFF"/>
-    <ellipse cx="98" cy="78" rx="10" ry="8" fill="#FFFFFF"/>
-    <circle cx="64" cy="79" r="5.5" fill="#5A8AAD"/>
-    <circle cx="100" cy="79" r="5.5" fill="#5A8AAD"/>
-    <circle cx="65" cy="78" r="2.5" fill="#1A1A1A"/>
-    <circle cx="101" cy="78" r="2.5" fill="#1A1A1A"/>
-    <circle cx="66" cy="77" r="1" fill="#FFFFFF"/>
-    <circle cx="102" cy="77" r="1" fill="#FFFFFF"/>
-    {/* Upper eyelids - slightly hooded */}
-    <path d="M 52 75 Q 62 70 72 75" fill="#E8C090" opacity="0.4"/>
-    <path d="M 88 75 Q 98 70 108 75" fill="#E8C090" opacity="0.4"/>
+    {/* Eyes - small, intense, deep-set under heavy brow */}
+    <ellipse cx="62" cy="78" rx="9" ry="6" fill="#FFFFFF"/>
+    <ellipse cx="100" cy="78" rx="9" ry="6" fill="#FFFFFF"/>
+    <circle cx="64" cy="78" r="4.5" fill="#5A8AAD"/>
+    <circle cx="102" cy="78" r="4.5" fill="#5A8AAD"/>
+    <circle cx="65" cy="77" r="2.2" fill="#1A1A1A"/>
+    <circle cx="103" cy="77" r="2.2" fill="#1A1A1A"/>
+    <circle cx="66" cy="76" r="0.8" fill="#FFFFFF"/>
+    <circle cx="104" cy="76" r="0.8" fill="#FFFFFF"/>
+    {/* Heavy hooded lids */}
+    <path d="M 52 76 Q 62 70 72 76" fill="#E8C090" opacity="0.5"/>
+    <path d="M 90 76 Q 100 70 110 76" fill="#E8C090" opacity="0.5"/>
 
-    {/* Strong angular eyebrows */}
-    <path d="M 50 66 Q 56 61 63 63 Q 68 64 72 67" stroke="#3A2A1A" strokeWidth="3" fill="none" strokeLinecap="round"/>
-    <path d="M 110 66 Q 104 61 97 63 Q 92 64 88 67" stroke="#3A2A1A" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    {/* Flat, straight angular brows */}
+    <path d="M 48 66 L 60 63 L 72 66" stroke="#3A2A1A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    <path d="M 112 66 L 102 63 L 90 66" stroke="#3A2A1A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
 
-    {/* Nose - slightly pointed, long */}
-    <path d="M 80 75 L 80 98" stroke="#E0B888" strokeWidth="2.5"/>
-    <path d="M 73 100 Q 76 104 80 105 Q 84 104 87 100" fill="#E8BE90"/>
+    {/* Nose - long, slightly pointed */}
+    <path d="M 80 72 L 80 100" stroke="#E0B888" strokeWidth="2.5"/>
+    <path d="M 73 102 Q 77 106 80 107 Q 83 106 87 102" fill="#E8BE90"/>
 
-    {/* Nasolabial folds */}
-    <path d="M 65 100 Q 62 110 60 118" stroke="#E0B888" strokeWidth="1" opacity="0.5"/>
-    <path d="M 95 100 Q 98 110 100 118" stroke="#E0B888" strokeWidth="1" opacity="0.5"/>
+    {/* Deep nasolabial folds */}
+    <path d="M 64 100 Q 60 112 58 122" stroke="#E0B888" strokeWidth="1.2" opacity="0.5"/>
+    <path d="M 98 100 Q 102 112 104 122" stroke="#E0B888" strokeWidth="1.2" opacity="0.5"/>
 
-    {/* Characteristic SMIRK - asymmetric, left side up */}
-    <path d="M 62 120 Q 72 126 80 125 Q 92 123 100 118" stroke="#B06060" strokeWidth="3" fill="none" strokeLinecap="round"/>
-    <path d="M 100 117 Q 105 114 108 112" stroke="#B06060" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    {/* Characteristic asymmetric SMIRK - right side up more */}
+    <path d="M 60 122 Q 70 128 80 127 Q 94 125 102 120" stroke="#B06060" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    <path d="M 102 119 Q 108 115 112 112" stroke="#B06060" strokeWidth="2" fill="none" strokeLinecap="round"/>
 
-    {/* Slight stubble shadow on jaw */}
-    <path d="M 50 130 Q 65 142 80 145 Q 95 142 110 130" fill="#E0C5A0" opacity="0.3"/>
+    {/* Visible jaw muscle bulges */}
+    <path d="M 42 100 Q 44 115 52 132" stroke="#E0C5A0" strokeWidth="2" opacity="0.35"/>
+    <path d="M 122 100 Q 120 115 112 132" stroke="#E0C5A0" strokeWidth="2" opacity="0.35"/>
 
-    {/* Chin dimple */}
-    <ellipse cx="80" cy="140" rx="3" ry="2" fill="#E0B888" opacity="0.4"/>
+    {/* Angular chin */}
+    <path d="M 62 148 L 72 152 L 80 154 L 88 152 L 98 148" stroke="#E0B888" strokeWidth="1" opacity="0.3"/>
+    <ellipse cx="80" cy="148" rx="3" ry="2" fill="#E0B888" opacity="0.4"/>
 
-    {/* Neck */}
-    <rect x="66" y="148" width="28" height="25" fill="#F5D4A8" rx="3"/>
+    {/* Thick neck */}
+    <rect x="64" y="152" width="32" height="22" fill="#F5D4A8" rx="3"/>
 
     {/* Black turtleneck / T-shirt */}
-    <path d="M 40 170 Q 50 162 66 165 L 80 160 L 94 165 Q 110 162 120 170 L 120 220 L 40 220 Z" fill="#1A1A1A"/>
-    {/* Collar */}
-    <path d="M 66 165 Q 73 158 80 157 Q 87 158 94 165" fill="#222222"/>
+    <path d="M 38 172 Q 50 162 64 167 L 80 160 L 96 167 Q 110 162 122 172 L 122 220 L 38 220 Z" fill="#1A1A1A"/>
+    <path d="M 64 167 Q 73 158 80 157 Q 87 158 96 167" fill="#222222"/>
 
     {/* X logo on chest */}
-    <circle cx="80" cy="192" r="12" fill="#000000" stroke="#333" strokeWidth="1"/>
-    <text x="80" y="199" fontSize="16" fill="#FFFFFF" textAnchor="middle" fontWeight="bold" fontFamily="Arial">X</text>
+    <circle cx="80" cy="194" r="12" fill="#000000" stroke="#333" strokeWidth="1"/>
+    <text x="80" y="201" fontSize="16" fill="#FFFFFF" textAnchor="middle" fontWeight="bold" fontFamily="Arial">X</text>
 
     {/* Small Tesla T */}
-    <text x="55" y="188" fontSize="10" fill="#E82127" textAnchor="middle" fontWeight="bold" fontFamily="Arial">T</text>
+    <text x="55" y="190" fontSize="10" fill="#E82127" textAnchor="middle" fontWeight="bold" fontFamily="Arial">T</text>
 
     {/* Small rocket */}
-    <path d="M 108 180 L 112 172 L 116 180 Z" fill="#C0C0C0"/>
-    <path d="M 109 180 L 112 184 L 115 180" fill="#E74C3C"/>
-    <circle cx="112" cy="176" r="1.5" fill="#3498DB"/>
+    <path d="M 108 182 L 112 174 L 116 182 Z" fill="#C0C0C0"/>
+    <path d="M 109 182 L 112 186 L 115 182" fill="#E74C3C"/>
+    <circle cx="112" cy="178" r="1.5" fill="#3498DB"/>
   </svg>
 );
 
-// Jeff Bezos - Egg-shaped bald head, massive shine, huge laugh, muscular
+// Jeff Bezos - Polished bald dome, tanned, muscular, intense eyes, mega-laugh, villain energy
 export const JeffBezos: React.FC<AvatarProps> = ({ className = '' }) => (
   <svg className={className} viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Egg-shaped bald head - wider at top, narrower jaw */}
-    <path d="M 30 80 Q 28 45 50 28 Q 65 18 80 17 Q 95 18 110 28 Q 132 45 130 80 L 128 105 Q 124 125 110 135 Q 95 145 80 146 Q 65 145 50 135 Q 36 125 32 105 Z" fill="#F0C890"/>
+    {/* Egg/bullet-shaped bald head — wider top, tapers to strong jaw */}
+    <path d="M 28 78 Q 26 40 50 24 Q 65 14 80 13 Q 95 14 110 24 Q 134 40 132 78 L 130 105 Q 126 125 112 136 Q 96 146 80 147 Q 64 146 48 136 Q 34 125 30 105 Z" fill="#D4A56A"/>
 
-    {/* MASSIVE SHINE on bald dome */}
-    <ellipse cx="72" cy="35" rx="30" ry="18" fill="#FFFFFF" opacity="0.5"/>
-    <ellipse cx="68" cy="30" rx="18" ry="12" fill="#FFFFFF" opacity="0.7"/>
-    <ellipse cx="65" cy="27" rx="8" ry="6" fill="#FFFFFF" opacity="0.9"/>
+    {/* MASSIVE shine on bald dome — his trademark */}
+    <ellipse cx="72" cy="32" rx="32" ry="18" fill="#FFFFFF" opacity="0.45"/>
+    <ellipse cx="68" cy="27" rx="20" ry="13" fill="#FFFFFF" opacity="0.65"/>
+    <ellipse cx="64" cy="23" rx="10" ry="7" fill="#FFFFFF" opacity="0.85"/>
+    {/* Secondary highlight */}
+    <ellipse cx="95" cy="38" rx="12" ry="8" fill="#FFFFFF" opacity="0.25"/>
 
-    {/* Large ears - sticking out */}
-    <ellipse cx="26" cy="85" rx="12" ry="18" fill="#F0C890"/>
-    <ellipse cx="134" cy="85" rx="12" ry="18" fill="#F0C890"/>
-    <ellipse cx="26" cy="85" rx="6" ry="10" fill="#E0B078" opacity="0.4"/>
-    <ellipse cx="134" cy="85" rx="6" ry="10" fill="#E0B078" opacity="0.4"/>
+    {/* Big sticking-out ears */}
+    <ellipse cx="24" cy="84" rx="13" ry="19" fill="#D4A56A"/>
+    <ellipse cx="136" cy="84" rx="13" ry="19" fill="#D4A56A"/>
+    <ellipse cx="24" cy="84" rx="6" ry="11" fill="#C09050" opacity="0.35"/>
+    <ellipse cx="136" cy="84" rx="6" ry="11" fill="#C09050" opacity="0.35"/>
 
-    {/* Eyes - confident, laughing, squinted */}
-    <ellipse cx="60" cy="75" rx="10" ry="7" fill="#FFFFFF"/>
-    <ellipse cx="100" cy="75" rx="10" ry="7" fill="#FFFFFF"/>
-    <circle cx="62" cy="76" r="5" fill="#3A2A1A"/>
-    <circle cx="102" cy="76" r="5" fill="#3A2A1A"/>
-    <circle cx="63" cy="75" r="2.5" fill="#000"/>
-    <circle cx="103" cy="75" r="2.5" fill="#000"/>
-    <circle cx="64" cy="74" r="1" fill="#FFFFFF"/>
-    <circle cx="104" cy="74" r="1" fill="#FFFFFF"/>
-    {/* Laugh lines around eyes */}
-    <path d="M 48 72 Q 46 75 47 78" stroke="#D0A870" strokeWidth="1" fill="none"/>
-    <path d="M 46 73 Q 44 76 45 79" stroke="#D0A870" strokeWidth="1" fill="none"/>
-    <path d="M 112 72 Q 114 75 113 78" stroke="#D0A870" strokeWidth="1" fill="none"/>
-    <path d="M 114 73 Q 116 76 115 79" stroke="#D0A870" strokeWidth="1" fill="none"/>
+    {/* Eyes — squinted, intense, almost villainous */}
+    <ellipse cx="60" cy="76" rx="10" ry="5.5" fill="#FFFFFF"/>
+    <ellipse cx="100" cy="76" rx="10" ry="5.5" fill="#FFFFFF"/>
+    <circle cx="62" cy="76" r="4.5" fill="#3A2510"/>
+    <circle cx="102" cy="76" r="4.5" fill="#3A2510"/>
+    <circle cx="63" cy="75" r="2.2" fill="#000"/>
+    <circle cx="103" cy="75" r="2.2" fill="#000"/>
+    <circle cx="64" cy="74" r="0.8" fill="#FFFFFF"/>
+    <circle cx="104" cy="74" r="0.8" fill="#FFFFFF"/>
+    {/* Deep crow's-feet laugh lines */}
+    <path d="M 48 72 Q 45 75 46 79" stroke="#B88A50" strokeWidth="1.2" fill="none"/>
+    <path d="M 46 73 Q 43 76 44 80" stroke="#B88A50" strokeWidth="1" fill="none"/>
+    <path d="M 45 74 Q 42 77 42 81" stroke="#B88A50" strokeWidth="0.8" fill="none"/>
+    <path d="M 112 72 Q 115 75 114 79" stroke="#B88A50" strokeWidth="1.2" fill="none"/>
+    <path d="M 114 73 Q 117 76 116 80" stroke="#B88A50" strokeWidth="1" fill="none"/>
+    <path d="M 115 74 Q 118 77 118 81" stroke="#B88A50" strokeWidth="0.8" fill="none"/>
 
-    {/* Thick arched eyebrows */}
-    <path d="M 48 63 Q 55 57 62 59 Q 68 60 72 64" stroke="#5A4A3A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-    <path d="M 112 63 Q 105 57 98 59 Q 92 60 88 64" stroke="#5A4A3A" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+    {/* Bold arched brows — expressive */}
+    <path d="M 46 62 Q 54 55 62 57 Q 68 58 73 63" stroke="#3A2510" strokeWidth="4" fill="none" strokeLinecap="round"/>
+    <path d="M 114 62 Q 106 55 98 57 Q 92 58 87 63" stroke="#3A2510" strokeWidth="4" fill="none" strokeLinecap="round"/>
 
-    {/* Nose - broad */}
-    <path d="M 80 75 L 80 95" stroke="#D0A870" strokeWidth="2"/>
-    <path d="M 72 98 Q 76 102 80 103 Q 84 102 88 98" fill="#E0B880"/>
-    <circle cx="74" cy="97" r="3" fill="#E0B880"/>
-    <circle cx="86" cy="97" r="3" fill="#E0B880"/>
+    {/* Nose — broad, flared nostrils */}
+    <path d="M 80 72 L 80 95" stroke="#B88A50" strokeWidth="2.5"/>
+    <path d="M 71 98 Q 76 103 80 104 Q 84 103 89 98" fill="#C89860"/>
+    <circle cx="73" cy="97" r="4" fill="#C89860"/>
+    <circle cx="87" cy="97" r="4" fill="#C89860"/>
 
-    {/* HUGE trademark Bezos LAUGH - wide open mouth */}
-    <path d="M 48 110 Q 80 140 112 110" fill="#8B3030"/>
-    <path d="M 48 110 Q 80 135 112 110" fill="#4A1515"/>
-    {/* Teeth - top row */}
-    <path d="M 55 112 L 55 118 L 62 118 L 62 112" fill="#FFFFFF"/>
-    <path d="M 63 111 L 63 119 L 72 119 L 72 111" fill="#FFFFFF"/>
-    <path d="M 73 110 L 73 120 L 80 120 L 80 110" fill="#FFFFFF"/>
-    <path d="M 81 110 L 81 120 L 88 120 L 88 110" fill="#FFFFFF"/>
-    <path d="M 89 111 L 89 119 L 98 119 L 98 111" fill="#FFFFFF"/>
-    <path d="M 99 112 L 99 118 L 106 118 L 106 112" fill="#FFFFFF"/>
-    {/* Tongue hint */}
-    <ellipse cx="80" cy="130" rx="15" ry="8" fill="#D44040"/>
+    {/* HUGE open-mouth Bezos LAUGH — ear to ear */}
+    <path d="M 44 108 Q 80 145 116 108" fill="#7A2020"/>
+    <path d="M 44 108 Q 80 140 116 108" fill="#3A0A0A"/>
+    {/* Top teeth — big, white, perfect */}
+    <rect x="54" y="110" width="8" height="8" rx="1" fill="#FFFFFF"/>
+    <rect x="63" y="109" width="9" height="10" rx="1" fill="#FFFFFF"/>
+    <rect x="73" y="108" width="8" height="11" rx="1" fill="#FFFFFF"/>
+    <rect x="82" y="108" width="8" height="11" rx="1" fill="#FFFFFF"/>
+    <rect x="91" y="109" width="9" height="10" rx="1" fill="#FFFFFF"/>
+    <rect x="101" y="110" width="8" height="8" rx="1" fill="#FFFFFF"/>
+    {/* Tongue */}
+    <ellipse cx="80" cy="132" rx="16" ry="9" fill="#D04040"/>
 
-    {/* Strong jaw and chin */}
-    <path d="M 50 132 Q 65 148 80 150 Q 95 148 110 132" stroke="#D0A870" strokeWidth="1" fill="none" opacity="0.3"/>
+    {/* Strong angular jaw */}
+    <path d="M 48 134 Q 64 148 80 150 Q 96 148 112 134" stroke="#B88A50" strokeWidth="1.5" fill="none" opacity="0.3"/>
 
-    {/* MUSCULAR neck */}
-    <path d="M 58 148 L 55 172 Q 55 172 80 178 Q 105 172 105 172 L 102 148" fill="#F0C890"/>
-    {/* Neck tendons */}
-    <path d="M 66 150 L 64 170" stroke="#D0A870" strokeWidth="1" opacity="0.3"/>
-    <path d="M 94 150 L 96 170" stroke="#D0A870" strokeWidth="1" opacity="0.3"/>
+    {/* THICK muscular neck */}
+    <path d="M 54 148 L 50 175 Q 50 175 80 180 Q 110 175 110 175 L 106 148" fill="#D4A56A"/>
+    {/* Neck tendons / veins */}
+    <path d="M 64 150 L 62 172" stroke="#B88A50" strokeWidth="1.5" opacity="0.3"/>
+    <path d="M 96 150 L 98 172" stroke="#B88A50" strokeWidth="1.5" opacity="0.3"/>
+    {/* Trapezius muscles hint */}
+    <path d="M 50 175 Q 40 178 30 180" stroke="#B88A50" strokeWidth="2" opacity="0.2"/>
+    <path d="M 110 175 Q 120 178 130 180" stroke="#B88A50" strokeWidth="2" opacity="0.2"/>
 
-    {/* Blue Origin / casual blue shirt */}
-    <path d="M 35 172 Q 48 163 58 168 L 80 160 L 102 168 Q 112 163 125 172 L 125 220 L 35 220 Z" fill="#2C5AA0"/>
-    {/* Collar */}
-    <path d="M 64 168 Q 72 160 80 158 Q 88 160 96 168" fill="#2468B8"/>
+    {/* Tight blue polo shirt — casual billionaire */}
+    <path d="M 30 175 Q 44 165 54 170 L 80 162 L 106 170 Q 116 165 130 175 L 130 220 L 30 220 Z" fill="#2C5AA0"/>
+    {/* Polo collar */}
+    <path d="M 62 170 Q 72 162 80 160 Q 88 162 98 170" fill="#2468B8"/>
+    <path d="M 76 160 L 76 172" stroke="#1A4888" strokeWidth="1"/>
+    <path d="M 84 160 L 84 172" stroke="#1A4888" strokeWidth="1"/>
+    {/* Short sleeve hems — showing biceps */}
+    <path d="M 30 178 Q 38 175 44 178" stroke="#2468B8" strokeWidth="2"/>
+    <path d="M 130 178 Q 122 175 116 178" stroke="#2468B8" strokeWidth="2"/>
 
-    {/* Amazon smile arrow - VERY PROMINENT */}
-    <path d="M 48 195 Q 80 212 112 195" stroke="#FF9900" strokeWidth="5" fill="none" strokeLinecap="round"/>
-    <path d="M 105 193 L 112 195 L 108 202" stroke="#FF9900" strokeWidth="4" fill="none" strokeLinecap="round"/>
+    {/* Amazon smile arrow — VERY PROMINENT */}
+    <path d="M 46 197 Q 80 215 114 197" stroke="#FF9900" strokeWidth="5" fill="none" strokeLinecap="round"/>
+    <path d="M 107 195 L 114 197 L 110 204" stroke="#FF9900" strokeWidth="4" fill="none" strokeLinecap="round"/>
   </svg>
 );
 
@@ -588,6 +603,104 @@ export const ChristineLagarde: React.FC<AvatarProps> = ({ className = '' }) => (
 
     {/* Euro symbol */}
     <text x="55" y="195" fontSize="14" fill="#FFD700" textAnchor="middle" opacity="0.5" fontWeight="bold">&euro;</text>
+  </svg>
+);
+
+// Satya Nadella - Bald, neat beard, round glasses, warm smile, Microsoft CEO
+export const SatyaNadella: React.FC<AvatarProps> = ({ className = '' }) => (
+  <svg className={className} viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Oval face — warm, friendly */}
+    <path d="M 38 78 Q 36 50 52 36 Q 66 26 80 25 Q 94 26 108 36 Q 124 50 122 78 L 120 105 Q 118 122 108 132 Q 96 142 80 143 Q 64 142 52 132 Q 42 122 40 105 Z" fill="#C68642"/>
+
+    {/* Bald dome — closely shaved, subtle shine */}
+    <ellipse cx="74" cy="34" rx="26" ry="14" fill="#FFFFFF" opacity="0.2"/>
+    <ellipse cx="70" cy="30" rx="14" ry="9" fill="#FFFFFF" opacity="0.35"/>
+    <ellipse cx="67" cy="27" rx="6" ry="4" fill="#FFFFFF" opacity="0.5"/>
+    {/* Very short stubble hair on sides */}
+    <path d="M 36 60 Q 38 50 44 42 Q 50 36 58 32" fill="#3A2A1A" opacity="0.25"/>
+    <path d="M 124 60 Q 122 50 116 42 Q 110 36 102 32" fill="#3A2A1A" opacity="0.25"/>
+
+    {/* Ears */}
+    <ellipse cx="34" cy="82" rx="8" ry="14" fill="#C68642"/>
+    <ellipse cx="126" cy="82" rx="8" ry="14" fill="#C68642"/>
+    <ellipse cx="34" cy="82" rx="4" ry="8" fill="#A06830" opacity="0.3"/>
+    <ellipse cx="126" cy="82" rx="4" ry="8" fill="#A06830" opacity="0.3"/>
+
+    {/* Round glasses — modern, thin-rimmed */}
+    <circle cx="60" cy="78" r="15" fill="none" stroke="#4A4A4A" strokeWidth="3"/>
+    <circle cx="100" cy="78" r="15" fill="none" stroke="#4A4A4A" strokeWidth="3"/>
+    {/* Lens shine */}
+    <circle cx="60" cy="78" r="13" fill="#FFFFFF" opacity="0.06"/>
+    <circle cx="100" cy="78" r="13" fill="#FFFFFF" opacity="0.06"/>
+    {/* Bridge */}
+    <path d="M 75 78 Q 80 82 85 78" stroke="#4A4A4A" strokeWidth="2.5" fill="none"/>
+    {/* Arms */}
+    <line x1="45" y1="76" x2="34" y2="74" stroke="#4A4A4A" strokeWidth="2"/>
+    <line x1="115" y1="76" x2="126" y2="74" stroke="#4A4A4A" strokeWidth="2"/>
+
+    {/* Friendly eyes — warm, approachable */}
+    <ellipse cx="60" cy="78" rx="7" ry="6" fill="#FFFFFF"/>
+    <ellipse cx="100" cy="78" rx="7" ry="6" fill="#FFFFFF"/>
+    <circle cx="61" cy="79" r="4.5" fill="#2A1A0A"/>
+    <circle cx="101" cy="79" r="4.5" fill="#2A1A0A"/>
+    <circle cx="62" cy="78" r="2" fill="#000000"/>
+    <circle cx="102" cy="78" r="2" fill="#000000"/>
+    <circle cx="63" cy="77" r="0.8" fill="#FFFFFF"/>
+    <circle cx="103" cy="77" r="0.8" fill="#FFFFFF"/>
+
+    {/* Gentle brows */}
+    <path d="M 47 66 Q 54 62 61 63 Q 67 64 72 67" stroke="#2A1A0A" strokeWidth="2.5" fill="none"/>
+    <path d="M 113 66 Q 106 62 99 63 Q 93 64 88 67" stroke="#2A1A0A" strokeWidth="2.5" fill="none"/>
+
+    {/* Nose — well-proportioned */}
+    <path d="M 80 76 L 80 96" stroke="#A06830" strokeWidth="2"/>
+    <path d="M 74 98 Q 77 102 80 103 Q 83 102 86 98" fill="#B07840"/>
+
+    {/* NEAT TRIMMED BEARD — his signature look */}
+    {/* Beard shadow on cheeks */}
+    <path d="M 46 105 Q 44 115 48 128 Q 55 140 66 143 Q 74 145 80 145 Q 86 145 94 143 Q 105 140 112 128 Q 116 115 114 105" fill="#2A1A0A" opacity="0.55"/>
+    {/* Beard texture — short trimmed */}
+    <path d="M 50 108 Q 48 118 52 130" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 58 110 Q 56 120 58 132" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 66 112 Q 65 122 66 136" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 80 108 Q 80 120 80 140" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 94 112 Q 95 122 94 136" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 102 110 Q 104 120 102 132" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    <path d="M 110 108 Q 112 118 108 130" stroke="#1A0A00" strokeWidth="0.8" opacity="0.3"/>
+    {/* Mustache */}
+    <path d="M 66 104 Q 72 108 80 109 Q 88 108 94 104" fill="#2A1A0A" opacity="0.6"/>
+
+    {/* Warm, genuine smile — visible through beard */}
+    <path d="M 62 116 Q 72 124 80 124 Q 88 124 98 116" stroke="#904040" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    {/* Slight teeth showing */}
+    <path d="M 68 117 Q 74 122 80 122 Q 86 122 92 117" fill="#FFFFFF" opacity="0.7"/>
+
+    {/* Smile crinkles at eyes */}
+    <path d="M 46 74 Q 44 77 45 80" stroke="#A06830" strokeWidth="0.8" fill="none" opacity="0.5"/>
+    <path d="M 114 74 Q 116 77 115 80" stroke="#A06830" strokeWidth="0.8" fill="none" opacity="0.5"/>
+
+    {/* Neck */}
+    <rect x="66" y="143" width="28" height="24" fill="#C68642" rx="3"/>
+
+    {/* Casual button-up shirt — tech CEO style */}
+    <path d="M 38 165 Q 50 157 66 162 L 80 155 L 94 162 Q 110 157 122 165 L 122 220 L 38 220 Z" fill="#2B2B2B"/>
+    {/* Collar */}
+    <path d="M 66 162 L 72 168 L 80 155 L 88 168 L 94 162" fill="#222222"/>
+    {/* Shirt inner */}
+    <path d="M 72 168 L 80 155 L 88 168 L 85 176 L 80 185 L 75 176 Z" fill="#333333"/>
+    {/* Button line */}
+    <circle cx="80" cy="172" r="1.5" fill="#555"/>
+    <circle cx="80" cy="182" r="1.5" fill="#555"/>
+    <circle cx="80" cy="192" r="1.5" fill="#555"/>
+
+    {/* Microsoft logo — four colored squares */}
+    <rect x="56" y="186" width="7" height="7" fill="#F25022"/>
+    <rect x="64" y="186" width="7" height="7" fill="#7FBA00"/>
+    <rect x="56" y="194" width="7" height="7" fill="#00A4EF"/>
+    <rect x="64" y="194" width="7" height="7" fill="#FFB900"/>
+
+    {/* Azure cloud hint */}
+    <path d="M 100 188 Q 102 183 107 183 Q 112 183 113 186 Q 116 185 118 187 Q 120 190 118 192 L 100 192 Q 98 190 100 188 Z" fill="#00A4EF" opacity="0.5"/>
   </svg>
 );
 
