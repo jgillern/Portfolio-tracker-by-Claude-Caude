@@ -61,27 +61,32 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(valid ? saved : 'en');
     setMounted(true);
 
-    // Load from Supabase if logged in
+    // Listen for auth state to load language from Supabase
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase
-          .from('user_preferences')
-          .select('language')
-          .eq('id', user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.language) {
-              const lang = data.language as Locale;
-              const isValid = LOCALES.some((l) => l.code === lang);
-              if (isValid) {
-                setLocaleState(lang);
-                setItem(STORAGE_KEYS.LANGUAGE, lang);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        const user = session?.user;
+        if (user) {
+          supabase
+            .from('user_preferences')
+            .select('language')
+            .eq('id', user.id)
+            .single()
+            .then(({ data }) => {
+              if (data?.language) {
+                const lang = data.language as Locale;
+                const isValid = LOCALES.some((l) => l.code === lang);
+                if (isValid) {
+                  setLocaleState(lang);
+                  setItem(STORAGE_KEYS.LANGUAGE, lang);
+                }
               }
-            }
-          });
+            });
+        }
       }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -95,9 +100,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
     // Sync to Supabase
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from('user_preferences').update({ language: newLocale }).eq('id', user.id).then(() => {});
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from('user_preferences').update({ language: newLocale }).eq('id', session.user.id).then(() => {});
       }
     });
   }, []);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getProfile, ensureProfile, ensurePreferences } from '@/lib/supabase/database';
 import { migrateLocalStorageToSupabase } from '@/lib/supabase/migration';
@@ -23,42 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Track whether profile loading is in progress to avoid duplicate loads
+  const profileLoadRef = useRef<string | null>(null);
+
+  // Effect 1: Listen for auth state changes.
+  // IMPORTANT: The callback must NOT be async for INITIAL_SESSION!
+  // INITIAL_SESSION fires INSIDE the Supabase auth lock. If the callback
+  // awaits DB queries (which need getSession() → the same lock), it deadlocks.
+  // SIGNED_IN/USER_UPDATED fire OUTSIDE the lock, so they could be awaited,
+  // but for consistency we handle all profile loading in Effect 2.
   useEffect(() => {
     const supabase = createClient();
 
-    // Get initial session from local storage (fast, no API call)
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      console.log('[AuthContext] getSession result:', {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        error
-      });
-
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      // CRITICAL: Set loading to false BEFORE async operations
-      // This ensures PortfolioContext can start loading immediately
-      setIsLoading(false);
-
-      if (currentUser) {
-        const p = await getProfile(currentUser.id);
-        setProfile(p);
-        // Run migration from localStorage (no-op if already migrated)
-        await migrateLocalStorageToSupabase(currentUser.id);
-      }
-    });
-
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[AuthContext] onAuthStateChange:', {
-        event,
-        hasSession: !!session,
-        userId: session?.user?.id
-      });
-
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
@@ -68,19 +47,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const newUser = session?.user ?? null;
       setUser(newUser);
-
-      // CRITICAL: Set loading to false immediately after setting user
-      // This ensures both updates happen in the same render batch
-      setIsLoading(false);
-
-      if (newUser && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED')) {
-        const p = await getProfile(newUser.id);
-        setProfile(p);
-      }
+      if (!newUser) setIsLoading(false);
+      // When newUser exists, isLoading stays true until Effect 2 finishes
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Effect 2: Load profile + run migration when user changes.
+  // This runs AFTER the auth lock is released, so DB queries work normally.
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+
+    // Avoid duplicate loads for the same user
+    if (profileLoadRef.current === user.id) return;
+    profileLoadRef.current = user.id;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const p = await getProfile(user.id);
+        if (cancelled) return;
+        setProfile(p);
+        await migrateLocalStorageToSupabase(user.id);
+      } catch (e) {
+        console.error('Failed to load profile:', e);
+      }
+      if (!cancelled) setIsLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+      profileLoadRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const signIn = useCallback(async (data: SignInData) => {
     const supabase = createClient();
