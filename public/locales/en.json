@@ -113,7 +113,8 @@
     "filterNone": "No instruments",
     "filterCount": "{count} instruments",
     "selectAll": "Select all",
-    "deselectAll": "Deselect all"
+    "deselectAll": "Deselect all",
+    "showMore": "Show more"
   },
   "calendar": {
     "title": "Events Calendar",

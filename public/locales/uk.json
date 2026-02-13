@@ -113,7 +113,8 @@
     "filterNone": "Немає інструментів",
     "filterCount": "{count} інструментів",
     "selectAll": "Вибрати все",
-    "deselectAll": "Скасувати вибір"
+    "deselectAll": "Скасувати вибір",
+    "showMore": "Показати більше"
   },
   "calendar": {
     "title": "Календар подій",

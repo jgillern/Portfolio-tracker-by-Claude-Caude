@@ -454,21 +454,19 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   await Promise.allSettled(
     symbols.slice(0, 10).map(async (symbol) => {
       try {
-        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 50 });
+        const result = await yf.search(symbol, { quotesCount: 0, newsCount: 100 });
         const news = result.news || [];
 
         for (const article of news) {
           const uuid = article.uuid || article.link;
 
-          // Use Yahoo Finance's relatedTickers when available to match
-          // portfolio symbols. If relatedTickers is empty/missing (common
-          // for non-US symbols), fall back to the queried symbol — Yahoo
-          // returned this article for that search query.
+          // Only include articles where Yahoo Finance's relatedTickers
+          // explicitly references a portfolio symbol. This prevents
+          // unrelated articles from appearing.
           const apiTickers = article.relatedTickers ?? [];
           const matchedSymbols = apiTickers.filter((t) => symbolSet.has(t.toUpperCase()));
-          const articleSymbols = matchedSymbols.length > 0
-            ? matchedSymbols
-            : [symbol];
+
+          if (matchedSymbols.length === 0) continue;
 
           if (!allArticles.has(uuid)) {
             allArticles.set(uuid, {
@@ -481,11 +479,11 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
               publishedAt: article.providerPublishTime
                 ? new Date(article.providerPublishTime).toISOString()
                 : new Date().toISOString(),
-              relatedSymbols: articleSymbols,
+              relatedSymbols: matchedSymbols,
             });
           } else {
             const existing = allArticles.get(uuid)!;
-            for (const s of articleSymbols) {
+            for (const s of matchedSymbols) {
               if (!existing.relatedSymbols.includes(s)) {
                 existing.relatedSymbols.push(s);
               }
@@ -499,8 +497,7 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   );
 
   const articles = Array.from(allArticles.values())
-    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-    .slice(0, 20);
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   setCache(cacheKey, articles, 15 * 60 * 1000);
   return articles;

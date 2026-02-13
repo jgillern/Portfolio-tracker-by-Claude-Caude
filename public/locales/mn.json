@@ -113,7 +113,8 @@
     "filterNone": "Хэрэгсэл сонгоогүй",
     "filterCount": "{count} хэрэгсэл",
     "selectAll": "Бүгдийг сонгох",
-    "deselectAll": "Сонголт цуцлах"
+    "deselectAll": "Сонголт цуцлах",
+    "showMore": "Дэлгэрэнгүй"
   },
   "calendar": {
     "title": "Үйл явдлын хуанли",

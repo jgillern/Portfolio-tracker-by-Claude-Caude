@@ -113,7 +113,8 @@
     "filterNone": "未选择工具",
     "filterCount": "{count} 个工具",
     "selectAll": "全选",
-    "deselectAll": "取消全选"
+    "deselectAll": "取消全选",
+    "showMore": "显示更多"
   },
   "calendar": {
     "title": "事件日历",
