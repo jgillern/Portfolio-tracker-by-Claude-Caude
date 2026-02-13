@@ -6,33 +6,25 @@ import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { PortfolioSwitcher } from '@/components/portfolio/PortfolioSwitcher';
 import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { SettingsModal } from '@/components/settings/SettingsModal';
-import { FunAvatar, getDefaultAvatarId } from '@/components/settings/FunAvatars';
-import { getItem } from '@/lib/localStorage';
-import { STORAGE_KEYS } from '@/config/constants';
-import type { AvatarId } from '@/config/constants';
+import { FunAvatar } from '@/components/settings/FunAvatars';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const { t } = useLanguage();
   const { state } = usePortfolio();
   const { profile, signOut } = useAuth();
+  const { avatar } = useTheme();
   const pathname = usePathname();
   const [showCreate, setShowCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [avatarId, setAvatarId] = useState<AvatarId>(getDefaultAvatarId());
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Load avatar from localStorage
-  useEffect(() => {
-    const saved = getItem<AvatarId | null>(STORAGE_KEYS.AVATAR, null);
-    if (saved) setAvatarId(saved);
-  }, [showSettings]); // Re-read when settings closes (avatar may have changed)
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -96,7 +88,7 @@ export function Header() {
                   className="flex items-center gap-2 rounded-full pl-1 pr-3 py-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   title={fullName}
                 >
-                  <FunAvatar avatarId={avatarId} className="w-7 h-7" />
+                  <FunAvatar avatarId={avatar} className="w-7 h-7" />
                   <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[120px] truncate">
                     {fullName}
                   </span>
@@ -107,7 +99,7 @@ export function Header() {
                     {/* User info header */}
                     {profile && (
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-                        <FunAvatar avatarId={avatarId} className="w-10 h-10 flex-shrink-0" />
+                        <FunAvatar avatarId={avatar} className="w-10 h-10 flex-shrink-0" />
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                             {fullName}

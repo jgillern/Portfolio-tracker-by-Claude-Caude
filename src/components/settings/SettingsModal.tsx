@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { updateProfile } from '@/lib/supabase/database';
 import { createClient } from '@/lib/supabase/client';
-import { getItem, setItem } from '@/lib/localStorage';
-import { STORAGE_KEYS, SKINS, AVATARS } from '@/config/constants';
+import { SKINS, AVATARS } from '@/config/constants';
 import type { Skin, AvatarId } from '@/config/constants';
-import { FunAvatar, getDefaultAvatarId } from './FunAvatars';
+import { FunAvatar } from './FunAvatars';
 import { Spinner } from '@/components/ui/Spinner';
 
 interface Props {
@@ -22,9 +21,13 @@ type Tab = 'personal' | 'personalization';
 export function SettingsModal({ isOpen, onClose }: Props) {
   const { t, locale } = useLanguage();
   const { user, profile, refreshProfile } = useAuth();
-  const { skin, setSkin } = useTheme();
+  const { skin, avatar, setSkin, setAvatar, persistPreferences } = useTheme();
 
   const [tab, setTab] = useState<Tab>('personal');
+
+  // Snapshot of original values to revert on Close
+  const originalSkinRef = useRef<Skin>(skin);
+  const originalAvatarRef = useRef<AvatarId>(avatar);
 
   // Personal info state
   const [firstName, setFirstName] = useState('');
@@ -33,148 +36,142 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [personalSaving, setPersonalSaving] = useState(false);
-  const [personalSuccess, setPersonalSuccess] = useState('');
-  const [personalError, setPersonalError] = useState('');
-  const [passwordSaving, setPasswordSaving] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [passwordError, setPasswordError] = useState('');
 
-  // Personalization state
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarId>(getDefaultAvatarId());
-  const [selectedSkin, setSelectedSkin] = useState<Skin>(skin);
+  // UI state
+  const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  // Init form values from profile
+  // Init form values when modal opens
   useEffect(() => {
-    if (profile) {
-      setFirstName(profile.first_name);
-      setLastName(profile.last_name);
-      setEmail(profile.email);
+    if (isOpen) {
+      if (profile) {
+        setFirstName(profile.first_name);
+        setLastName(profile.last_name);
+        setEmail(profile.email);
+      }
+      originalSkinRef.current = skin;
+      originalAvatarRef.current = avatar;
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSuccessMsg('');
+      setErrorMsg('');
+      setTab('personal');
     }
-    const savedAvatar = getItem<AvatarId | null>(STORAGE_KEYS.AVATAR, null);
-    setSelectedAvatar(savedAvatar ?? getDefaultAvatarId());
-    setSelectedSkin(skin);
-  }, [profile, skin, isOpen]);
-
-  // Clear messages when switching tabs
-  useEffect(() => {
-    setPersonalSuccess('');
-    setPersonalError('');
-    setPasswordSuccess('');
-    setPasswordError('');
-  }, [tab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSavePersonal = async () => {
+  // ── Handlers for live preview ──────────────────────────
+  const handleSkinPreview = (s: Skin) => setSkin(s);
+  const handleAvatarPreview = (a: AvatarId) => setAvatar(a);
+
+  // ── Close: revert all previews ─────────────────────────
+  const handleClose = () => {
+    setSkin(originalSkinRef.current);
+    setAvatar(originalAvatarRef.current);
+    onClose();
+  };
+
+  // ── Save: persist everything ───────────────────────────
+  const handleSave = async () => {
     if (!user) return;
-    setPersonalSaving(true);
-    setPersonalError('');
-    setPersonalSuccess('');
+    setSaving(true);
+    setErrorMsg('');
+    setSuccessMsg('');
 
     try {
-      // Update profile (name)
-      await updateProfile(user.id, { first_name: firstName, last_name: lastName });
+      // 1) Update profile (name)
+      const nameChanged = firstName !== profile?.first_name || lastName !== profile?.last_name;
+      if (nameChanged) {
+        await updateProfile(user.id, { first_name: firstName, last_name: lastName });
+      }
 
-      // Update email if changed
+      // 2) Update email if changed
       if (email !== profile?.email) {
         const supabase = createClient();
         const { error } = await supabase.auth.updateUser({ email });
         if (error) {
-          setPersonalError(error.message);
-          setPersonalSaving(false);
+          setErrorMsg(error.message);
+          setSaving(false);
           return;
         }
       }
 
-      await refreshProfile();
-      setPersonalSuccess(t('settings.saved'));
-    } catch {
-      setPersonalError(t('settings.error'));
-    }
-    setPersonalSaving(false);
-  };
-
-  const handleChangePassword = async () => {
-    setPasswordSaving(true);
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (newPassword.length < 6) {
-      setPasswordError(t('auth.weakPassword'));
-      setPasswordSaving(false);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError(t('settings.passwordMismatch'));
-      setPasswordSaving(false);
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-
-      // Verify current password by re-authenticating
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email: profile?.email ?? '',
-        password: currentPassword,
-      });
-      if (signInErr) {
-        setPasswordError(t('settings.wrongPassword'));
-        setPasswordSaving(false);
-        return;
+      // 3) Change password if fields are filled
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          setErrorMsg(t('auth.weakPassword'));
+          setSaving(false);
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          setErrorMsg(t('settings.passwordMismatch'));
+          setSaving(false);
+          return;
+        }
+        const supabase = createClient();
+        // Verify current password
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: profile?.email ?? '',
+          password: currentPassword,
+        });
+        if (signInErr) {
+          setErrorMsg(t('settings.wrongPassword'));
+          setSaving(false);
+          return;
+        }
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          setErrorMsg(error.message);
+          setSaving(false);
+          return;
+        }
       }
 
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) {
-        setPasswordError(error.message);
-        setPasswordSaving(false);
-        return;
+      // 4) Persist skin + avatar to DB
+      await persistPreferences();
+
+      // 5) Refresh profile in context
+      if (nameChanged || email !== profile?.email) {
+        await refreshProfile();
       }
 
-      setPasswordSuccess(t('settings.passwordChanged'));
+      // Update originals so Close won't revert after a successful save
+      originalSkinRef.current = skin;
+      originalAvatarRef.current = avatar;
+
+      setSuccessMsg(t('settings.saved'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch {
-      setPasswordError(t('settings.error'));
+      setErrorMsg(t('settings.error'));
     }
-    setPasswordSaving(false);
+    setSaving(false);
   };
 
-  const handleAvatarSelect = (id: AvatarId) => {
-    setSelectedAvatar(id);
-    setItem(STORAGE_KEYS.AVATAR, id);
-  };
+  const skinLabel = (s: typeof SKINS[number]) => locale === 'cs' ? s.label.cs : s.label.en;
+  const avatarLabel = (a: typeof AVATARS[number]) => locale === 'cs' ? a.label.cs : a.label.en;
 
-  const handleSkinSelect = (s: Skin) => {
-    setSelectedSkin(s);
-    setSkin(s);
-  };
-
-  const skinLabel = (s: typeof SKINS[number]) => {
-    return locale === 'cs' ? s.label.cs : s.label.en;
-  };
-
-  const avatarLabel = (a: typeof AVATARS[number]) => {
-    return locale === 'cs' ? a.label.cs : a.label.en;
-  };
+  const inputCls = 'w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-gray-800 shadow-2xl">
+      <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl bg-white dark:bg-gray-800 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {t('settings.title')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,7 +181,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <button
             onClick={() => setTab('personal')}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
@@ -207,11 +204,12 @@ export function SettingsModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        <div className="p-5">
+        {/* Scrollable content */}
+        <div className="p-5 overflow-y-auto flex-1">
           {/* Personal Info Tab */}
           {tab === 'personal' && (
             <div className="space-y-6">
-              {/* Name fields */}
+              {/* Profile section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   {t('settings.profileSection')}
@@ -221,59 +219,24 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {t('auth.firstName')}
                     </label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {t('auth.lastName')}
                     </label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                    />
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputCls} />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('auth.email')}
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
                 </div>
-
-                {personalError && (
-                  <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-2">
-                    <p className="text-sm text-red-700 dark:text-red-300">{personalError}</p>
-                  </div>
-                )}
-                {personalSuccess && (
-                  <div className="rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-2">
-                    <p className="text-sm text-green-700 dark:text-green-300">{personalSuccess}</p>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleSavePersonal}
-                  disabled={personalSaving}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2 px-4 transition-colors"
-                >
-                  {personalSaving && <Spinner className="h-4 w-4 text-white" />}
-                  {t('portfolio.save')}
-                </button>
               </div>
 
-              {/* Password change */}
+              {/* Password section */}
               <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   {t('settings.changePassword')}
@@ -282,55 +245,20 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('settings.currentPassword')}
                   </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                  <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('settings.newPassword')}
                   </label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                  <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={inputCls} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('settings.confirmPassword')}
                   </label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputCls} />
                 </div>
-
-                {passwordError && (
-                  <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-2">
-                    <p className="text-sm text-red-700 dark:text-red-300">{passwordError}</p>
-                  </div>
-                )}
-                {passwordSuccess && (
-                  <div className="rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-2">
-                    <p className="text-sm text-green-700 dark:text-green-300">{passwordSuccess}</p>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleChangePassword}
-                  disabled={passwordSaving || !currentPassword || !newPassword}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2 px-4 transition-colors"
-                >
-                  {passwordSaving && <Spinner className="h-4 w-4 text-white" />}
-                  {t('settings.changePassword')}
-                </button>
               </div>
             </div>
           )}
@@ -344,19 +272,19 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   {t('settings.avatar')}
                 </h3>
                 <div className="grid grid-cols-4 gap-3">
-                  {AVATARS.map((avatar) => (
+                  {AVATARS.map((a) => (
                     <button
-                      key={avatar.id}
-                      onClick={() => handleAvatarSelect(avatar.id)}
+                      key={a.id}
+                      onClick={() => handleAvatarPreview(a.id)}
                       className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
-                        selectedAvatar === avatar.id
+                        avatar === a.id
                           ? 'bg-blue-100 dark:bg-blue-900/40 ring-2 ring-blue-500 scale-105'
                           : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <FunAvatar avatarId={avatar.id} className="w-12 h-12" />
+                      <FunAvatar avatarId={a.id} className="w-12 h-12" />
                       <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                        {avatarLabel(avatar)}
+                        {avatarLabel(a)}
                       </span>
                     </button>
                   ))}
@@ -372,11 +300,11 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   {SKINS.map((s) => (
                     <button
                       key={s.key}
-                      onClick={() => handleSkinSelect(s.key)}
+                      onClick={() => handleSkinPreview(s.key)}
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${
-                        selectedSkin === s.key
+                        skin === s.key
                           ? 'ring-2 ring-blue-500 scale-105'
-                          : 'hover:scale-102'
+                          : ''
                       }`}
                       style={getSkinPreviewStyle(s.key)}
                     >
@@ -391,13 +319,45 @@ export function SettingsModal({ isOpen, onClose }: Props) {
             </div>
           )}
         </div>
+
+        {/* Footer with messages + buttons */}
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
+          {/* Success / Error messages */}
+          {errorMsg && (
+            <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-2 mb-3">
+              <p className="text-sm text-red-700 dark:text-red-300">{errorMsg}</p>
+            </div>
+          )}
+          {successMsg && (
+            <div className="rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-2 mb-3">
+              <p className="text-sm text-green-700 dark:text-green-300">{successMsg}</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleClose}
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              {t('portfolio.close')}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
+            >
+              {saving && <Spinner className="h-4 w-4 text-white" />}
+              {t('portfolio.save')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function getSkinPreviewStyle(skin: Skin): React.CSSProperties {
-  switch (skin) {
+function getSkinPreviewStyle(s: Skin): React.CSSProperties {
+  switch (s) {
     case 'light': return { background: '#f9fafb', border: '1px solid #e5e7eb' };
     case 'dark': return { background: '#1f2937', border: '1px solid #374151' };
     case 'ocean': return { background: '#0c4a6e', border: '1px solid #164e63' };
@@ -407,8 +367,8 @@ function getSkinPreviewStyle(skin: Skin): React.CSSProperties {
   }
 }
 
-function getSkinPreviewTextStyle(skin: Skin): React.CSSProperties {
-  switch (skin) {
+function getSkinPreviewTextStyle(s: Skin): React.CSSProperties {
+  switch (s) {
     case 'light': return { color: '#374151' };
     case 'dark': return { color: '#e5e7eb' };
     case 'ocean': return { color: '#67e8f9' };
