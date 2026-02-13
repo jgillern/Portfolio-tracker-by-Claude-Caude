@@ -94,10 +94,16 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Přepínání přes dropdown v hlavičce s obrázky vlajek (flagcdn.com CDN) a kódem jazyka
 - Všechny popisky, tlačítka, chybové hlášky ve všech podporovaných jazycích
 
-### Tmavý režim
-- Přepínání světlý / tmavý režim
-- Automatická detekce systémové preference
-- Všechny komponenty podporují oba režimy
+### Vzhled a personalizace
+- **7 skinů aplikace:** Light, Dark, Ocean, Sunset, Forest, Cyberpunk, Water
+  - Každý skin má vlastní barevné schéma (přebarví hlavičku, akcentní barvy, pozadí)
+  - 5 tmavých skinů (Dark, Ocean, Forest, Cyberpunk, Water), 2 světlé (Light, Sunset)
+  - **Water** — animovaný skin s vlnící se vodní hladinou (CSS animace kaustik a vln)
+- Automatická detekce systémové preference (light/dark) při prvním spuštění
+- **8 vtipných avatarů** na výběr: Ninja, Astronaut, Robot, Pirát, Čaroděj, Mimozemšťan, Cool Kočka, Medvěd
+  - SVG avatary zobrazené v hlavičce vedle jména uživatele
+- Nastavení skinu a avatara přes modální dialog "Nastavení"
+- Všechny preference (skin + avatar) se ukládají do Supabase DB a localStorage
 
 ### Autentizace a uživatelské účty
 - Registrace a přihlášení přes e-mail a heslo (Supabase Auth)
@@ -105,13 +111,19 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - Vizuálně atraktivní přihlašovací stránka s animovaným gradientovým pozadím
 - Název aplikace na login stránce: "Honzův bombézní portfolio tracker"
 - Automatická ochrana všech stránek — nepřihlášený uživatel je přesměrován na `/login`
-- User menu v hlavičce s iniciálami, jménem a odhlášením
+- User menu v hlavičce s avatarem, celým jménem uživatele a dropdown nabídkou
+  - Dropdown: uživatelský profil (avatar + jméno + e-mail), Nastavení, Odhlášení
+- **Nastavení** — modální dialog přístupný z dropdown menu v hlavičce
+  - **Osobní údaje:** úprava jména, příjmení, e-mailu a změna hesla
+  - **Personalizace:** výběr avatara (8 SVG avatarů) a skinu aplikace (6 skinů)
+  - Živý náhled skinu a avatara (změny viditelné okamžitě při výběru)
+  - Tlačítko "Zavřít" zruší neuložené změny, "Uložit" uloží vše do databáze
 - Automatická migrace dat z localStorage do Supabase při prvním přihlášení
 
 ### Persistence dat
 - Všechna data (portfolia, instrumenty, preference) se ukládají v Supabase PostgreSQL databázi
 - Data dostupná napříč zařízeními a prohlížeči po přihlášení
-- localStorage slouží jako cache pro téma, jazyk a pořadí sekcí dashboardu (pro okamžitý start)
+- localStorage slouží jako cache pro skin+avatar, jazyk a pořadí sekcí dashboardu (pro okamžitý start)
 - Row Level Security (RLS) — každý uživatel vidí pouze svá data
 
 ---
@@ -196,6 +208,8 @@ src/
 │   ├── layout/                   # Header, navigace
 │   ├── portfolio/                # Správa portfolií (modaly, vyhledávání, CSV import)
 │   ├── dashboard/                # Graf, tabulky, alokace, metriky, drag-and-drop, refresh
+│   ├── settings/                 # Nastavení (SettingsModal, FunAvatars)
+│   ├── login/                    # Přihlašovací stránka (BusinessmanAvatars)
 │   ├── news/                     # Zprávy
 │   └── calendar/                 # Kalendář událostí
 ├── hooks/                        # Custom React hooks

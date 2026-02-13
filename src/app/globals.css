@@ -329,3 +329,112 @@ body {
 [data-skin="cyberpunk"] .dark\:bg-gray-900 { background-color: #1e0a3c !important; }
 [data-skin="cyberpunk"] .dark\:border-gray-700 { border-color: #581c87 !important; }
 [data-skin="cyberpunk"] body { background-color: #0f0520 !important; }
+
+/* Water skin - animated water surface with rippling waves */
+@keyframes water-wave-1 {
+  0% { background-position: 0% 50%, 0% 80%; }
+  50% { background-position: 100% 50%, -50% 80%; }
+  100% { background-position: 0% 50%, 0% 80%; }
+}
+
+@keyframes water-wave-2 {
+  0% { transform: translateX(0) scaleY(1); }
+  25% { transform: translateX(-5%) scaleY(1.02); }
+  50% { transform: translateX(0) scaleY(0.98); }
+  75% { transform: translateX(5%) scaleY(1.01); }
+  100% { transform: translateX(0) scaleY(1); }
+}
+
+@keyframes water-shimmer {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.08; }
+}
+
+@keyframes water-caustics {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+[data-skin="water"] header {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 26, 54, 0.95) 0%,
+    rgba(3, 40, 76, 0.9) 100%
+  ) !important;
+  border-color: #0e4d7a !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-skin="water"] .bg-blue-600 { background-color: #0284c7 !important; }
+[data-skin="water"] .hover\:bg-blue-700:hover { background-color: #0369a1 !important; }
+[data-skin="water"] .text-blue-600 { color: #38bdf8 !important; }
+[data-skin="water"] .text-blue-400 { color: #7dd3fc !important; }
+[data-skin="water"] .border-blue-600 { border-color: #38bdf8 !important; }
+[data-skin="water"] .border-blue-400 { border-color: #7dd3fc !important; }
+[data-skin="water"] .bg-blue-50\/50 { background-color: rgba(2, 132, 199, 0.1) !important; }
+[data-skin="water"] .bg-blue-900\/20 { background-color: rgba(56, 189, 248, 0.12) !important; }
+[data-skin="water"] .ring-blue-500 { --tw-ring-color: #38bdf8 !important; }
+[data-skin="water"] .focus\:ring-blue-500:focus { --tw-ring-color: #38bdf8 !important; }
+[data-skin="water"] .bg-gray-100 { background-color: #0c3d5f !important; }
+[data-skin="water"] .dark\:bg-gray-800 { background-color: #0a3252 !important; }
+[data-skin="water"] .dark\:bg-gray-900\/80 { background: rgba(2, 26, 54, 0.92) !important; }
+[data-skin="water"] .dark\:bg-gray-900 { background-color: #021a36 !important; }
+[data-skin="water"] .dark\:border-gray-700 { border-color: #0e4d7a !important; }
+
+/* Animated water body background */
+[data-skin="water"] body {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(14, 77, 122, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(3, 105, 161, 0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 90%, rgba(2, 132, 199, 0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #011627 0%, #021a36 30%, #0a2d4d 60%, #0c3d5f 100%) !important;
+  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100% !important;
+  animation: water-wave-1 12s ease-in-out infinite !important;
+}
+
+/* Animated wave overlay on the entire page */
+[data-skin="water"]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 60px,
+      rgba(56, 189, 248, 0.015) 60px,
+      rgba(56, 189, 248, 0.015) 61px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 80px,
+      rgba(56, 189, 248, 0.01) 80px,
+      rgba(56, 189, 248, 0.01) 81px
+    );
+  animation: water-wave-2 8s ease-in-out infinite;
+}
+
+/* Caustic light patterns (the dancing light you see at the bottom of a pool) */
+[data-skin="water"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120px 80px at 20% 30%, rgba(125, 211, 252, 0.06) 0%, transparent 100%),
+    radial-gradient(ellipse 100px 60px at 60% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 100%),
+    radial-gradient(ellipse 80px 100px at 80% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 100%),
+    radial-gradient(ellipse 150px 90px at 40% 70%, rgba(2, 132, 199, 0.05) 0%, transparent 100%);
+  background-size: 300% 300%;
+  animation: water-caustics 20s linear infinite, water-shimmer 6s ease-in-out infinite;
+}
+
+/* Ensure content stays above the water effects */
+[data-skin="water"] body > * {
+  position: relative;
+  z-index: 1;
+}

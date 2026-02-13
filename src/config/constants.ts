@@ -16,7 +16,7 @@ export const STORAGE_KEYS = {
   AVATAR: 'portfolio-tracker-avatar',
 } as const;
 
-export type Skin = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest' | 'cyberpunk';
+export type Skin = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest' | 'cyberpunk' | 'water';
 
 export const SKINS: { key: Skin; isDark: boolean; label: { en: string; cs: string }; emoji: string }[] = [
   { key: 'light', isDark: false, label: { en: 'Light', cs: 'Svetly' }, emoji: '☀️' },
@@ -25,6 +25,7 @@ export const SKINS: { key: Skin; isDark: boolean; label: { en: string; cs: strin
   { key: 'sunset', isDark: false, label: { en: 'Sunset', cs: 'Zapad slunce' }, emoji: '🌅' },
   { key: 'forest', isDark: true, label: { en: 'Forest', cs: 'Les' }, emoji: '🌲' },
   { key: 'cyberpunk', isDark: true, label: { en: 'Cyberpunk', cs: 'Cyberpunk' }, emoji: '🔮' },
+  { key: 'water', isDark: true, label: { en: 'Water', cs: 'Vodni hladina' }, emoji: '💧' },
 ];
 
 export type AvatarId = 'ninja' | 'astronaut' | 'robot' | 'pirate' | 'wizard' | 'alien' | 'cat' | 'bear';

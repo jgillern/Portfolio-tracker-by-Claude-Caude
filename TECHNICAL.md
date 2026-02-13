@@ -154,7 +154,7 @@ interface UserProfile {
 interface UserPreferences {
   id: string;           // UUID z Supabase Auth
   language: string;     // Locale kód (en, cs, sk, uk, zh, mn)
-  theme: string;        // 'light' | 'dark'
+  theme: string;        // Kombinovaný formát "skin|avatar" (např. "ocean|ninja"), zpětně kompatibilní s "light"/"dark"
   dashboard_order: string[]; // Pořadí sekcí dashboardu
   updated_at: string;
 }
@@ -281,7 +281,11 @@ CREATE TRIGGER on_auth_user_created
 | Konstanta | Typ | Popis |
 |---|---|---|
 | `TIME_PERIODS` | `Array<{ key, label }>` | Časová období s bilingválními popisky |
-| `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`, `portfolio-tracker-dashboard-order`) |
+| `STORAGE_KEYS` | `Record` | Klíče pro localStorage (`portfolio-tracker-state`, `portfolio-tracker-lang`, `portfolio-tracker-theme`, `portfolio-tracker-avatar`) |
+| `SKINS` | `Array<{ key: Skin, isDark, label, emoji }>` | 7 skinů: light, dark, ocean, sunset, forest, cyberpunk, water (animovaný) |
+| `AVATARS` | `Array<{ id: AvatarId, label }>` | 8 avatarů: ninja, astronaut, robot, pirate, wizard, alien, cat, bear |
+| `Skin` | Type alias | `'light' \| 'dark' \| 'ocean' \| 'sunset' \| 'forest' \| 'cyberpunk' \| 'water'` |
+| `AvatarId` | Type alias | `'ninja' \| 'astronaut' \| 'robot' \| 'pirate' \| 'wizard' \| 'alien' \| 'cat' \| 'bear'` |
 | `INSTRUMENT_TYPE_LABELS` | `Record` | Bilingvální názvy typů instrumentů |
 
 ### `src/config/sectors.ts`
@@ -427,9 +431,11 @@ Autentizační kontext — spravuje přihlášení, registraci a odhlášení p�
 | `user` | `User \| null` | Supabase Auth user objekt |
 | `profile` | `UserProfile \| null` | Profil uživatele (jméno, příjmení, e-mail) |
 | `isLoading` | `boolean` | Zda se načítá session |
+| `isSigningOut` | `boolean` | Zda probíhá odhlášení (zabraňuje flash "žádné portfolio") |
 | `signIn(data)` | `(SignInData) => Promise<{ error }>` | Přihlášení e-mailem a heslem |
 | `signUp(data)` | `(SignUpData) => Promise<{ error }>` | Registrace s metadaty (jméno, příjmení) |
 | `signOut()` | `() => Promise<void>` | Odhlášení a přesměrování na `/login` |
+| `refreshProfile()` | `() => Promise<void>` | Znovu načte profil z DB (po úpravě v nastavení) |
 
 **Chování (2-efektová architektura):**
 
@@ -484,20 +490,35 @@ Vícejazyčný i18n systém (6 jazyků).
 
 ### `src/context/ThemeContext.tsx`
 
-Světlý / tmavý režim.
+Single source of truth pro skin, avatar a theme (light/dark). Spravuje 7 skinů a 8 avatarů.
 
 **Hook:** `useTheme()`
 
 | Vlastnost / metoda | Typ | Popis |
 |---|---|---|
-| `theme` | `'light' \| 'dark'` | Aktuální téma |
-| `toggleTheme()` | `() => void` | Přepne téma |
+| `theme` | `'light' \| 'dark'` | Odvozeno ze skinu (`skinIsDark()`) |
+| `skin` | `Skin` | Aktuální skin (light, dark, ocean, sunset, forest, cyberpunk, water) |
+| `avatar` | `AvatarId` | Aktuální avatar (ninja, astronaut, robot, pirate, wizard, alien, cat, bear) |
+| `toggleTheme()` | `() => void` | Přepne mezi light/dark (persistuje okamžitě) |
+| `setTheme(theme)` | `('light' \| 'dark') => void` | Nastaví light nebo dark skin |
+| `setSkin(skin)` | `(Skin) => void` | Živý náhled skinu — ukládá do localStorage, NE do DB |
+| `setAvatar(avatar)` | `(AvatarId) => void` | Živý náhled avatara — ukládá do localStorage, NE do DB |
+| `persistPreferences()` | `() => Promise<void>` | Uloží aktuální skin + avatar do DB i localStorage |
+
+**Persistence formát:** Skin a avatar se ukládají jako kombinovaný řetězec `"skin|avatar"` (např. `"ocean|ninja"`) do sloupce `user_preferences.theme`. Zpětně kompatibilní s plain `"light"` / `"dark"`.
+
+**Klíčové funkce:**
+- `parseThemeValue(raw)` — dekóduje `"ocean|ninja"` na `{ skin: 'ocean', avatar: 'ninja' }`, fallback na `light` + `ninja`
+- `encodeThemeValue(skin, avatar)` — zakóduje na `"ocean|ninja"`
+- `skinIsDark(skin)` — vrací `true` pro dark, ocean, forest, cyberpunk, water
 
 **Chování:**
-- Při mountu: zjistí uložené téma z localStorage, jinak respektuje `prefers-color-scheme`
+- Při mountu: zjistí uložené hodnoty z localStorage, jinak respektuje `prefers-color-scheme`
 - Registruje `onAuthStateChange` listener — při `INITIAL_SESSION` nebo `SIGNED_IN` načte preferenci z Supabase (má přednost nad localStorage). Tím se zabrání volání `getUser()`, které by mohlo způsobit deadlock uvnitř auth locku.
-- Přidává/odebírá třídu `dark` na `<html>` elementu
-- Ukládá preferenci do localStorage (cache) + Supabase (persistent)
+- Přidává/odebírá třídu `dark` na `<html>` elementu + nastavuje atribut `data-skin` pro CSS overrides
+- `setSkin()` / `setAvatar()` slouží k živému náhledu v SettingsModal — ukládají jen do localStorage
+- `persistPreferences()` uloží do DB — voláno z SettingsModal při kliknutí na "Uložit"
+- `toggleTheme()` persistuje okamžitě (pro toggle button v hlavičce, mimo nastavení)
 
 ---
 
@@ -596,7 +617,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 | Komponenta | Popis |
 |---|---|
-| `Header` | Sticky hlavička s navigací (Dashboard, Zprávy, Kalendář), portfolio switcherem, jazykovým a tematickým přepínačem. Responsive — mobilní navigace pod hlavičkou. |
+| `Header` | Sticky hlavička s navigací (Dashboard, Zprávy, Kalendář), portfolio switcherem, jazykovým a tematickým přepínačem. User menu: avatar pill (FunAvatar + celé jméno uživatele) s dropdown nabídkou (profil, nastavení, odhlášení). Spravuje SettingsModal a CreatePortfolioModal. Responsive — mobilní navigace pod hlavičkou. |
 
 ### Portfolio (`src/components/portfolio/`)
 
@@ -624,6 +645,19 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 | `PortfolioMetrics` | — | Hodnocení portfolia — 6 finančních metrik ve 2-sloupcové mřížce. Každá metrika zobrazena přes `MetricGauge` s piecewise lineární škálou (center=0 pro většinu metrik, center=1 pro Beta). Rozsahy: Sharpe [-8, 3], Beta [0, 2], Alpha [-120, 40], Sortino [-8, 4], Treynor [-1, 0.5], Calmar [-3, 3]. Načítá data přes `useMetrics` hook. Loading spinner. |
 | `MetricGauge` | `name`, `value`, `tooltip`, `min`, `max`, `center?`, `format?` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. **Piecewise lineární mapování:** pokud je zadán `center`, hodnoty pod centrem se mapují na [0%, 40%] osy a nad centrem na [40%, 100%]. Díky tomu je neutrální hodnota (0) vždy na 40 % osy a extrémně záporné hodnoty (Sharpe -4, Alpha -86 %) nejsou přilepené na samém okraji. Bez `center` se použije klasická lineární škála. |
 | `DraggableSection` | `id`, `isDragged`, `isDragOver`, `onDragStart`, `onDragOver`, `onDragEnd`, `children` | Wrapper pro drag-and-drop sekcí. HTML5 DnD API. Vizuální zpětná vazba: opacity při přetahování, modrý ring při hoveru. 6-bodová drag handle ikona v pravém horním rohu. |
+
+### Settings (`src/components/settings/`)
+
+| Komponenta | Props | Popis |
+|---|---|---|
+| `SettingsModal` | `isOpen`, `onClose` | Modální dialog nastavení se dvěma záložkami. **Osobní údaje:** úprava jména, příjmení, e-mailu a změna hesla (s ověřením aktuálního). **Personalizace:** výběr avatara (8 SVG avatarů v mřížce 4×2) a skinu aplikace (7 skinů v mřížce s barevnými preview). Živý náhled — změny jsou viditelné okamžitě při výběru (snapshot/revert pattern: `originalSkinRef` + `originalAvatarRef`). Patička: "Zavřít" (revert na uložené hodnoty) a "Uložit" (batch save: profil → e-mail → heslo → `persistPreferences()` → `refreshProfile()`). Úspěch/chyba zobrazeny v patičce. |
+| `FunAvatar` | `avatarId: AvatarId`, `className?` | Vykreslí jeden z 8 vtipných SVG avatarů (Ninja, Astronaut, Robot, Pirát, Čaroděj, Mimozemšťan, Cool Kočka, Medvěd). ViewBox 0 0 40 40. Používá se v Header (user menu pill + dropdown) a v SettingsModal (picker). |
+
+### Login (`src/components/login/`)
+
+| Komponenta | Props | Popis |
+|---|---|---|
+| `BusinessmanAvatars` | — | 8 SVG karikatur známých podnikatelů / finančníků jako dekorace na přihlašovací stránce (Elon Musk, Jeff Bezos, Michael Saylor, Jerome Powell, Aleš Michl, Warren Buffett, Christine Lagarde, Satoshi Nakamoto). ViewBox 0 0 160 220. |
 
 ### News (`src/components/news/`)
 
@@ -666,6 +700,7 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 
 ### `src/app/(app)/page.tsx` — Dashboard
 
+- Loading stav při `authLoading || portfolioLoading || isSigningOut` (zabraňuje flash při odhlášení)
 - Zobrazuje název aktivního portfolia
 - Tlačítka: přidat instrument, import CSV, upravit portfolio, smazat portfolio
 - `RefreshControl` vedle názvu portfolia (obnoví kotace i graf přes refreshSignal)
@@ -697,10 +732,12 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 - Custom utilita `.line-clamp-2` pro ořezání textu na 2 řádky
 - Login animace: `@keyframes gradient-shift` (pozadí), `bounce-gentle` (nadpis), `fade-in-up` (karta), `float` (dekorace)
 - CSS třídy: `.login-bg`, `.login-title`, `.login-card`, `.login-float` — podpora dark mode
+- **Skin CSS overrides:** `[data-skin="ocean"]`, `[data-skin="sunset"]`, `[data-skin="forest"]`, `[data-skin="cyberpunk"]`, `[data-skin="water"]` — přepisují hlavičku, akcentní barvy (bg-blue-600, text-blue-600), pozadí stránky atd. pomocí `!important`
+- **Water skin animace:** `@keyframes water-wave-1` (vlnící se pozadí), `water-wave-2` (jemný posun gridu), `water-shimmer` (pulzující průhlednost), `water-caustics` (pohyblivé kaustiky). Používá `::before` (vlnový overlay) a `::after` (kaustické světelné vzory) pseudoelementy na `<html>`
 
-### Dark mode strategie
+### Dark mode a skin strategie
 
-Třída `dark` na `<html>` elementu (spravována přes `ThemeContext`). Všechny komponenty používají Tailwind `dark:` varianty.
+Třída `dark` na `<html>` elementu + atribut `data-skin` (spravováno přes `ThemeContext`). Všechny komponenty používají Tailwind `dark:` varianty. Skiny přepisují barvy pomocí `[data-skin="X"]` selektorů s `!important` v `globals.css`. Tmavé skiny (ocean, forest, cyberpunk, water) automaticky aktivují `dark` třídu.
 
 ### Responsive breakpointy
 
@@ -724,6 +761,7 @@ Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
   "portfolio":  { ... }     // Dialogy správy portfolia (vč. importCsv)
   "import":     { ... }     // CSV import — pokyny, chybové hlášky, výsledky
   "auth":       { ... }     // Autentizace — přihlášení, registrace, chyby
+  "settings":   { ... }     // Nastavení — osobní údaje, personalizace, heslo, avatary, skiny
   "search":     { ... }     // Vyhledávání instrumentů
   "news":       { ... }     // Sekce zpráv
   "calendar":   { ... }     // Kalendář událostí
