@@ -20,16 +20,19 @@ export function PortfolioMetrics() {
 
   if (!activePortfolio || instruments.length === 0) return null;
 
-  // Gauge ranges: neutral value (0) sits at ~40% of the bar so that
-  // mildly negative values appear in the lower-third, not at the far left.
+  // Piecewise linear gauge: center (neutral) maps to 40% of the bar.
+  // [min, center] → [0%, 40%]  and  [center, max] → [40%, 100%]
+  // This ensures extreme negative values stay visible (not clamped at 2%)
+  // while neutral (0) sits at a natural "below-average" position.
   const metricConfigs = [
     {
       key: 'sharpeRatio',
       name: t('metrics.sharpeRatio'),
       tooltip: t('metrics.sharpeRatioTooltip'),
       value: metrics?.sharpeRatio ?? null,
-      min: -2,
+      min: -8,
       max: 3,
+      center: 0,
     },
     {
       key: 'beta',
@@ -38,14 +41,16 @@ export function PortfolioMetrics() {
       value: metrics?.beta ?? null,
       min: 0,
       max: 2,
+      center: 1,
     },
     {
       key: 'alpha',
       name: t('metrics.alpha'),
       tooltip: t('metrics.alphaTooltip'),
       value: metrics?.alpha ?? null,
-      min: -20,
-      max: 30,
+      min: -120,
+      max: 40,
+      center: 0,
       format: (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`,
     },
     {
@@ -53,24 +58,27 @@ export function PortfolioMetrics() {
       name: t('metrics.sortinoRatio'),
       tooltip: t('metrics.sortinoRatioTooltip'),
       value: metrics?.sortinoRatio ?? null,
-      min: -2,
+      min: -8,
       max: 4,
+      center: 0,
     },
     {
       key: 'treynorRatio',
       name: t('metrics.treynorRatio'),
       tooltip: t('metrics.treynorRatioTooltip'),
       value: metrics?.treynorRatio ?? null,
-      min: -0.2,
-      max: 0.3,
+      min: -1,
+      max: 0.5,
+      center: 0,
     },
     {
       key: 'calmarRatio',
       name: t('metrics.calmarRatio'),
       tooltip: t('metrics.calmarRatioTooltip'),
       value: metrics?.calmarRatio ?? null,
-      min: -2,
+      min: -3,
       max: 3,
+      center: 0,
       format: (v: number) => v.toFixed(2),
     },
   ];
@@ -95,6 +103,7 @@ export function PortfolioMetrics() {
               tooltip={config.tooltip}
               min={config.min}
               max={config.max}
+              center={config.center}
               format={config.format}
             />
           ))}

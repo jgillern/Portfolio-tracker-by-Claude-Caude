@@ -8,18 +8,32 @@ interface MetricGaugeProps {
   tooltip: string;
   min: number;
   max: number;
+  center?: number;
   format?: (v: number) => string;
 }
 
-export function MetricGauge({ name, value, tooltip, min, max, format }: MetricGaugeProps) {
+// Piecewise linear mapping: [min, center] → [0%, centerPct] and [center, max] → [centerPct, 100%].
+// This lets us place the neutral value at a fixed point on the gauge (e.g. 40%)
+// while still accommodating extreme values on either side without clamping.
+const CENTER_PCT = 40;
+
+export function MetricGauge({ name, value, tooltip, min, max, center, format }: MetricGaugeProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const displayValue = value != null ? (format ? format(value) : value.toFixed(2)) : '—';
 
-  // Clamp position to 0-100%
   let position = 50;
   if (value != null) {
-    position = ((value - min) / (max - min)) * 100;
+    if (center != null) {
+      const clamped = Math.max(min, Math.min(max, value));
+      if (clamped <= center) {
+        position = ((clamped - min) / (center - min)) * CENTER_PCT;
+      } else {
+        position = CENTER_PCT + ((clamped - center) / (max - center)) * (100 - CENTER_PCT);
+      }
+    } else {
+      position = ((value - min) / (max - min)) * 100;
+    }
     position = Math.max(2, Math.min(98, position));
   }
 

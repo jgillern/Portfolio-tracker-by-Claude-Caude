@@ -169,18 +169,16 @@ export function PerformanceChart({ refreshSignal }: Props) {
   const isLoading = portfolioLoading || comparisonLoading;
 
   const CustomDot = ({ cx, cy, payload, dataKey }: any) => {
-    const values = mergedChartData.filter(d => d[dataKey] != null).map(d => d[dataKey]);
-    const isLast = payload[dataKey] === values[values.length - 1];
+    // Find the last data point that has a value for this key (by timestamp, not value)
+    const pointsWithData = mergedChartData.filter(d => d[dataKey] != null);
+    if (pointsWithData.length === 0) return null;
+    const lastPoint = pointsWithData[pointsWithData.length - 1];
+    const isLast = payload.time === lastPoint.time;
 
     if (!isLast) return null;
 
     const perf = calculatePerformance(mergedChartData, dataKey);
     if (perf === null) return null;
-
-    // Calculate vertical offset to prevent text overlap
-    const allKeys = ['portfolio', ...comparisonInstruments.map(i => i.symbol)];
-    const keyIndex = allKeys.indexOf(dataKey);
-    const verticalOffset = keyIndex * 16; // 16px spacing between labels
 
     const color = dataKey === 'portfolio'
       ? (isPositive ? '#10B981' : '#EF4444')
@@ -191,7 +189,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
         <circle cx={cx} cy={cy} r={4} fill={color} />
         <text
           x={cx + 8}
-          y={cy + 4 - verticalOffset}
+          y={cy + 4}
           fill={color}
           fontSize={11}
           fontWeight="600"
