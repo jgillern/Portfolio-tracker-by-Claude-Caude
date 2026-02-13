@@ -13,6 +13,7 @@ import {
   JeromePowell,
   AlesMichl,
   WarrenBuffett,
+  SatyaNadella,
   SatoshiNakamoto,
   ChristineLagarde,
 } from '@/components/login/BusinessmanAvatars';
@@ -115,7 +116,10 @@ export default function LoginPage() {
           <div className="absolute top-[35%] -left-12 animate-peek-left pointer-events-auto" style={{ animationDelay: '1.5s' }}>
             <MichaelSaylor className="w-36 h-48 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left saylor-hover cursor-pointer" />
           </div>
-          <div className="absolute top-[62%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '2.5s' }}>
+          <div className="absolute top-[50%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '2.5s' }}>
+            <SatyaNadella className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left nadella-hover cursor-pointer" />
+          </div>
+          <div className="absolute top-[68%] -left-8 animate-peek-left pointer-events-auto" style={{ animationDelay: '3.5s' }}>
             <WarrenBuffett className="w-32 h-44 drop-shadow-2xl opacity-90 hover:opacity-100 businessman-avatar businessman-left buffett-hover cursor-pointer" />
           </div>
 
