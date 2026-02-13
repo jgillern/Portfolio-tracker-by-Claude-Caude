@@ -2,7 +2,7 @@ import YahooFinance from 'yahoo-finance2';
 import { SearchResult } from '@/types/api';
 import { InstrumentType } from '@/types/portfolio';
 import { Quote, ChartDataPoint, NewsArticle, TimePeriod, CalendarEvent, CalendarEventType } from '@/types/market';
-import { subDays, subMonths, subYears, startOfYear, differenceInDays } from 'date-fns';
+import { subDays, subMonths, subYears, startOfYear, differenceInDays, format } from 'date-fns';
 
 const yf = new YahooFinance();
 
@@ -443,6 +443,60 @@ async function getChartMax(
   }
 }
 
+/** Fetch news from Finnhub for a single symbol (last 7 days) */
+async function fetchFinnhubNews(symbol: string): Promise<NewsArticle[]> {
+  const apiKey = process.env.FINNHUB_API_KEY;
+  if (!apiKey) return [];
+
+  const now = new Date();
+  const from = format(subDays(now, 7), 'yyyy-MM-dd');
+  const to = format(now, 'yyyy-MM-dd');
+
+  try {
+    const res = await fetch(
+      `https://finnhub.io/api/v1/company-news?symbol=${encodeURIComponent(symbol)}&from=${from}&to=${to}&token=${apiKey}`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data.map((item: {
+      id: number;
+      headline: string;
+      summary: string;
+      image: string;
+      url: string;
+      source: string;
+      datetime: number;
+      related: string;
+    }) => ({
+      uuid: `finnhub-${item.id}`,
+      title: item.headline || '',
+      summary: item.summary || '',
+      thumbnailUrl: item.image || null,
+      link: item.url || '',
+      publisher: item.source || '',
+      publishedAt: item.datetime
+        ? new Date(item.datetime * 1000).toISOString()
+        : new Date().toISOString(),
+      relatedSymbols: [symbol.toUpperCase()],
+    }));
+  } catch (error) {
+    console.error(`Finnhub news error for ${symbol}:`, error);
+    return [];
+  }
+}
+
+/** Normalize a URL for deduplication (strip protocol, www, trailing slash) */
+function normalizeUrl(url: string): string {
+  return url
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/+$/, '')
+    .toLowerCase();
+}
+
 export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
   const cacheKey = `news:${symbols.join(',')}`;
   const cached = getCached<NewsArticle[]>(cacheKey);
@@ -450,9 +504,12 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
 
   const symbolSet = new Set(symbols.map((s) => s.toUpperCase()));
   const allArticles = new Map<string, NewsArticle>();
+  // Track URLs for cross-source deduplication
+  const seenUrls = new Map<string, string>(); // normalizedUrl -> uuid
 
+  // --- Source 1: Yahoo Finance ---
   await Promise.allSettled(
-    symbols.slice(0, 10).map(async (symbol) => {
+    symbols.map(async (symbol) => {
       try {
         const result = await yf.search(symbol, { quotesCount: 0, newsCount: 100 });
         const news = result.news || [];
@@ -460,12 +517,8 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
         for (const article of news) {
           const uuid = article.uuid || article.link;
 
-          // Only include articles where Yahoo Finance's relatedTickers
-          // explicitly references a portfolio symbol. This prevents
-          // unrelated articles from appearing.
           const apiTickers = article.relatedTickers ?? [];
           const matchedSymbols = apiTickers.filter((t) => symbolSet.has(t.toUpperCase()));
-
           if (matchedSymbols.length === 0) continue;
 
           if (!allArticles.has(uuid)) {
@@ -481,6 +534,9 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
                 : new Date().toISOString(),
               relatedSymbols: matchedSymbols,
             });
+            if (article.link) {
+              seenUrls.set(normalizeUrl(article.link), uuid);
+            }
           } else {
             const existing = allArticles.get(uuid)!;
             for (const s of matchedSymbols) {
@@ -491,10 +547,45 @@ export async function getNews(symbols: string[]): Promise<NewsArticle[]> {
           }
         }
       } catch (error) {
-        console.error(`News error for ${symbol}:`, error);
+        console.error(`Yahoo news error for ${symbol}:`, error);
       }
     })
   );
+
+  // --- Source 2: Finnhub (if API key configured) ---
+  if (process.env.FINNHUB_API_KEY) {
+    const finnhubResults = await Promise.allSettled(
+      symbols.map((symbol) => fetchFinnhubNews(symbol))
+    );
+
+    for (const result of finnhubResults) {
+      if (result.status !== 'fulfilled') continue;
+      for (const article of result.value) {
+        // Deduplicate by URL across sources
+        const normUrl = article.link ? normalizeUrl(article.link) : '';
+        const existingUuid = normUrl ? seenUrls.get(normUrl) : undefined;
+
+        if (existingUuid) {
+          // Article already exists from Yahoo — merge symbols
+          const existing = allArticles.get(existingUuid)!;
+          for (const s of article.relatedSymbols) {
+            if (!existing.relatedSymbols.includes(s)) {
+              existing.relatedSymbols.push(s);
+            }
+          }
+          // Finnhub often has summaries when Yahoo doesn't
+          if (!existing.summary && article.summary) {
+            existing.summary = article.summary;
+          }
+        } else if (!allArticles.has(article.uuid)) {
+          allArticles.set(article.uuid, article);
+          if (normUrl) {
+            seenUrls.set(normUrl, article.uuid);
+          }
+        }
+      }
+    }
+  }
 
   const articles = Array.from(allArticles.values())
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
