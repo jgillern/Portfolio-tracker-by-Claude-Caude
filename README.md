@@ -249,6 +249,15 @@ V Supabase Dashboard → Authentication → Settings → Email Auth:
 
 ---
 
+## Vývojový tým
+
+| Člen | Role | Popis |
+|---|---|---|
+| **Opus** | Seniorní vývojář, hlavní architekt | Návrh architektury, implementace komplexních funkcí, klíčová rozhodnutí o technologiích a datových tocích. |
+| **Sonnet** | Juniorní vývojář | Zpracovává menší a méně komplexní úpravy. Pokud si něčím není jistý, nebude machrovat a požádá zadavatele o předání na Opuse. |
+
+---
+
 ## Licence
 
 Soukromý projekt.
