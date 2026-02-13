@@ -202,10 +202,12 @@ export async function getChart(
   }
 
   try {
-    const allSeries: { timestamp: number; normalizedPrice: number }[][] = [];
+    // Use indexed array to maintain order matching symbols/weights
+    const seriesSlots: ({ timestamp: number; normalizedPrice: number }[] | null)[] =
+      new Array(symbols.length).fill(null);
 
     await Promise.allSettled(
-      symbols.map(async (symbol) => {
+      symbols.map(async (symbol, symbolIndex) => {
         try {
           const chart = await yf.chart(symbol, {
             period1,
@@ -216,43 +218,41 @@ export async function getChart(
           const chartQuotes = chart.quotes || [];
           if (chartQuotes.length === 0) return;
 
-          const basePrice = chartQuotes[0].close ?? chartQuotes[0].open ?? 1;
-          const series = chartQuotes
-            .filter((cq) => cq.date && cq.close != null)
-            .map((cq) => ({
-              timestamp: cq.date.getTime(),
-              normalizedPrice: (cq.close! / basePrice) * 100,
-            }));
+          // Filter to valid quotes first, then normalize from the first valid close
+          const validQuotes = chartQuotes.filter((cq) => cq.date && cq.close != null);
+          if (validQuotes.length === 0) return;
 
-          allSeries.push(series);
+          const basePrice = validQuotes[0].close!;
+          const series = validQuotes.map((cq) => ({
+            timestamp: cq.date.getTime(),
+            normalizedPrice: (cq.close! / basePrice) * 100,
+          }));
+
+          seriesSlots[symbolIndex] = series;
         } catch (error) {
           console.error(`Chart error for ${symbol}:`, error);
         }
       })
     );
 
+    // Build aligned series + weights arrays (preserving symbol order)
+    const allSeries: { timestamp: number; normalizedPrice: number }[][] = [];
+    const alignedWeights: number[] = [];
+    for (let i = 0; i < seriesSlots.length; i++) {
+      if (seriesSlots[i] && seriesSlots[i]!.length > 0) {
+        allSeries.push(seriesSlots[i]!);
+        alignedWeights.push(weights?.[i] ?? 0);
+      }
+    }
+
     if (allSeries.length === 0) return [];
 
-    const baseSeries = allSeries.reduce((a, b) => (a.length > b.length ? a : b));
-    const effectiveWeights = weights ?? Array(allSeries.length).fill(100 / allSeries.length) as number[];
+    // If no explicit weights provided, distribute equally
+    const effectiveWeights = weights
+      ? alignedWeights
+      : allSeries.map(() => 100 / allSeries.length);
 
-    const result: ChartDataPoint[] = baseSeries.map((point, idx) => {
-      let weightedSum = 0;
-      let totalWeight = 0;
-
-      for (let i = 0; i < allSeries.length; i++) {
-        const series = allSeries[i];
-        const seriesPoint = series[Math.min(idx, series.length - 1)];
-        const w = effectiveWeights[i] ?? 100 / allSeries.length;
-        weightedSum += seriesPoint.normalizedPrice * w;
-        totalWeight += w;
-      }
-
-      return {
-        timestamp: point.timestamp,
-        value: totalWeight > 0 ? weightedSum / totalWeight : 0,
-      };
-    });
+    const result = aggregateSeries(allSeries, effectiveWeights);
 
     setCache(cacheKey, result, 5 * 60 * 1000);
     return result;
@@ -260,6 +260,32 @@ export async function getChart(
     console.error('Chart error:', error);
     return [];
   }
+}
+
+/** Aggregate multiple normalized series into a single weighted portfolio line */
+function aggregateSeries(
+  allSeries: { timestamp: number; normalizedPrice: number }[][],
+  weights: number[],
+): ChartDataPoint[] {
+  const baseSeries = allSeries.reduce((a, b) => (a.length > b.length ? a : b));
+
+  return baseSeries.map((point, idx) => {
+    let weightedSum = 0;
+    let totalWeight = 0;
+
+    for (let i = 0; i < allSeries.length; i++) {
+      const series = allSeries[i];
+      const seriesPoint = series[Math.min(idx, series.length - 1)];
+      const w = weights[i] ?? 100 / allSeries.length;
+      weightedSum += seriesPoint.normalizedPrice * w;
+      totalWeight += w;
+    }
+
+    return {
+      timestamp: point.timestamp,
+      value: totalWeight > 0 ? weightedSum / totalWeight : 0,
+    };
+  });
 }
 
 /**
@@ -280,11 +306,12 @@ async function getChartMax(
   const veryOldDate = new Date('1970-01-01');
 
   try {
-    // Step 1: Fetch full monthly history for each symbol
-    const rawSeries: { timestamp: number; close: number }[][] = [];
+    // Step 1: Fetch full monthly history for each symbol (indexed to preserve order)
+    const rawSlots: ({ timestamp: number; close: number }[] | null)[] =
+      new Array(symbols.length).fill(null);
 
     await Promise.allSettled(
-      symbols.map(async (symbol) => {
+      symbols.map(async (symbol, symbolIndex) => {
         try {
           const chart = await yf.chart(symbol, {
             period1: veryOldDate,
@@ -302,18 +329,28 @@ async function getChartMax(
               close: cq.close!,
             }));
 
-          rawSeries.push(series);
+          if (series.length > 0) rawSlots[symbolIndex] = series;
         } catch (error) {
           console.error(`Chart MAX error for ${symbol}:`, error);
         }
       })
     );
 
-    if (rawSeries.length === 0) return [];
+    // Filter out symbols that returned no data, keeping alignment with weights
+    const validRawSeries: { timestamp: number; close: number }[][] = [];
+    const validIndices: number[] = [];
+    for (let i = 0; i < rawSlots.length; i++) {
+      if (rawSlots[i]) {
+        validRawSeries.push(rawSlots[i]!);
+        validIndices.push(i);
+      }
+    }
+
+    if (validRawSeries.length === 0) return [];
 
     // Step 2: Find the latest "first data point" — the common start
     const latestFirstTimestamp = Math.max(
-      ...rawSeries.map((s) => s[0].timestamp)
+      ...validRawSeries.map((s) => s[0].timestamp)
     );
 
     // Step 3: Determine the appropriate interval based on actual range
@@ -330,10 +367,11 @@ async function getChartMax(
     // Step 4: If monthly is fine, trim and normalize existing data
     // Otherwise re-fetch with the appropriate interval from the common start
     let allSeries: { timestamp: number; normalizedPrice: number }[][] = [];
+    let seriesWeightIndices = validIndices;
 
     if (interval === '1mo') {
       // Use already fetched monthly data, just trim to common start
-      for (const series of rawSeries) {
+      for (const series of validRawSeries) {
         const trimmed = series.filter((p) => p.timestamp >= latestFirstTimestamp);
         if (trimmed.length === 0) continue;
         const basePrice = trimmed[0].close;
@@ -345,10 +383,13 @@ async function getChartMax(
         );
       }
     } else {
-      // Re-fetch with finer interval from common start date
+      // Re-fetch with finer interval from common start date (indexed)
       const commonStart = new Date(latestFirstTimestamp);
+      const refetchSlots: ({ timestamp: number; normalizedPrice: number }[] | null)[] =
+        new Array(symbols.length).fill(null);
+
       await Promise.allSettled(
-        symbols.map(async (symbol) => {
+        symbols.map(async (symbol, symbolIndex) => {
           try {
             const chart = await yf.chart(symbol, {
               period1: commonStart,
@@ -359,45 +400,40 @@ async function getChartMax(
             const chartQuotes = chart.quotes || [];
             if (chartQuotes.length === 0) return;
 
-            const basePrice = chartQuotes[0].close ?? chartQuotes[0].open ?? 1;
-            const series = chartQuotes
-              .filter((cq) => cq.date && cq.close != null)
-              .map((cq) => ({
-                timestamp: cq.date.getTime(),
-                normalizedPrice: (cq.close! / basePrice) * 100,
-              }));
+            const validQuotes = chartQuotes.filter((cq) => cq.date && cq.close != null);
+            if (validQuotes.length === 0) return;
 
-            allSeries.push(series);
+            const basePrice = validQuotes[0].close!;
+            const series = validQuotes.map((cq) => ({
+              timestamp: cq.date.getTime(),
+              normalizedPrice: (cq.close! / basePrice) * 100,
+            }));
+
+            refetchSlots[symbolIndex] = series;
           } catch (error) {
             console.error(`Chart MAX refetch error for ${symbol}:`, error);
           }
         })
       );
+
+      allSeries = [];
+      seriesWeightIndices = [];
+      for (let i = 0; i < refetchSlots.length; i++) {
+        if (refetchSlots[i] && refetchSlots[i]!.length > 0) {
+          allSeries.push(refetchSlots[i]!);
+          seriesWeightIndices.push(i);
+        }
+      }
     }
 
     if (allSeries.length === 0) return [];
 
     // Step 5: Aggregate into weighted portfolio line
-    const baseSeries = allSeries.reduce((a, b) => (a.length > b.length ? a : b));
-    const effectiveWeights = weights ?? Array(allSeries.length).fill(100 / allSeries.length) as number[];
+    const effectiveWeights = weights
+      ? seriesWeightIndices.map((i) => weights[i] ?? 0)
+      : allSeries.map(() => 100 / allSeries.length);
 
-    const result: ChartDataPoint[] = baseSeries.map((point, idx) => {
-      let weightedSum = 0;
-      let totalWeight = 0;
-
-      for (let i = 0; i < allSeries.length; i++) {
-        const series = allSeries[i];
-        const seriesPoint = series[Math.min(idx, series.length - 1)];
-        const w = effectiveWeights[i] ?? 100 / allSeries.length;
-        weightedSum += seriesPoint.normalizedPrice * w;
-        totalWeight += w;
-      }
-
-      return {
-        timestamp: point.timestamp,
-        value: totalWeight > 0 ? weightedSum / totalWeight : 0,
-      };
-    });
+    const result = aggregateSeries(allSeries, effectiveWeights);
 
     setCache(cacheKey, result, 5 * 60 * 1000);
     return result;
