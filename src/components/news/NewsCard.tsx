@@ -1,9 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { NewsArticle } from '@/types/market';
 import { formatDate } from '@/lib/utils';
+
+function getPublisherDomain(publisher: string, articleUrl: string): string | null {
+  // Try to extract domain from article URL first
+  try {
+    const url = new URL(articleUrl);
+    return url.hostname.replace(/^www\./, '');
+  } catch {
+    // Fallback: guess domain from publisher name
+    const name = publisher.toLowerCase().replace(/\s+/g, '');
+    const knownDomains: Record<string, string> = {
+      reuters: 'reuters.com',
+      bloomberg: 'bloomberg.com',
+      cnbc: 'cnbc.com',
+      yahoo: 'yahoo.com',
+      marketwatch: 'marketwatch.com',
+      wsj: 'wsj.com',
+      ft: 'ft.com',
+      seekingalpha: 'seekingalpha.com',
+      benzinga: 'benzinga.com',
+      investopedia: 'investopedia.com',
+      barrons: 'barrons.com',
+      fool: 'fool.com',
+    };
+    for (const [key, domain] of Object.entries(knownDomains)) {
+      if (name.includes(key)) return domain;
+    }
+    return null;
+  }
+}
 
 interface Props {
   article: NewsArticle;
@@ -11,6 +40,34 @@ interface Props {
 
 export function NewsCard({ article }: Props) {
   const { t, locale } = useLanguage();
+  const [imageUrl, setImageUrl] = useState<string | null>(article.thumbnailUrl);
+  const [imgError, setImgError] = useState(false);
+
+  // Try OG image scraping when no thumbnail
+  useEffect(() => {
+    if (article.thumbnailUrl || !article.link) return;
+
+    let cancelled = false;
+    fetch(`/api/og-image?url=${encodeURIComponent(article.link)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled && data.imageUrl) {
+          setImageUrl(data.imageUrl);
+        }
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [article.thumbnailUrl, article.link]);
+
+  // Determine what to show as the thumbnail
+  const publisherDomain = getPublisherDomain(article.publisher, article.link);
+  const clearbitLogoUrl = publisherDomain
+    ? `https://logo.clearbit.com/${publisherDomain}?size=96`
+    : null;
+
+  const showImage = imageUrl && !imgError;
+  const showLogo = !showImage && clearbitLogoUrl;
 
   return (
     <a
@@ -19,13 +76,30 @@ export function NewsCard({ article }: Props) {
       rel="noopener noreferrer"
       className="flex gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:shadow-md transition-shadow group"
     >
-      {article.thumbnailUrl ? (
+      {showImage ? (
         <div className="hidden sm:block flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
           <img
-            src={article.thumbnailUrl}
+            src={imageUrl!}
             alt=""
             className="w-full h-full object-cover"
             loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        </div>
+      ) : showLogo ? (
+        <div className="hidden sm:flex flex-shrink-0 w-24 h-24 rounded-lg bg-gray-100 dark:bg-gray-700 items-center justify-center">
+          <img
+            src={clearbitLogoUrl!}
+            alt={article.publisher}
+            className="w-12 h-12 object-contain"
+            loading="lazy"
+            onError={(e) => {
+              // If logo also fails, replace with SVG icon
+              const parent = (e.target as HTMLElement).parentElement;
+              if (parent) {
+                parent.innerHTML = '<svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>';
+              }
+            }}
           />
         </div>
       ) : (
