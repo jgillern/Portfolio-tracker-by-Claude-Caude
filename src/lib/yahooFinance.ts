@@ -2,7 +2,7 @@ import YahooFinance from 'yahoo-finance2';
 import { SearchResult } from '@/types/api';
 import { InstrumentType } from '@/types/portfolio';
 import { Quote, ChartDataPoint, NewsArticle, TimePeriod, CalendarEvent, CalendarEventType } from '@/types/market';
-import { subDays, subMonths, subYears, startOfYear } from 'date-fns';
+import { subDays, subMonths, subYears, startOfYear, differenceInDays } from 'date-fns';
 
 const yf = new YahooFinance();
 
@@ -155,9 +155,10 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
 export async function getChart(
   symbols: string[],
   period: TimePeriod,
-  weights?: number[]
+  weights?: number[],
+  sinceDate?: Date
 ): Promise<ChartDataPoint[]> {
-  const cacheKey = `chart:${symbols.join(',')}:${period}:${weights?.join(',')}`;
+  const cacheKey = `chart:${symbols.join(',')}:${period}:${weights?.join(',')}:${sinceDate?.toISOString() ?? ''}`;
   const cached = getCached<ChartDataPoint[]>(cacheKey);
   if (cached) return cached;
 
@@ -190,6 +191,20 @@ export async function getChart(
       period1 = startOfYear(now);
       interval = '1d';
       break;
+    case 'max': {
+      period1 = sinceDate ?? subYears(now, 5);
+      const days = differenceInDays(now, period1);
+      if (days <= 30) {
+        interval = '1d';
+      } else if (days <= 365) {
+        interval = '1d';
+      } else if (days <= 365 * 3) {
+        interval = '1wk';
+      } else {
+        interval = '1mo';
+      }
+      break;
+    }
     default:
       period1 = subMonths(now, 1);
       interval = '1d';

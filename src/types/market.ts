@@ -26,7 +26,7 @@ export interface NewsArticle {
   relatedSymbols: string[];
 }
 
-export type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd';
+export type TimePeriod = '1d' | '1w' | '1mo' | '1y' | '5y' | 'ytd' | 'max';
 
 export type CalendarEventType = 'earnings' | 'dividend' | 'split' | 'other';
 
