@@ -422,12 +422,10 @@ export const AlesMichl: React.FC<AvatarProps> = ({ className = '' }) => (
     <circle cx="52" cy="185" r="9" fill="#11457E" stroke="#C0A050" strokeWidth="1"/>
     <text x="52" y="188" fontSize="7" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">ČNB</text>
 
-    {/* Czech flag colors - subtle stripe */}
-    <rect x="108" y="180" width="12" height="3" fill="#D7141A"/>
-    <rect x="108" y="183" width="12" height="3" fill="#FFFFFF"/>
-    <rect x="108" y="186" width="6" height="6" fill="#11457E"/>
-    <rect x="114" y="186" width="6" height="3" fill="#FFFFFF"/>
-    <rect x="114" y="183" width="6" height="3" fill="#D7141A"/>
+    {/* Czech flag pin — correct: white top, red bottom, blue triangle left */}
+    <rect x="108" y="180" width="12" height="4" fill="#FFFFFF"/>
+    <rect x="108" y="184" width="12" height="4" fill="#D7141A"/>
+    <polygon points="108,180 108,188 114,184" fill="#11457E"/>
   </svg>
 );
 
@@ -783,85 +781,119 @@ export const SatoshiNakamoto: React.FC<AvatarProps> = ({ className = '' }) => (
 
 // Babiš & Trump scheming together — leaning in, sly smirks, plotting
 export const BabisAndTrump: React.FC<AvatarProps> = ({ className = '' }) => (
-  <svg className={className} viewBox="0 0 340 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg className={className} viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
     {/* === ANDREJ BABIŠ — left side, leaning right === */}
     <g transform="rotate(5, 90, 100)">
-      {/* Long, narrow gaunt face */}
-      <path d="M 52 62 Q 50 38 62 28 Q 72 20 82 19 Q 92 20 102 28 Q 114 38 112 62 L 110 88 Q 108 104 100 112 L 94 120 Q 88 124 82 124 Q 76 124 70 120 L 64 112 Q 56 104 54 88 Z" fill="#F0C8A0"/>
+      {/* Wide, square, heavy face — broad jaw, fleshy */}
+      <path d="M 46 58 Q 42 34 54 24 Q 64 16 82 15 Q 100 16 110 24 Q 122 34 118 58 L 116 88 Q 114 106 106 116 L 100 122 Q 92 128 82 128 Q 72 128 64 122 L 58 116 Q 50 106 48 88 Z" fill="#E8C0A0"/>
 
-      {/* Gray/silver hair — swept back, thinning */}
-      <path d="M 64 28 Q 74 14 82 12 Q 90 14 100 28 Q 92 16 82 14 Q 72 16 64 28 Z" fill="#B0B0B0"/>
-      <path d="M 60 32 Q 68 12 82 10 Q 96 12 104 32 Q 94 16 82 13 Q 70 16 60 32 Z" fill="#A8A8A8"/>
-      {/* Side hair — gray */}
-      <path d="M 48 42 L 48 65 Q 50 54 54 42 Z" fill="#A0A0A0"/>
-      <path d="M 116 42 L 116 65 Q 114 54 110 42 Z" fill="#A0A0A0"/>
-      {/* Hair texture */}
-      <path d="M 66 20 Q 74 12 82 11" stroke="#C0C0C0" strokeWidth="1.5" fill="none" opacity="0.6"/>
-      <path d="M 98 20 Q 90 12 82 11" stroke="#C0C0C0" strokeWidth="1.5" fill="none" opacity="0.6"/>
+      {/* Very thin gray hair — scalp visible through, combover */}
+      {/* Scalp showing through on top */}
+      <ellipse cx="82" cy="20" rx="28" ry="10" fill="#E0B898" opacity="0.4"/>
+      {/* Thin wispy hair strands combed back over scalp */}
+      <path d="M 54 30 Q 62 12 82 9 Q 102 12 110 30" fill="none"/>
+      <path d="M 56 28 Q 66 14 82 11 Q 98 14 108 28" stroke="#B0B0B0" strokeWidth="2" fill="none" opacity="0.7"/>
+      <path d="M 58 26 Q 68 14 82 12" stroke="#B8B8B8" strokeWidth="1.5" fill="none" opacity="0.5"/>
+      <path d="M 62 24 Q 72 14 82 12" stroke="#C0C0C0" strokeWidth="1" fill="none" opacity="0.4"/>
+      <path d="M 106 26 Q 96 14 82 12" stroke="#B8B8B8" strokeWidth="1.5" fill="none" opacity="0.5"/>
+      <path d="M 102 24 Q 92 14 82 12" stroke="#C0C0C0" strokeWidth="1" fill="none" opacity="0.4"/>
+      {/* Very thin coverage on crown — barely there */}
+      <path d="M 58 30 Q 70 10 82 8 Q 94 10 106 30 Q 96 16 82 13 Q 68 16 58 30 Z" fill="#B0B0B0" opacity="0.45"/>
+      {/* Side hair — short, gray, more visible */}
+      <path d="M 44 38 L 42 60 Q 46 50 50 38 Z" fill="#A0A0A0"/>
+      <path d="M 120 38 L 122 60 Q 118 50 114 38 Z" fill="#A0A0A0"/>
+      {/* Above-ear hair patches */}
+      <path d="M 44 42 Q 46 34 54 28" fill="#A8A8A8" opacity="0.6"/>
+      <path d="M 120 42 Q 118 34 110 28" fill="#A8A8A8" opacity="0.6"/>
 
-      {/* Ears */}
-      <ellipse cx="48" cy="70" rx="7" ry="12" fill="#F0C8A0"/>
-      <ellipse cx="116" cy="70" rx="7" ry="12" fill="#F0C8A0"/>
+      {/* Large prominent ears */}
+      <ellipse cx="42" cy="72" rx="9" ry="14" fill="#E8C0A0"/>
+      <ellipse cx="122" cy="72" rx="9" ry="14" fill="#E8C0A0"/>
+      <ellipse cx="42" cy="72" rx="5" ry="9" fill="#D8A888" opacity="0.25"/>
+      <ellipse cx="122" cy="72" rx="5" ry="9" fill="#D8A888" opacity="0.25"/>
 
-      {/* Deep-set eyes — calculating, sly */}
-      <ellipse cx="70" cy="62" rx="8" ry="5.5" fill="#FFFFFF"/>
-      <ellipse cx="94" cy="62" rx="8" ry="5.5" fill="#FFFFFF"/>
-      <circle cx="72" cy="62" r="4" fill="#5A7A6A"/>
-      <circle cx="96" cy="62" r="4" fill="#5A7A6A"/>
-      <circle cx="73" cy="61" r="2" fill="#1A1A1A"/>
-      <circle cx="97" cy="61" r="2" fill="#1A1A1A"/>
-      <circle cx="74" cy="60" r="0.7" fill="#FFFFFF"/>
-      <circle cx="98" cy="60" r="0.7" fill="#FFFFFF"/>
-      {/* Heavy, slightly lowered lids — scheming look */}
-      <path d="M 62 60 Q 70 56 78 60" fill="#E0B888" opacity="0.5"/>
-      <path d="M 86 60 Q 94 56 102 60" fill="#E0B888" opacity="0.5"/>
+      {/* BIG forehead — prominent, high, with DEEP wrinkles */}
+      <path d="M 56 38 Q 68 35 82 35 Q 96 35 108 38" stroke="#D0A070" strokeWidth="1.2" opacity="0.5"/>
+      <path d="M 58 42 Q 70 39 82 39 Q 94 39 106 42" stroke="#D0A070" strokeWidth="1.1" opacity="0.45"/>
+      <path d="M 60 46 Q 72 43 82 43 Q 92 43 104 46" stroke="#D0A070" strokeWidth="1" opacity="0.4"/>
+      <path d="M 62 50 Q 72 47 82 47 Q 92 47 102 50" stroke="#D0A070" strokeWidth="0.8" opacity="0.3"/>
 
-      {/* Heavy brow — slightly furrowed */}
-      <path d="M 60 54 Q 66 50 72 52 Q 76 53 78 55" stroke="#8A8A8A" strokeWidth="2.5" fill="none"/>
-      <path d="M 104 54 Q 98 50 92 52 Q 88 53 86 55" stroke="#8A8A8A" strokeWidth="2.5" fill="none"/>
+      {/* Eyes — small, deep-set under MASSIVE brows, intense stare */}
+      <ellipse cx="70" cy="66" rx="6.5" ry="4" fill="#FFFFFF"/>
+      <ellipse cx="94" cy="66" rx="6.5" ry="4" fill="#FFFFFF"/>
+      <circle cx="71" cy="66" r="3.2" fill="#6A7868"/>
+      <circle cx="95" cy="66" r="3.2" fill="#6A7868"/>
+      <circle cx="72" cy="65.5" r="1.6" fill="#1A1A1A"/>
+      <circle cx="96" cy="65.5" r="1.6" fill="#1A1A1A"/>
+      <circle cx="73" cy="64.5" r="0.5" fill="#FFFFFF"/>
+      <circle cx="97" cy="64.5" r="0.5" fill="#FFFFFF"/>
+      {/* Heavy drooping lids — stern, intense */}
+      <path d="M 62 64 Q 70 60 78 64" fill="#D8B088" opacity="0.7"/>
+      <path d="M 86 64 Q 94 60 102 64" fill="#D8B088" opacity="0.7"/>
+      {/* Deep under-eye bags */}
+      <path d="M 63 70 Q 70 73 77 70" stroke="#C89868" strokeWidth="1" fill="none" opacity="0.4"/>
+      <path d="M 87 70 Q 94 73 101 70" stroke="#C89868" strokeWidth="1" fill="none" opacity="0.4"/>
 
-      {/* Nose — long, prominent */}
-      <path d="M 82 60 L 82 82" stroke="#D0A878" strokeWidth="2"/>
-      <path d="M 76 84 Q 79 88 82 89 Q 85 88 88 84" fill="#D8B080"/>
+      {/* ★ MASSIVE bushy dark gray eyebrows — THE iconic feature ★ */}
+      {/* Left brow — thick, dark, furrowed/angry */}
+      <path d="M 58 56 Q 64 50 70 52 Q 74 53 78 56" stroke="#5A5A5A" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+      <path d="M 59 55 Q 65 50 71 51.5" stroke="#686868" strokeWidth="2" fill="none" opacity="0.5"/>
+      {/* Right brow — matching */}
+      <path d="M 106 56 Q 100 50 94 52 Q 90 53 86 56" stroke="#5A5A5A" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+      <path d="M 105 55 Q 99 50 93 51.5" stroke="#686868" strokeWidth="2" fill="none" opacity="0.5"/>
+      {/* Brow furrow lines between them — frowning crease */}
+      <path d="M 78 54 Q 82 50 86 54" stroke="#C09060" strokeWidth="1" fill="none" opacity="0.4"/>
+      <path d="M 79 56 Q 82 52 85 56" stroke="#C09060" strokeWidth="0.8" fill="none" opacity="0.3"/>
 
-      {/* Deep nasolabial folds */}
-      <path d="M 72 84 Q 68 94 66 102" stroke="#D0A878" strokeWidth="1.2" opacity="0.5"/>
-      <path d="M 92 84 Q 96 94 98 102" stroke="#D0A878" strokeWidth="1.2" opacity="0.5"/>
+      {/* Nose — wide, broad, bulbous tip */}
+      <path d="M 82 60 L 81 80" stroke="#D0A070" strokeWidth="3"/>
+      <path d="M 72 84 Q 77 90 82 92 Q 87 90 92 84" fill="#D8A878"/>
+      <ellipse cx="76" cy="84" rx="3.5" ry="2.5" fill="#D0A070" opacity="0.5"/>
+      <ellipse cx="88" cy="84" rx="3.5" ry="2.5" fill="#D0A070" opacity="0.5"/>
+      {/* Nostrils */}
+      <ellipse cx="77" cy="86" rx="2" ry="1.2" fill="#B08060" opacity="0.3"/>
+      <ellipse cx="87" cy="86" rx="2" ry="1.2" fill="#B08060" opacity="0.3"/>
 
-      {/* Sly, one-sided smirk — scheming */}
-      <path d="M 68 104 Q 76 110 82 110 Q 90 109 98 104" stroke="#906060" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-      <path d="M 98 103 Q 102 100 104 97" stroke="#906060" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      {/* Very deep nasolabial folds */}
+      <path d="M 70 86 Q 62 98 60 108" stroke="#C89060" strokeWidth="1.8" opacity="0.5"/>
+      <path d="M 94 86 Q 102 98 104 108" stroke="#C89060" strokeWidth="1.8" opacity="0.5"/>
 
-      {/* Slight stubble */}
-      <path d="M 60 108 Q 72 120 82 122 Q 92 120 104 108" fill="#C0B0A0" opacity="0.15"/>
+      {/* Stern, downturned mouth — grimace/frown, scheming version */}
+      <path d="M 66 108 Q 74 112 82 111 Q 92 110 100 106" stroke="#906060" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* One corner slightly up — the scheming smirk */}
+      <path d="M 100 105 Q 104 102 106 98" stroke="#906060" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
 
-      {/* Chin — prominent, long */}
-      <ellipse cx="82" cy="120" rx="3" ry="2" fill="#D0A878" opacity="0.3"/>
+      {/* Heavy jowls — sagging cheeks */}
+      <path d="M 48 100 Q 52 114 62 122" stroke="#D0A070" strokeWidth="1.2" opacity="0.35"/>
+      <path d="M 116 100 Q 112 114 102 122" stroke="#D0A070" strokeWidth="1.2" opacity="0.35"/>
+      <ellipse cx="56" cy="108" rx="6" ry="4" fill="#E0B898" opacity="0.15"/>
+      <ellipse cx="108" cy="108" rx="6" ry="4" fill="#E0B898" opacity="0.15"/>
 
-      {/* Forehead wrinkles */}
-      <path d="M 62 40 Q 72 38 82 38 Q 92 38 102 40" stroke="#D0A878" strokeWidth="0.8" opacity="0.35"/>
-      <path d="M 64 44 Q 73 42 82 42 Q 91 42 100 44" stroke="#D0A878" strokeWidth="0.8" opacity="0.3"/>
+      {/* Chin — wide, squared */}
+      <ellipse cx="82" cy="124" rx="10" ry="4" fill="#D8B090" opacity="0.15"/>
 
-      {/* Neck */}
-      <rect x="72" y="124" width="20" height="16" fill="#F0C8A0" rx="2"/>
+      {/* Thick neck */}
+      <rect x="68" y="128" width="28" height="14" fill="#E8C0A0" rx="2"/>
 
-      {/* Dark coat/suit */}
-      <path d="M 44 138 Q 56 130 72 136 L 82 128 L 92 136 Q 108 130 120 138 L 120 200 L 44 200 Z" fill="#2A2A2A"/>
-      {/* Lapels */}
-      <path d="M 72 136 L 76 144 L 82 128 L 88 144 L 92 136" fill="#222222"/>
-      {/* White shirt */}
-      <path d="M 76 144 L 82 128 L 88 144 L 86 152 L 82 160 L 78 152 Z" fill="#FFFFFF"/>
+      {/* Dark suit jacket */}
+      <path d="M 38 140 Q 52 132 68 138 L 82 130 L 96 138 Q 112 132 126 140 L 126 200 L 38 200 Z" fill="#2A2A2A"/>
+      {/* Lapels — wider */}
+      <path d="M 68 138 L 73 148 L 82 130 L 91 148 L 96 138" fill="#222222"/>
 
-      {/* Pink/paisley patterned tie */}
-      <path d="M 80 140 L 82 136 L 84 140 L 82 168 Z" fill="#C87090"/>
-      <path d="M 79 144 L 82 140 L 85 144" fill="#D88098"/>
-      {/* Tie pattern */}
-      <circle cx="82" cy="150" r="1" fill="#E8A0B0" opacity="0.5"/>
-      <circle cx="82" cy="156" r="1" fill="#E8A0B0" opacity="0.5"/>
-      <circle cx="82" cy="162" r="1" fill="#E8A0B0" opacity="0.5"/>
+      {/* White shirt — OPEN COLLAR, no tie */}
+      <path d="M 73 148 L 82 130 L 91 148 L 89 158 L 82 166 L 75 158 Z" fill="#FFFFFF"/>
+      {/* Open collar V-shape */}
+      <path d="M 76 140 L 82 134 L 88 140" stroke="#E8E8E8" strokeWidth="1" fill="none"/>
+      {/* Visible chest/skin in collar opening */}
+      <path d="M 78 142 L 82 136 L 86 142 L 84 148 L 82 150 L 80 148 Z" fill="#E0B898" opacity="0.5"/>
 
-      {/* AGROFERT badge hint */}
-      <text x="58" y="160" fontSize="6" fill="#8AB040" textAnchor="middle" fontWeight="bold" opacity="0.6">AGF</text>
+      {/* Czech flag pin on lapel */}
+      <rect x="100" y="146" width="8" height="4" fill="#FFFFFF" rx="0.3"/>
+      <rect x="100" y="150" width="8" height="4" fill="#D7141A" rx="0.3"/>
+      <polygon points="100,146 100,154 104,150" fill="#11457E"/>
+
+      {/* AGROFERT badge */}
+      <text x="54" y="162" fontSize="5" fill="#8AB040" textAnchor="middle" fontWeight="bold" opacity="0.5">AGF</text>
     </g>
 
     {/* === DONALD TRUMP — right side, leaning left === */}
@@ -963,7 +995,68 @@ export const BabisAndTrump: React.FC<AvatarProps> = ({ className = '' }) => (
     <text x="170" y="35" fontSize="14" fill="#2A8A2A" textAnchor="middle" fontWeight="bold" opacity="0.8">$</text>
     <text x="182" y="35" fontSize="14" fill="#2A8A2A" textAnchor="middle" fontWeight="bold" opacity="0.8">$</text>
 
-    {/* Sneaky "hands rubbing" gesture lines between them */}
+    {/* === DISINTEGRATING CZECH FLAG — left/Babiš side === */}
+    {/* Main flag body — cracking, pieces falling away */}
+    <g opacity="0.75">
+      {/* Main flag piece — tilted, damaged */}
+      <g transform="rotate(-12, 30, 180)">
+        <rect x="10" y="172" width="28" height="8" fill="#FFFFFF"/>
+        <rect x="10" y="180" width="28" height="8" fill="#D7141A"/>
+        <polygon points="10,172 10,188 20,180" fill="#11457E"/>
+        {/* Crack across flag */}
+        <path d="M 18 172 L 22 177 L 19 182 L 24 188" stroke="#1A1A1A" strokeWidth="0.6" fill="none" opacity="0.5"/>
+      </g>
+      {/* Broken-off piece floating away — top right */}
+      <g transform="rotate(25, 50, 168)">
+        <polygon points="44,164 54,164 54,170 48,170" fill="#FFFFFF" opacity="0.6"/>
+        <polygon points="48,170 54,170 54,172 44,172" fill="#D7141A" opacity="0.6"/>
+      </g>
+      {/* Small shard falling */}
+      <rect x="22" y="194" width="5" height="4" fill="#D7141A" opacity="0.4" transform="rotate(35, 24, 196)"/>
+      {/* Another shard */}
+      <polygon points="38,190 44,188 42,194" fill="#11457E" opacity="0.35" transform="rotate(-20, 40, 191)"/>
+      {/* Tiny debris */}
+      <rect x="16" y="200" width="3" height="2" fill="#FFFFFF" opacity="0.3" transform="rotate(50, 17, 201)"/>
+      <rect x="34" y="198" width="2" height="3" fill="#D7141A" opacity="0.25" transform="rotate(-15, 35, 199)"/>
+    </g>
+
+    {/* === DISINTEGRATING AMERICAN FLAG — right/Trump side === */}
+    {/* Main flag body — cracking, pieces falling apart */}
+    <g opacity="0.75">
+      {/* Main flag piece — tilted, damaged */}
+      <g transform="rotate(12, 310, 180)">
+        <rect x="296" y="170" width="30" height="18" fill="#B22234"/>
+        {/* Stripes */}
+        <rect x="296" y="172.5" width="30" height="2.5" fill="#FFFFFF"/>
+        <rect x="296" y="177.5" width="30" height="2.5" fill="#FFFFFF"/>
+        <rect x="296" y="182.5" width="30" height="2.5" fill="#FFFFFF"/>
+        {/* Blue canton */}
+        <rect x="296" y="170" width="12" height="10" fill="#3C3B6E"/>
+        {/* Stars hint */}
+        <circle cx="299" cy="173" r="0.6" fill="#FFFFFF"/>
+        <circle cx="302" cy="173" r="0.6" fill="#FFFFFF"/>
+        <circle cx="305" cy="173" r="0.6" fill="#FFFFFF"/>
+        <circle cx="300" cy="176" r="0.6" fill="#FFFFFF"/>
+        <circle cx="304" cy="176" r="0.6" fill="#FFFFFF"/>
+        {/* Crack across flag */}
+        <path d="M 308 170 L 312 175 L 308 180 L 314 188" stroke="#1A1A1A" strokeWidth="0.6" fill="none" opacity="0.5"/>
+      </g>
+      {/* Broken-off piece floating away */}
+      <g transform="rotate(-30, 298, 168)">
+        <polygon points="290,162 300,162 298,168 288,168" fill="#B22234" opacity="0.6"/>
+        <line x1="290" y1="165" x2="300" y2="165" stroke="#FFFFFF" strokeWidth="1" opacity="0.5"/>
+      </g>
+      {/* Shard of blue canton falling */}
+      <rect x="316" y="194" width="6" height="5" fill="#3C3B6E" opacity="0.4" transform="rotate(-40, 319, 196)"/>
+      <circle cx="318" cy="196" r="0.4" fill="#FFFFFF" opacity="0.3"/>
+      {/* Red stripe shard */}
+      <polygon points="304,196 312,194 310,200" fill="#B22234" opacity="0.35" transform="rotate(25, 308, 197)"/>
+      {/* Tiny debris */}
+      <rect x="320" y="202" width="3" height="2" fill="#FFFFFF" opacity="0.3" transform="rotate(-55, 321, 203)"/>
+      <rect x="300" y="200" width="2" height="3" fill="#B22234" opacity="0.25" transform="rotate(20, 301, 201)"/>
+    </g>
+
+    {/* Sneaky hand gesture lines between them */}
     <path d="M 120 140 Q 135 135 145 140" stroke="#F0C8A0" strokeWidth="1.5" opacity="0.4"/>
     <path d="M 195 140 Q 210 135 220 140" stroke="#F0B070" strokeWidth="1.5" opacity="0.4"/>
   </svg>
