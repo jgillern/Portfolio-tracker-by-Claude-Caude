@@ -3,6 +3,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
+import { useAuth } from '@/context/AuthContext';
+import { Spinner } from '@/components/ui/Spinner';
 import { useMarketData } from '@/hooks/useMarketData';
 import { useDashboardOrder } from '@/hooks/useDashboardOrder';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
@@ -23,7 +25,8 @@ import { hasCustomWeights } from '@/types/portfolio';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
-  const { activePortfolio, deletePortfolio } = usePortfolio();
+  const { activePortfolio, deletePortfolio, isLoading: portfolioLoading } = usePortfolio();
+  const { isLoading: authLoading } = useAuth();
   const [showAddInstrument, setShowAddInstrument] = useState(false);
   const [showEditPortfolio, setShowEditPortfolio] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -54,6 +57,14 @@ export default function DashboardPage() {
     }),
     [chartRefreshSignal, quotes, isLoading]
   );
+
+  if (authLoading || portfolioLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
   if (!activePortfolio) {
     return (
