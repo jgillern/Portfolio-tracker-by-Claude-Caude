@@ -66,3 +66,76 @@ body {
 .login-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Businessman avatar peeking animations */
+@keyframes peek-from-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes peek-from-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes peek-from-bottom {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(-50%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -15px) rotate(2deg);
+    opacity: 0.7;
+  }
+}
+
+.animate-peek-left {
+  animation: peek-from-left 1s ease-out forwards;
+}
+
+.animate-peek-right {
+  animation: peek-from-right 1s ease-out forwards;
+}
+
+.animate-peek-bottom {
+  animation: peek-from-bottom 1s ease-out forwards;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}

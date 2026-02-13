@@ -7,6 +7,17 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Spinner } from '@/components/ui/Spinner';
 import { createClient } from '@/lib/supabase/client';
+import {
+  ElonMusk,
+  JeffBezos,
+  MichaelSaylor,
+  JeromePowell,
+  AlesMichl,
+  WarrenBuffett,
+  SatoshiNakamoto,
+  JamieDimon,
+  ChristineLagarde,
+} from '@/components/login/BusinessmanAvatars';
 
 type Tab = 'login' | 'register';
 
@@ -96,6 +107,44 @@ export default function LoginPage() {
           <div className="login-float absolute top-[15%] left-[10%] w-20 h-20 rounded-full bg-white/10 blur-xl" />
           <div className="login-float absolute top-[25%] right-[15%] w-32 h-32 rounded-full bg-white/5 blur-2xl" style={{ animationDelay: '2s' }} />
           <div className="login-float absolute bottom-[20%] left-[20%] w-24 h-24 rounded-full bg-white/10 blur-xl" style={{ animationDelay: '4s' }} />
+        </div>
+
+        {/* Businessman avatars peeking from sides */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
+          {/* Left side - peeking from left */}
+          <div className="absolute top-[10%] -left-8 animate-peek-left" style={{ animationDelay: '0.5s' }}>
+            <ElonMusk className="w-24 h-32 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="absolute top-[35%] -left-10 animate-peek-left" style={{ animationDelay: '1.5s' }}>
+            <MichaelSaylor className="w-28 h-36 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="absolute top-[60%] -left-6 animate-peek-left" style={{ animationDelay: '2.5s' }}>
+            <WarrenBuffett className="w-26 h-34 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+
+          {/* Right side - peeking from right */}
+          <div className="absolute top-[15%] -right-8 animate-peek-right" style={{ animationDelay: '1s' }}>
+            <JeffBezos className="w-26 h-34 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="absolute top-[40%] -right-10 animate-peek-right" style={{ animationDelay: '2s' }}>
+            <JeromePowell className="w-24 h-32 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="absolute top-[65%] -right-6 animate-peek-right" style={{ animationDelay: '3s' }}>
+            <AlesMichl className="w-25 h-33 drop-shadow-2xl opacity-90 hover:opacity-100 transition-opacity" />
+          </div>
+
+          {/* Bottom corners */}
+          <div className="absolute bottom-[8%] left-[5%] animate-peek-bottom" style={{ animationDelay: '3.5s' }}>
+            <JamieDimon className="w-22 h-30 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="absolute bottom-[8%] right-[5%] animate-peek-bottom" style={{ animationDelay: '4s' }}>
+            <ChristineLagarde className="w-22 h-30 drop-shadow-2xl opacity-85 hover:opacity-100 transition-opacity" />
+          </div>
+
+          {/* Mysterious Satoshi - top center, floating */}
+          <div className="absolute top-[5%] left-1/2 -translate-x-1/2 animate-float-slow" style={{ animationDelay: '4.5s' }}>
+            <SatoshiNakamoto className="w-20 h-28 drop-shadow-2xl opacity-70 hover:opacity-90 transition-opacity" />
+          </div>
         </div>
 
         {/* Title */}
