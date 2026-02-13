@@ -51,9 +51,9 @@ export function KeyStats() {
           if (res.ok) {
             const data = await res.json();
             if (data.length >= 2) {
-              const first = data[0].value;
+              // Chart data is normalized to index 100 at start, so performance = last - 100
               const last = data[data.length - 1].value;
-              const performance = ((last - first) / first) * 100;
+              const performance = last - 100;
               results.push({ period, label, value: performance });
             } else {
               results.push({ period, label, value: null });
