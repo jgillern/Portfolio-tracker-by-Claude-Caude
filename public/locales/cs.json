@@ -113,7 +113,8 @@
     "filterNone": "Žádné instrumenty",
     "filterCount": "{count} instrumentů",
     "selectAll": "Vybrat vše",
-    "deselectAll": "Zrušit výběr"
+    "deselectAll": "Zrušit výběr",
+    "showMore": "Zobrazit další"
   },
   "calendar": {
     "title": "Kalendář událostí",

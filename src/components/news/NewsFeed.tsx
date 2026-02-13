@@ -8,6 +8,8 @@ import { NewsCard } from './NewsCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
 
+const PAGE_SIZE = 10;
+
 export function NewsFeed() {
   const { t } = useLanguage();
   const { activePortfolio } = usePortfolio();
@@ -17,12 +19,14 @@ export function NewsFeed() {
 
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>(allSymbols);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Sync selected symbols when portfolio instruments change
   const allSymbolsKey = allSymbols.join(',');
   useEffect(() => {
     setSelectedSymbols(allSymbols);
+    setVisibleCount(PAGE_SIZE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allSymbolsKey]);
 
@@ -159,9 +163,17 @@ export function NewsFeed() {
         </div>
       ) : (
         <div className="space-y-3">
-          {articles.map((article) => (
+          {articles.slice(0, visibleCount).map((article) => (
             <NewsCard key={article.uuid} article={article} />
           ))}
+          {visibleCount < articles.length && (
+            <button
+              onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+              className="w-full py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            >
+              {t('news.showMore')} ({articles.length - visibleCount})
+            </button>
+          )}
         </div>
       )}
     </div>
