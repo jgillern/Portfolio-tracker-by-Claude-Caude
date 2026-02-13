@@ -152,13 +152,14 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ### Přepnutí jazyka
 
 ```
-1. Uživatel otevře jazykový dropdown v hlavičce
-2. Vybere jazyk z 6 možností (EN, CZ, SK, UA, ZH, MN)
-3. setLocale() → změní locale v LanguageContext
-4. Nový locale se uloží do localStorage (cache) + Supabase (persistent)
-5. Načte se příslušný JSON (/locales/{locale}.json) — cachuje se po prvním načtení
-6. t() funkce vrací překlady z nového souboru
-7. Všechny komponenty se přerenderují s novými texty
+1. Nový návštěvník bez uloženého nastavení vidí stránku v češtině (výchozí: 'cs')
+2. Uživatel otevře jazykový dropdown v hlavičce
+3. Vybere jazyk z 6 možností (EN, CZ, SK, UA, ZH, MN)
+4. setLocale() → změní locale v LanguageContext
+5. Nový locale se uloží do localStorage (cache) + Supabase (persistent)
+6. Načte se příslušný JSON (/locales/{locale}.json) — cachuje se po prvním načtení
+7. t() funkce vrací překlady z nového souboru
+8. Všechny komponenty se přerenderují s novými texty
 ```
 
 ---
@@ -206,7 +207,7 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 
 | Klíč | Obsah | Aktualizace |
 |---|---|---|
-| `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` | Při přepnutí jazyka |
+| `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` (výchozí: `"cs"`) | Při přepnutí jazyka |
 | `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
 | `portfolio-tracker-dashboard-order` | `string[]` (JSON) — pořadí sekcí dashboardu | Při přeřazení sekcí drag-and-drop |
 
@@ -397,6 +398,16 @@ RootLayout (ThemeProvider → LanguageProvider)
 
 **Pro:** Hromadné přidání instrumentů bez opakovaného vyhledávání
 **Realizace:** `ImportCsvModal` parsuje CSV soubor (UTF-8, středník jako oddělovač — český formát), zobrazí náhled v tabulce, postupně validuje tickery přes `/api/search`. Kontroluje duplicity a nepřekročení 100% váhy. Zobrazí výsledek: úspěšně přidané + přeskočené s důvody.
+
+### 10. Piecewise lineární škála metrik
+
+**Pro:** Extrémně záporné metriky (Sharpe -4, Alpha -86 %) jsou viditelně na levém okraji osy, ale ne přilepené na absolutním minimu (2 %). Zároveň neutrální hodnota (0) sedí konzistentně na 40 % osy.
+**Realizace:** `MetricGauge` komponenta přijímá prop `center` (neutrální hodnota). Osa se dělí na dvě lineární části: `[min, center] → [0%, 40%]` a `[center, max] → [40%, 100%]`. Díky tomu mohou mít záporná a kladná strana osy různou citlivost — většina metrik má center = 0, Beta má center = 1 (ideální hodnota).
+
+### 11. Čeština jako výchozí jazyk
+
+**Pro:** Primární uživatelé aplikace jsou česky mluvící — nový návštěvník okamžitě vidí rozhraní česky.
+**Realizace:** `LanguageContext` nastavuje výchozí locale na `'cs'`. Při prvním načtení (bez uloženého nastavení v localStorage) se zobrazí čeština. Po přepnutí se volba persistuje.
 
 ---
 

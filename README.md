@@ -49,6 +49,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - **Hodnocení portfolia** — 6 finančních metrik s vizuálním ukazatelem:
   - Sharpe Ratio, Beta, Jensenova Alfa, Sortino Ratio, Treynor Ratio, Calmar Ratio
   - Každá metrika se zobrazuje s hodnotou a gradientní osou (červená → žlutá → zelená)
+  - Piecewise lineární škála s bodem `center` — neutrální hodnota (0) mapuje na 40 % osy, extrémně záporné hodnoty nejsou přilepené na samém okraji
   - Tooltip s vysvětlením, co daná metrika měří
 - **Drag-and-drop** — přetahování sekcí dashboardu myší pro změnu pořadí
   - Pořadí se ukládá do localStorage a přežije zavření prohlížeče
@@ -89,6 +90,7 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 
 ### Lokalizace
 - 6 jazyků: angličtina, čeština, slovenština, ukrajinština, čínština, mongolština
+- **Výchozí jazyk: čeština** — nový návštěvník bez uloženého nastavení uvidí stránku česky
 - Přepínání přes dropdown v hlavičce s obrázky vlajek (flagcdn.com CDN) a kódem jazyka
 - Všechny popisky, tlačítka, chybové hlášky ve všech podporovaných jazycích
 
@@ -244,6 +246,15 @@ V Supabase Dashboard → Authentication → Settings → Email Auth:
 - Export portfolia do CSV/PDF
 - Notifikace o cenových pohybech
 - Porovnání výkonnosti portfolia s benchmarkem (S&P 500, BTC)
+
+---
+
+## Vývojový tým
+
+| Člen | Role | Popis |
+|---|---|---|
+| **Opus** | Seniorní vývojář, hlavní architekt | Návrh architektury, implementace komplexních funkcí, klíčová rozhodnutí o technologiích a datových tocích. |
+| **Sonnet** | Juniorní vývojář | Zpracovává menší a méně komplexní úpravy. Pokud si něčím není jistý, nebude machrovat a požádá zadavatele o předání na Opuse. |
 
 ---
 

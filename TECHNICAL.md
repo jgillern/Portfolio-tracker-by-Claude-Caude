@@ -478,6 +478,8 @@ Vícejazyčný i18n systém (6 jazyků).
 
 **Podporované jazyky:** EN (angličtina), CZ (čeština), SK (slovenština), UA (ukrajinština), ZH (čínština), MN (mongolština).
 
+**Výchozí jazyk:** čeština (`cs`). Nový návštěvník bez uloženého nastavení uvidí stránku česky. Po přepnutí jazyka se volba uloží do localStorage a Supabase.
+
 **Překlady:** Lazy-loaded JSON soubory z `/locales/{en,cs,sk,uk,zh,mn}.json`. Cachovány v paměti po prvním načtení.
 
 ### `src/context/ThemeContext.tsx`
@@ -619,8 +621,8 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 | `AllocationTable` | — | Sektorová alokace: stacked bar chart + legenda. Auto-detekce vlastních vah přes `hasCustomWeights()`. Bilingvální názvy sektorů. 10 barev pro sektory. |
 | `TypeAllocation` | — | Alokace dle typu instrumentu (stock, ETF, crypto, bond, commodity). Horizontální bar chart + legenda. Barvy: modrá (stock), fialová (ETF), oranžová (crypto), zelená (bond), žlutá (commodity). Čistě klient-side výpočet z portfolia. |
 | `CountryAllocation` | — | Alokace dle země původu. Načítá data přes `useCountries` hook. Stacked bar chart + legenda s vlajkami (flagcdn.com). Loading spinner, empty state. 12 barev pro země. |
-| `PortfolioMetrics` | — | Hodnocení portfolia — 6 finančních metrik ve 2-sloupcové mřížce. Každá metrika zobrazena přes `MetricGauge`. Načítá data přes `useMetrics` hook. Loading spinner. |
-| `MetricGauge` | `label`, `value`, `tooltip`, `min`, `max` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. Všechny osy mají orientaci červená (vlevo) → zelená (vpravo). |
+| `PortfolioMetrics` | — | Hodnocení portfolia — 6 finančních metrik ve 2-sloupcové mřížce. Každá metrika zobrazena přes `MetricGauge` s piecewise lineární škálou (center=0 pro většinu metrik, center=1 pro Beta). Rozsahy: Sharpe [-8, 3], Beta [0, 2], Alpha [-120, 40], Sortino [-8, 4], Treynor [-1, 0.5], Calmar [-3, 3]. Načítá data přes `useMetrics` hook. Loading spinner. |
+| `MetricGauge` | `name`, `value`, `tooltip`, `min`, `max`, `center?`, `format?` | Vizuální ukazatel jedné metriky: název, hodnota, gradientní osa (červená→žlutá→zelená) s markerem. Info ikona s tooltip vysvětlením. **Piecewise lineární mapování:** pokud je zadán `center`, hodnoty pod centrem se mapují na [0%, 40%] osy a nad centrem na [40%, 100%]. Díky tomu je neutrální hodnota (0) vždy na 40 % osy a extrémně záporné hodnoty (Sharpe -4, Alpha -86 %) nejsou přilepené na samém okraji. Bez `center` se použije klasická lineární škála. |
 | `DraggableSection` | `id`, `isDragged`, `isDragOver`, `onDragStart`, `onDragOver`, `onDragEnd`, `children` | Wrapper pro drag-and-drop sekcí. HTML5 DnD API. Vizuální zpětná vazba: opacity při přetahování, modrý ring při hoveru. 6-bodová drag handle ikona v pravém horním rohu. |
 
 ### News (`src/components/news/`)
