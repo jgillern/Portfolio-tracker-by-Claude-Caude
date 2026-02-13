@@ -97,10 +97,11 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 
 ```
 1. Uživatel klikne "Odhlásit se" v user menu
-2. signOut() → supabase.auth.signOut() (klient) — vymaže klientský session state
-3. POST /api/auth/signout → server-side Supabase signOut() — správně vyčistí httpOnly cookies
-4. Redirect na /login přes window.location.href (full page reload)
-5. Middleware detekuje nepřihlášeného → propustí na /login
+2. signOut() nastaví isSigningOut = true → dashboard zobrazí loading stav (zabrání flash "žádné portfolio")
+3. supabase.auth.signOut() (klient) — vymaže klientský session state
+4. POST /api/auth/signout → server-side Supabase signOut() — správně vyčistí httpOnly cookies
+5. Redirect na /login přes window.location.href (full page reload)
+6. Middleware detekuje nepřihlášeného → propustí na /login
 ```
 
 ### Načtení dashboardu
@@ -201,14 +202,15 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 |---|---|---|
 | **Supabase DB** | Portfolia, instrumenty, preference | Trvalé úložiště, cross-device |
 | **Supabase Auth** | Session, user metadata | Autentizace (cookie-based) |
-| **localStorage** | Jazyk, téma, pořadí sekcí | Cache pro okamžitý start |
+| **localStorage** | Jazyk, skin+avatar, pořadí sekcí | Cache pro okamžitý start |
 
 ### localStorage klíče (cache)
 
 | Klíč | Obsah | Aktualizace |
 |---|---|---|
 | `portfolio-tracker-lang` | `"en"`, `"cs"`, `"sk"`, `"uk"`, `"zh"` nebo `"mn"` (výchozí: `"cs"`) | Při přepnutí jazyka |
-| `portfolio-tracker-theme` | `"light"` nebo `"dark"` | Při přepnutí tématu |
+| `portfolio-tracker-theme` | `"ocean\|ninja"` — kombinovaný formát `skin\|avatar` (zpětně kompatibilní s plain `"light"`, `"dark"`) | Při změně skinu/avatara |
+| `portfolio-tracker-avatar` | `AvatarId` (`"ninja"`, `"astronaut"`, `"robot"` atd.) — standalone avatar cache | Při změně avatara |
 | `portfolio-tracker-dashboard-order` | `string[]` (JSON) — pořadí sekcí dashboardu | Při přeřazení sekcí drag-and-drop |
 
 **Poznámka:** Klíč `portfolio-tracker-state` (dříve používaný pro portfolia) se čte pouze při jednorázové migraci do Supabase — po migraci se odstraní. Nová data portfolií se ukládají výhradně do Supabase DB.
@@ -269,7 +271,10 @@ RootLayout (ThemeProvider → LanguageProvider)
     │   ├── PortfolioSwitcher (dropdown + "Přidat nové portfolio")
     │   ├── LanguageToggle
     │   ├── ThemeToggle
-    │   └── UserMenu (iniciály, jméno, e-mail, odhlášení)
+    │   └── UserMenu (avatar pill: FunAvatar + celé jméno)
+    │       ├── Dropdown: profil (avatar + jméno + e-mail)
+    │       ├── Nastavení → SettingsModal
+    │       └── Odhlášení
     │
     ├── DashboardPage (/)
     │   ├── Portfolio heading + RefreshControl + akce (přidat, import CSV, upravit, smazat)
@@ -298,6 +303,12 @@ RootLayout (ThemeProvider → LanguageProvider)
     │   ├── ImportCsvModal (nahrání souboru, náhled, validace, výsledek)
     │   ├── Empty state + CreatePortfolioModal (pokud žádné portfolio)
     │   └── Delete confirmation dialog
+    │
+    ├── SettingsModal (otevírán z Header dropdown)
+    │   ├── Tab: Osobní údaje (jméno, příjmení, e-mail, změna hesla)
+    │   └── Tab: Personalizace
+    │       ├── Avatar picker (FunAvatar × 8, živý náhled)
+    │       └── Skin picker (6 skinů s preview barvami, živý náhled)
     │
     ├── NewsPage (/news)
     │   └── NewsFeed
@@ -409,6 +420,20 @@ RootLayout (ThemeProvider → LanguageProvider)
 **Pro:** Primární uživatelé aplikace jsou česky mluvící — nový návštěvník okamžitě vidí rozhraní česky.
 **Realizace:** `LanguageContext` nastavuje výchozí locale na `'cs'`. Při prvním načtení (bez uloženého nastavení v localStorage) se zobrazí čeština. Po přepnutí se volba persistuje.
 
+### 12. Skin + Avatar systém bez migrace DB
+
+**Pro:** Personalizace aplikace (6 skinů + 8 avatarů) bez nutnosti přidávat nové sloupce do databáze.
+**Realizace:** Skin a avatar se ukládají jako kombinovaný řetězec `"skin|avatar"` (např. `"ocean|ninja"`) do stávajícího sloupce `user_preferences.theme`. Zpětně kompatibilní s plain hodnotami `"light"` / `"dark"`.
+- `ThemeContext` je single source of truth pro skin + avatar
+- `setSkin()` / `setAvatar()` — živý náhled (localStorage), `persistPreferences()` — uložení do DB
+- `parseThemeValue()` dekóduje kombinovaný formát, `encodeThemeValue()` kóduje
+- CSS skiny: atribut `[data-skin="X"]` na `<html>` elementu s `!important` overrides v `globals.css`
+
+### 13. Ochrana proti flash při odhlášení
+
+**Pro:** Při odhlášení se krátce nezobrazí "žádné portfolio" ani jiný nechtěný stav.
+**Realizace:** `AuthContext` vystavuje `isSigningOut` boolean, který se nastaví na `true` před zahájením async odhlášení. Dashboard ho kontroluje spolu s `authLoading` a zobrazí loading spinner.
+
 ---
 
 ## Známá omezení
@@ -460,11 +485,15 @@ Stav před:                         Stav po:
 5. `AuthContext` — přihlášení, registrace, odhlášení
 6. Route group `(app)` pro chráněné stránky
 7. Animovaná login stránka ("Honzův bombézní portfolio tracker")
-8. User menu v Header s iniciálami a odhlášením
+8. User menu v Header s avatarem, celým jménem a dropdown nabídkou (nastavení + odhlášení)
 9. Automatická migrace localStorage → Supabase
+10. SettingsModal — úprava profilu, hesla, avatara a skinu s persistencí do DB
+11. 6 barevných skinů aplikace (Light, Dark, Ocean, Sunset, Forest, Cyberpunk)
+12. 8 SVG avatarů s živým náhledem v nastavení
+13. ThemeContext přepsán na single source of truth pro skin + avatar (formát `skin|avatar` v DB)
+14. Ochrana proti flash při odhlášení (`isSigningOut`)
 
 **Co se nezměnilo:**
-- Všechny UI komponenty (grafem, tabulky, alokace, metriky)
 - Hooky pro tržní data (`useMarketData`, `useChart`, `useNews`)
 - API routes pro Yahoo Finance data
-- Lokalizace (6 jazyků) — rozšířena o `auth` sekci
+- Lokalizace (6 jazyků) — rozšířena o `auth` a `settings` sekce
