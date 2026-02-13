@@ -729,20 +729,20 @@ export const SatoshiNakamoto: React.FC<AvatarProps> = ({ className = '' }) => (
     {/* Hood folds */}
     <path d="M 38 80 Q 50 60 80 52 Q 110 60 122 80" stroke="#181818" strokeWidth="2" fill="none"/>
 
-    {/* GLOWING green eyes - mysterious */}
-    <circle cx="62" cy="83" r="10" fill="#00FF88" opacity="0.9"/>
-    <circle cx="98" cy="83" r="10" fill="#00FF88" opacity="0.9"/>
+    {/* GLOWING orange eyes - mysterious */}
+    <circle cx="62" cy="83" r="10" fill="#FF8C00" opacity="0.9"/>
+    <circle cx="98" cy="83" r="10" fill="#FF8C00" opacity="0.9"/>
     {/* Inner eye */}
-    <circle cx="62" cy="83" r="6" fill="#00CC66"/>
-    <circle cx="98" cy="83" r="6" fill="#00CC66"/>
+    <circle cx="62" cy="83" r="6" fill="#FF6600"/>
+    <circle cx="98" cy="83" r="6" fill="#FF6600"/>
     {/* Pupil */}
     <circle cx="62" cy="83" r="3" fill="#FFFFFF"/>
     <circle cx="98" cy="83" r="3" fill="#FFFFFF"/>
     {/* Glow effect - pulsating rings */}
-    <circle cx="62" cy="83" r="14" fill="none" stroke="#00FF88" strokeWidth="1.5" opacity="0.4"/>
-    <circle cx="98" cy="83" r="14" fill="none" stroke="#00FF88" strokeWidth="1.5" opacity="0.4"/>
-    <circle cx="62" cy="83" r="18" fill="none" stroke="#00FF88" strokeWidth="1" opacity="0.2"/>
-    <circle cx="98" cy="83" r="18" fill="none" stroke="#00FF88" strokeWidth="1" opacity="0.2"/>
+    <circle cx="62" cy="83" r="14" fill="none" stroke="#FF8C00" strokeWidth="1.5" opacity="0.4"/>
+    <circle cx="98" cy="83" r="14" fill="none" stroke="#FF8C00" strokeWidth="1.5" opacity="0.4"/>
+    <circle cx="62" cy="83" r="18" fill="none" stroke="#FF8C00" strokeWidth="1" opacity="0.2"/>
+    <circle cx="98" cy="83" r="18" fill="none" stroke="#FF8C00" strokeWidth="1" opacity="0.2"/>
 
     {/* Mysterious aura rings */}
     <circle cx="80" cy="85" r="65" fill="none" stroke="#00FF88" strokeWidth="1" opacity="0.25"/>
