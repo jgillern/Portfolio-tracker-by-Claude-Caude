@@ -256,6 +256,95 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   SATOSHI EASTER EGG - peek in/out from edges
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes satoshi-slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-30%);
+    opacity: 0.6;
+  }
+}
+
+@keyframes satoshi-slide-out-left {
+  0% {
+    transform: translateX(-30%);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes satoshi-slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(30%);
+    opacity: 0.6;
+  }
+}
+
+@keyframes satoshi-slide-out-right {
+  0% {
+    transform: translateX(30%);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes satoshi-idle-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.satoshi-peek-in-left {
+  animation: satoshi-slide-in-left 1.2s ease-out forwards;
+}
+
+.satoshi-peek-out-left {
+  animation: satoshi-slide-out-left 1.2s ease-in forwards;
+}
+
+.satoshi-peek-in-right {
+  animation: satoshi-slide-in-right 1.2s ease-out forwards;
+}
+
+.satoshi-peek-out-right {
+  animation: satoshi-slide-out-right 1.2s ease-in forwards;
+}
+
+.satoshi-idle-left {
+  transform: translateX(-30%);
+  animation: satoshi-idle-bob 3s ease-in-out infinite;
+}
+
+.satoshi-idle-right {
+  transform: translateX(30%);
+  animation: satoshi-idle-bob 3s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
    SKIN SYSTEM - Color overrides per skin
    ═══════════════════════════════════════════════════════════ */
 
