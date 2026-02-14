@@ -11,8 +11,8 @@ interface Appearance {
 }
 
 // Min/max seconds between appearances
-const MIN_INTERVAL = 45;
-const MAX_INTERVAL = 120;
+const MIN_INTERVAL = 10;
+const MAX_INTERVAL = 30;
 // How long Satoshi stays visible (ms)
 const VISIBLE_DURATION = 6000;
 // Fade-in + slide-in duration (must match CSS)
@@ -52,8 +52,8 @@ export function SatoshiEasterEgg() {
   }, []);
 
   useEffect(() => {
-    // First appearance after a random delay (20-60s)
-    const initialDelay = (20 + Math.random() * 40) * 1000;
+    // First appearance after a short random delay (5-15s)
+    const initialDelay = (5 + Math.random() * 10) * 1000;
     let timeoutId = setTimeout(() => {
       triggerAppearance();
       scheduleNext();
@@ -93,7 +93,7 @@ export function SatoshiEasterEgg() {
       }}
     >
       <div className={isLeft ? '' : 'scale-x-[-1]'}>
-        <SatoshiNakamoto className="w-20 h-28 drop-shadow-lg opacity-60" />
+        <SatoshiNakamoto className="w-[104px] h-[146px] drop-shadow-lg opacity-60" />
       </div>
     </div>
   );
