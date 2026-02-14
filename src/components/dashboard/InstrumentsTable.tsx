@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePortfolio } from '@/context/PortfolioContext';
 import { Quote } from '@/types/market';
@@ -23,6 +23,35 @@ function ChangeCell({ value }: { value: number }) {
   );
 }
 
+type SortKey = 'weight' | 'price' | 'change24h' | 'change1w' | 'change1m' | 'change1y' | 'changeYtd';
+type SortDir = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDir }) {
+  return (
+    <svg
+      className={cn(
+        'inline-block w-3 h-3 ml-0.5 transition-colors',
+        active ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-600'
+      )}
+      viewBox="0 0 10 14"
+      fill="currentColor"
+    >
+      <path
+        d="M5 0L9 5H1L5 0Z"
+        className={cn(
+          active && direction === 'asc' ? 'opacity-100' : 'opacity-30'
+        )}
+      />
+      <path
+        d="M5 14L1 9H9L5 14Z"
+        className={cn(
+          active && direction === 'desc' ? 'opacity-100' : 'opacity-30'
+        )}
+      />
+    </svg>
+  );
+}
+
 interface Props {
   quotes: Quote[];
   isLoading: boolean;
@@ -31,6 +60,8 @@ interface Props {
 export function InstrumentsTable({ quotes, isLoading }: Props) {
   const { t } = useLanguage();
   const { activePortfolio } = usePortfolio();
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   if (!activePortfolio) return null;
   const { instruments } = activePortfolio;
@@ -47,13 +78,65 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
 
   const showWeights = hasCustomWeights(activePortfolio);
 
-  // Sort instruments by weight (descending)
-  const sortedInstruments = [...instruments].sort((a, b) => {
-    if (!showWeights) return 0;
-    const weightA = a.weight ?? 0;
-    const weightB = b.weight ?? 0;
-    return weightB - weightA;
-  });
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const getQuoteValue = (symbol: string, key: SortKey): number => {
+    if (key === 'weight') return 0; // handled separately
+    const quote = quotes.find((q) => q.symbol === symbol);
+    if (!quote) return 0;
+    return quote[key] ?? 0;
+  };
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const sortedInstruments = useMemo(() => {
+    const arr = [...instruments];
+
+    if (sortKey === null) {
+      // Default: sort by weight descending
+      if (showWeights) {
+        arr.sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0));
+      }
+      return arr;
+    }
+
+    const dir = sortDir === 'desc' ? -1 : 1;
+
+    arr.sort((a, b) => {
+      let valA: number, valB: number;
+      if (sortKey === 'weight') {
+        valA = a.weight ?? 0;
+        valB = b.weight ?? 0;
+      } else if (sortKey === 'price') {
+        const qA = quotes.find((q) => q.symbol === a.symbol);
+        const qB = quotes.find((q) => q.symbol === b.symbol);
+        valA = qA?.price ?? 0;
+        valB = qB?.price ?? 0;
+      } else {
+        valA = getQuoteValue(a.symbol, sortKey);
+        valB = getQuoteValue(b.symbol, sortKey);
+      }
+      return (valA - valB) * dir;
+    });
+
+    return arr;
+  }, [instruments, sortKey, sortDir, quotes, showWeights]);
+
+  const thSortable = (key: SortKey, label: string, className: string) => (
+    <th
+      className={cn(className, 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors')}
+      onClick={() => handleSort(key)}
+    >
+      {label}
+      <SortIcon active={sortKey === key} direction={sortKey === key ? sortDir : 'desc'} />
+    </th>
+  );
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -74,13 +157,13 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
               <tr className="border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                 <th className="text-left px-4 sm:px-6 py-3">{t('dashboard.name')}</th>
                 <th className="text-left px-2 py-3">{t('dashboard.type')}</th>
-                <th className="text-right px-2 py-3">{t('dashboard.weight')}</th>
-                <th className="text-right px-2 py-3">{t('dashboard.price')}</th>
-                <th className="text-right px-2 py-3">{t('dashboard.change24h')}</th>
-                <th className="text-right px-2 py-3 hidden sm:table-cell">{t('dashboard.change1w')}</th>
-                <th className="text-right px-2 py-3 hidden md:table-cell">{t('dashboard.change1m')}</th>
-                <th className="text-right px-2 py-3 hidden lg:table-cell">{t('dashboard.change1y')}</th>
-                <th className="text-right px-2 py-3 hidden lg:table-cell">{t('dashboard.changeYtd')}</th>
+                {thSortable('weight', t('dashboard.weight'), 'text-right px-2 py-3')}
+                {thSortable('price', t('dashboard.price'), 'text-right px-2 py-3')}
+                {thSortable('change24h', t('dashboard.change24h'), 'text-right px-2 py-3')}
+                {thSortable('change1w', t('dashboard.change1w'), 'text-right px-2 py-3 hidden sm:table-cell')}
+                {thSortable('change1m', t('dashboard.change1m'), 'text-right px-2 py-3 hidden md:table-cell')}
+                {thSortable('change1y', t('dashboard.change1y'), 'text-right px-2 py-3 hidden lg:table-cell')}
+                {thSortable('changeYtd', t('dashboard.changeYtd'), 'text-right px-2 py-3 hidden lg:table-cell')}
               </tr>
             </thead>
             <tbody>

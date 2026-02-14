@@ -3,14 +3,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CountryAllocationItem } from '@/types/market';
 
+// Maps symbol -> country name (for detail modal lookups)
+export type SymbolCountryMap = Map<string, string>;
+
 export function useCountries(symbols: string[], types: string[], weights: number[]) {
   const [countries, setCountries] = useState<CountryAllocationItem[]>([]);
+  const [symbolCountryMap, setSymbolCountryMap] = useState<SymbolCountryMap>(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCountries = useCallback(async () => {
     if (symbols.length === 0) {
       setCountries([]);
+      setSymbolCountryMap(new Map());
       return;
     }
 
@@ -23,6 +28,19 @@ export function useCountries(symbols: string[], types: string[], weights: number
       );
       if (!res.ok) throw new Error('Failed to fetch countries');
       const data: { symbol: string; country: string; countryCode: string }[] = await res.json();
+
+      // Build symbol -> country mapping
+      const scMap = new Map<string, string>();
+      for (const item of data) {
+        scMap.set(item.symbol, item.country);
+      }
+      // Symbols without country data map to N/A
+      for (const s of symbols) {
+        if (!scMap.has(s)) {
+          scMap.set(s, 'N/A');
+        }
+      }
+      setSymbolCountryMap(scMap);
 
       // Aggregate by country using weights
       const totalWeight = weights.reduce((a, b) => a + b, 0);
@@ -75,5 +93,5 @@ export function useCountries(symbols: string[], types: string[], weights: number
     fetchCountries();
   }, [fetchCountries]);
 
-  return { countries, isLoading, error, refetch: fetchCountries };
+  return { countries, symbolCountryMap, isLoading, error, refetch: fetchCountries };
 }
