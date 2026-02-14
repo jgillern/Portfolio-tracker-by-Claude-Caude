@@ -7,8 +7,9 @@ import { Quote } from '@/types/market';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatPercent, formatCurrency, cn } from '@/lib/utils';
-import { hasCustomWeights } from '@/types/portfolio';
+import { hasCustomWeights, Instrument } from '@/types/portfolio';
 import { InstrumentLogo } from '@/components/ui/InstrumentLogo';
+import { InstrumentProfileModal } from './InstrumentProfileModal';
 
 function ChangeCell({ value }: { value: number }) {
   return (
@@ -62,6 +63,7 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
   const { activePortfolio } = usePortfolio();
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
 
   if (!activePortfolio) return null;
   const { instruments } = activePortfolio;
@@ -172,7 +174,8 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
                 return (
                   <tr
                     key={instrument.symbol}
-                    className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                    className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
+                    onClick={() => setSelectedInstrument(instrument)}
                   >
                     <td className="px-4 sm:px-6 py-3">
                       <div className="flex items-center gap-2.5">
@@ -225,6 +228,13 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
           </table>
         </div>
       )}
+
+      <InstrumentProfileModal
+        isOpen={selectedInstrument !== null}
+        onClose={() => setSelectedInstrument(null)}
+        instrument={selectedInstrument}
+        quote={selectedInstrument ? quotes.find((q) => q.symbol === selectedInstrument.symbol) ?? null : null}
+      />
     </div>
   );
 }
