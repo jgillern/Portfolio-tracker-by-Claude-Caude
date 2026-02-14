@@ -19,13 +19,41 @@ function setCache(key: string, data: unknown, ttlMs: number) {
   cache.set(key, { data, expiresAt: Date.now() + ttlMs });
 }
 
+const LANG_MAP: Record<string, string> = {
+  cs: 'cs', sk: 'sk', uk: 'uk', zh: 'zh-CN', mn: 'mn',
+};
+
+async function translateText(text: string, targetLang: string): Promise<string | null> {
+  const langCode = LANG_MAP[targetLang];
+  if (!langCode || targetLang === 'en') return null;
+  try {
+    // Use MyMemory free translation API (max ~500 chars for free)
+    const truncated = text.length > 500 ? text.slice(0, 497) + '...' : text;
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(truncated)}&langpair=en|${langCode}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.responseData?.translatedText) {
+      const translated = data.responseData.translatedText;
+      // MyMemory returns original text in uppercase when it can't translate
+      if (translated === truncated.toUpperCase()) return null;
+      return translated;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get('symbol');
+  const lang = request.nextUrl.searchParams.get('lang') || 'en';
   if (!symbol) {
     return NextResponse.json({ error: 'symbol parameter required' }, { status: 400 });
   }
 
-  const cacheKey = `profile:${symbol}`;
+  const cacheKey = `profile:${symbol}:${lang}`;
   const cached = getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
@@ -65,6 +93,7 @@ export async function GET(request: NextRequest) {
       industry: profile?.industry || null,
       website: profile?.website || null,
       description: profile?.longBusinessSummary || null,
+      localizedDescription: null as string | null,
       employees: profile?.fullTimeEmployees ?? null,
       country: profile?.country || null,
     };
@@ -192,6 +221,11 @@ export async function GET(request: NextRequest) {
       }
     }
     result.analystTrend = analystTrend;
+
+    // Translate description if non-English locale
+    if (lang !== 'en' && result.description) {
+      result.localizedDescription = await translateText(result.description as string, lang);
+    }
 
     setCache(cacheKey, result, 5 * 60 * 1000);
     return NextResponse.json(result);
