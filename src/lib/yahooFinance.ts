@@ -628,7 +628,7 @@ const COMMON_DOMAINS: Record<string, string> = {
   PG: 'pg.com', JNJ: 'jnj.com', PFE: 'pfizer.com', MRNA: 'modernatx.com',
   BA: 'boeing.com', CAT: 'cat.com', XOM: 'exxonmobil.com', CVX: 'chevron.com',
   // Index providers
-  '^GSPC': 'spglobal.com', '^DJI': 'spglobal.com',
+  '^GSPC': 'spglobal.com', '^DJI': 'dowjones.com',
   '^IXIC': 'nasdaq.com', '^NDX': 'nasdaq.com',
 };
 
