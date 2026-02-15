@@ -84,6 +84,69 @@ const INDEX_TO_ETF_TRACKER: Record<string, string> = {
   '^GSPTSE': 'XIC.TO',
 };
 
+/**
+ * Hardcoded country allocations for major indices.
+ * The top-10 holdings approach fails for country breakdown because
+ * e.g. MSCI World top 10 are all US companies despite the index covering 23 countries.
+ * These weights are approximate and based on publicly available index factsheets.
+ */
+const INDEX_COUNTRY_ALLOCATIONS: Record<string, { country: string; weight: number }[]> = {
+  // S&P 500 — 100% US
+  '^GSPC': [{ country: 'United States', weight: 1.0 }],
+  'SPY': [{ country: 'United States', weight: 1.0 }],
+  // NASDAQ Composite — ~100% US
+  '^IXIC': [{ country: 'United States', weight: 1.0 }],
+  'QQQ': [{ country: 'United States', weight: 0.97 }, { country: 'China', weight: 0.015 }, { country: 'Netherlands', weight: 0.015 }],
+  // Dow Jones — 100% US
+  '^DJI': [{ country: 'United States', weight: 1.0 }],
+  // MSCI World (URTH) — developed markets
+  'URTH': [
+    { country: 'United States', weight: 0.71 }, { country: 'Japan', weight: 0.055 },
+    { country: 'United Kingdom', weight: 0.038 }, { country: 'France', weight: 0.03 },
+    { country: 'Canada', weight: 0.03 }, { country: 'Germany', weight: 0.023 },
+    { country: 'Switzerland', weight: 0.025 }, { country: 'Australia', weight: 0.018 },
+    { country: 'Netherlands', weight: 0.012 }, { country: 'Sweden', weight: 0.008 },
+    { country: 'Denmark', weight: 0.008 }, { country: 'Italy', weight: 0.007 },
+    { country: 'Spain', weight: 0.006 }, { country: 'Hong Kong', weight: 0.005 },
+  ],
+  // MSCI Emerging Markets (EEM)
+  'EEM': [
+    { country: 'China', weight: 0.26 }, { country: 'India', weight: 0.20 },
+    { country: 'Taiwan', weight: 0.19 }, { country: 'South Korea', weight: 0.12 },
+    { country: 'Brazil', weight: 0.05 }, { country: 'Saudi Arabia', weight: 0.04 },
+    { country: 'South Africa', weight: 0.03 }, { country: 'Mexico', weight: 0.025 },
+    { country: 'Indonesia', weight: 0.02 }, { country: 'Thailand', weight: 0.02 },
+  ],
+  // MSCI All Country World (ACWI)
+  'ACWI': [
+    { country: 'United States', weight: 0.64 }, { country: 'Japan', weight: 0.05 },
+    { country: 'United Kingdom', weight: 0.035 }, { country: 'China', weight: 0.03 },
+    { country: 'France', weight: 0.028 }, { country: 'Canada', weight: 0.028 },
+    { country: 'India', weight: 0.02 }, { country: 'Germany', weight: 0.02 },
+    { country: 'Switzerland', weight: 0.023 }, { country: 'Taiwan', weight: 0.02 },
+    { country: 'Australia', weight: 0.016 }, { country: 'South Korea', weight: 0.013 },
+  ],
+  // FTSE 100 — 100% UK
+  '^FTSE': [{ country: 'United Kingdom', weight: 1.0 }],
+  // Nikkei 225 — 100% Japan
+  '^N225': [{ country: 'Japan', weight: 1.0 }],
+  // DAX — 100% Germany
+  '^GDAXI': [{ country: 'Germany', weight: 1.0 }],
+  // Hang Seng — mostly HK/China
+  '^HSI': [{ country: 'Hong Kong', weight: 0.55 }, { country: 'China', weight: 0.45 }],
+  // EURO STOXX 50
+  '^STOXX50E': [
+    { country: 'France', weight: 0.33 }, { country: 'Germany', weight: 0.27 },
+    { country: 'Netherlands', weight: 0.15 }, { country: 'Spain', weight: 0.08 },
+    { country: 'Italy', weight: 0.07 }, { country: 'Belgium', weight: 0.04 },
+    { country: 'Finland', weight: 0.03 }, { country: 'Ireland', weight: 0.03 },
+  ],
+  // CAC 40 — 100% France
+  '^FCHI': [{ country: 'France', weight: 1.0 }],
+  // Russell 2000 — 100% US
+  '^RUT': [{ country: 'United States', weight: 1.0 }],
+};
+
 export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get('symbol');
   const lang = request.nextUrl.searchParams.get('lang') || 'en';
@@ -321,22 +384,29 @@ export async function GET(request: NextRequest) {
         sectorWeightings.sort((a, b) => b.weight - a.weight);
       }
 
-      // Country breakdown (aggregated from holdings)
-      const countryMap = new Map<string, number>();
-      for (const h of holdingsRaw) {
-        if (h.country && h.weight > 0) {
-          countryMap.set(h.country, (countryMap.get(h.country) || 0) + h.weight);
+      // Country breakdown — prefer hardcoded allocations, fall back to holdings lookup
+      let countryBreakdown: { country: string; weight: number }[];
+      const hardcodedCountries = INDEX_COUNTRY_ALLOCATIONS[symbol] || INDEX_COUNTRY_ALLOCATIONS[INDEX_TO_ETF_TRACKER[symbol] || ''];
+      if (hardcodedCountries && hardcodedCountries.length > 0) {
+        countryBreakdown = hardcodedCountries;
+      } else {
+        const countryMap = new Map<string, number>();
+        for (const h of holdingsRaw) {
+          if (h.country && h.weight > 0) {
+            countryMap.set(h.country, (countryMap.get(h.country) || 0) + h.weight);
+          }
         }
+        countryBreakdown = Array.from(countryMap.entries())
+          .map(([country, weight]) => ({ country, weight }))
+          .sort((a, b) => b.weight - a.weight);
       }
-      const countryBreakdown = Array.from(countryMap.entries())
-        .map(([country, weight]) => ({ country, weight }))
-        .sort((a, b) => b.weight - a.weight);
 
       result.topHoldings = {
         holdings: holdingsRaw,
         sectorWeightings,
         countryBreakdown,
         totalTop10Weight: holdingsRaw.reduce((sum, h) => sum + h.weight, 0),
+        countrySource: hardcodedCountries ? 'index' : 'holdings',
       };
     }
 

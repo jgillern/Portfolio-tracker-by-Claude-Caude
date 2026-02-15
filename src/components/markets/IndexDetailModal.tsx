@@ -62,6 +62,7 @@ interface IndexProfile {
     sectorWeightings: SectorWeight[];
     countryBreakdown: CountryWeight[];
     totalTop10Weight: number;
+    countrySource?: 'index' | 'holdings';
   };
 }
 
@@ -455,7 +456,9 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{t('markets.countryBreakdown')}</h3>
-                  <span className="text-[10px] text-gray-400">{t('markets.basedOnTop10')}</span>
+                  {th.countrySource !== 'index' && (
+                    <span className="text-[10px] text-gray-400">{t('markets.basedOnTop10')}</span>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {th.countryBreakdown.map((c) => (
