@@ -308,6 +308,8 @@
     "indexOverview": "Index Overview",
     "addCustomIndex": "Add index",
     "removeIndex": "Remove",
+    "noData": "no data",
+    "noDataAvailable": "No data available for this index",
     "noDescription": "No description available.",
     "searchIndexPlaceholder": "Search for an index...",
     "officialWebsite": "Official website",

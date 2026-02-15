@@ -291,6 +291,8 @@
     "indexOverview": "Огляд індексу",
     "addCustomIndex": "Додати індекс",
     "removeIndex": "Видалити",
+    "noData": "немає даних",
+    "noDataAvailable": "Для цього індексу немає даних",
     "noDescription": "Опис недоступний.",
     "searchIndexPlaceholder": "Шукати індекс...",
     "officialWebsite": "Офіційний сайт",

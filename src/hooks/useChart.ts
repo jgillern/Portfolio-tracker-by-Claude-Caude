@@ -21,7 +21,8 @@ export function useChart(symbols: string[], period: TimePeriod, weights?: number
     setError(null);
 
     try {
-      let url = `/api/chart?symbols=${symbolsKey}&range=${period}`;
+      const encodedSymbols = symbols.map(encodeURIComponent).join(',');
+      let url = `/api/chart?symbols=${encodedSymbols}&range=${period}`;
       if (weights && weights.length > 0) {
         url += `&weights=${weightsKey}`;
       }

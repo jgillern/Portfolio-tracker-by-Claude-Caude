@@ -139,7 +139,7 @@ export function IndexTable() {
   useEffect(() => {
     if (allSymbols.length === 0) return;
     setIsLoading(true);
-    fetch(`/api/quote?symbols=${allSymbols.join(',')}`)
+    fetch(`/api/quote?symbols=${allSymbols.map(encodeURIComponent).join(',')}`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) setQuotes(data);

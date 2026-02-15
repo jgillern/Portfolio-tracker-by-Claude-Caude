@@ -291,6 +291,8 @@
     "indexOverview": "指数概览",
     "addCustomIndex": "添加指数",
     "removeIndex": "删除",
+    "noData": "无数据",
+    "noDataAvailable": "此指数无可用数据",
     "noDescription": "暂无描述。",
     "searchIndexPlaceholder": "搜索指数...",
     "officialWebsite": "官方网站",
