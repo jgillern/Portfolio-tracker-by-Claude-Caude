@@ -42,23 +42,92 @@ function mapQuoteType(quoteType: string): InstrumentType {
 }
 
 /**
- * Index database from FinanceDatabase (90k+ indices).
- * Loaded lazily on first search, cached in memory.
+ * Instrument databases from FinanceDatabase (290k+ instruments).
+ * Loaded lazily on first search, cached in memory (server-side only).
  * Data sourced from: https://github.com/JerBouma/FinanceDatabase
+ * Updated via: scripts/update-finance-db.py
  */
-interface IndexEntry { s: string; n: string; e: string; c: string }
-let _indexDB: IndexEntry[] | null = null;
+interface DBEntry { s: string; n: string; e: string; t: string; sec?: string }
 
-function getIndexDB(): IndexEntry[] {
-  if (!_indexDB) {
+const _dbs: Record<string, DBEntry[]> = {};
+
+function loadDB(name: string): DBEntry[] {
+  if (!_dbs[name]) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _indexDB = require('@/data/indices.json') as IndexEntry[];
+    _dbs[name] = require(`@/data/${name}.json`) as DBEntry[];
   }
-  return _indexDB;
+  return _dbs[name];
 }
 
-export async function searchInstruments(query: string): Promise<SearchResult[]> {
-  const cacheKey = `search:${query}`;
+function dbTypeToInstrumentType(t: string): InstrumentType {
+  switch (t) {
+    case 'equity': return 'stock';
+    case 'etf': return 'etf';
+    case 'crypto': return 'crypto';
+    default: return 'stock';
+  }
+}
+
+/** Search local instrument databases. mode='index' searches only indices, otherwise all. */
+export function searchLocalDB(query: string, mode?: 'index'): SearchResult[] {
+  const q = query.toLowerCase().trim();
+  if (!q || q.length < 2) return [];
+
+  const databases = mode === 'index'
+    ? [loadDB('indices')]
+    : [loadDB('equities'), loadDB('etfs'), loadDB('cryptos'), loadDB('indices')];
+
+  const results: SearchResult[] = [];
+  const seen = new Set<string>();
+
+  // Exact symbol matches first (higher priority)
+  for (const db of databases) {
+    for (const entry of db) {
+      if (results.length >= 20) break;
+      if (entry.s.toLowerCase() === q && !seen.has(entry.s)) {
+        seen.add(entry.s);
+        results.push({
+          symbol: entry.s,
+          name: entry.n,
+          type: dbTypeToInstrumentType(entry.t),
+          exchange: entry.e,
+          sector: entry.sec,
+          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
+        });
+      }
+    }
+    if (results.length >= 20) break;
+  }
+
+  // Then partial matches on symbol and name
+  for (const db of databases) {
+    for (const entry of db) {
+      if (results.length >= 20) break;
+      if (seen.has(entry.s)) continue;
+      if (
+        entry.s.toLowerCase().includes(q) ||
+        entry.n.toLowerCase().includes(q)
+      ) {
+        seen.add(entry.s);
+        results.push({
+          symbol: entry.s,
+          name: entry.n,
+          type: dbTypeToInstrumentType(entry.t),
+          exchange: entry.e,
+          sector: entry.sec,
+          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
+        });
+      }
+    }
+    if (results.length >= 20) break;
+  }
+
+  return results;
+}
+
+/** Yahoo Finance search as supplement (slower, may fail) */
+export async function searchYahooFinance(query: string): Promise<SearchResult[]> {
+  const cacheKey = `yf-search:${query}`;
   const cached = getCached<SearchResult[]>(cacheKey);
   if (cached) return cached;
 
@@ -72,7 +141,6 @@ export async function searchInstruments(query: string): Promise<SearchResult[]> 
       const rawQuoteType = 'quoteType' in q ? String((q as Record<string, unknown>).quoteType || '') : '';
       const isIndex = rawQuoteType === 'INDEX';
 
-      // Include Yahoo Finance quotes and INDEX results (even if isYahooFinance is false)
       if (!isYF && !isIndex) continue;
 
       results.push({
@@ -88,38 +156,9 @@ export async function searchInstruments(query: string): Promise<SearchResult[]> 
     setCache(cacheKey, results, 10 * 60 * 1000);
     return results;
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Yahoo search error:', error);
     return [];
   }
-}
-
-/** Search the local index database (90k+ indices from FinanceDatabase) */
-export function searchLocalIndices(query: string): SearchResult[] {
-  const q = query.toLowerCase().trim();
-  if (!q || q.length < 2) return [];
-
-  const db = getIndexDB();
-  const results: SearchResult[] = [];
-
-  // Exact symbol match first, then name/exchange match
-  for (const idx of db) {
-    if (results.length >= 20) break;
-    if (
-      idx.s.toLowerCase().includes(q) ||
-      idx.n.toLowerCase().includes(q) ||
-      idx.e.toLowerCase().includes(q)
-    ) {
-      results.push({
-        symbol: idx.s,
-        name: idx.n,
-        type: 'stock' as InstrumentType,
-        exchange: idx.e,
-        quoteType: 'INDEX',
-      });
-    }
-  }
-
-  return results;
 }
 
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
