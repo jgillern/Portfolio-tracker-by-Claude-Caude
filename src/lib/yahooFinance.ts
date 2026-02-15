@@ -41,33 +41,122 @@ function mapQuoteType(quoteType: string): InstrumentType {
   }
 }
 
-export async function searchInstruments(query: string): Promise<SearchResult[]> {
-  const cacheKey = `search:${query}`;
+/**
+ * Instrument databases from FinanceDatabase (290k+ instruments).
+ * Loaded lazily on first search, cached in memory (server-side only).
+ * Data sourced from: https://github.com/JerBouma/FinanceDatabase
+ * Updated via: scripts/update-finance-db.py
+ */
+interface DBEntry { s: string; n: string; e: string; t: string; sec?: string }
+
+const _dbs: Record<string, DBEntry[]> = {};
+
+function loadDB(name: string): DBEntry[] {
+  if (!_dbs[name]) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    _dbs[name] = require(`@/data/${name}.json`) as DBEntry[];
+  }
+  return _dbs[name];
+}
+
+function dbTypeToInstrumentType(t: string): InstrumentType {
+  switch (t) {
+    case 'equity': return 'stock';
+    case 'etf': return 'etf';
+    case 'crypto': return 'crypto';
+    default: return 'stock';
+  }
+}
+
+/** Search local instrument databases. mode='index' searches only indices, otherwise all. */
+export function searchLocalDB(query: string, mode?: 'index'): SearchResult[] {
+  const q = query.toLowerCase().trim();
+  if (!q || q.length < 2) return [];
+
+  const databases = mode === 'index'
+    ? [loadDB('indices')]
+    : [loadDB('equities'), loadDB('etfs'), loadDB('cryptos'), loadDB('indices')];
+
+  const results: SearchResult[] = [];
+  const seen = new Set<string>();
+
+  // Exact symbol matches first (higher priority)
+  for (const db of databases) {
+    for (const entry of db) {
+      if (results.length >= 20) break;
+      if (entry.s.toLowerCase() === q && !seen.has(entry.s)) {
+        seen.add(entry.s);
+        results.push({
+          symbol: entry.s,
+          name: entry.n,
+          type: dbTypeToInstrumentType(entry.t),
+          exchange: entry.e,
+          sector: entry.sec,
+          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
+        });
+      }
+    }
+    if (results.length >= 20) break;
+  }
+
+  // Then partial matches on symbol and name
+  for (const db of databases) {
+    for (const entry of db) {
+      if (results.length >= 20) break;
+      if (seen.has(entry.s)) continue;
+      if (
+        entry.s.toLowerCase().includes(q) ||
+        entry.n.toLowerCase().includes(q)
+      ) {
+        seen.add(entry.s);
+        results.push({
+          symbol: entry.s,
+          name: entry.n,
+          type: dbTypeToInstrumentType(entry.t),
+          exchange: entry.e,
+          sector: entry.sec,
+          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
+        });
+      }
+    }
+    if (results.length >= 20) break;
+  }
+
+  return results;
+}
+
+/** Yahoo Finance search as supplement (slower, may fail) */
+export async function searchYahooFinance(query: string): Promise<SearchResult[]> {
+  const cacheKey = `yf-search:${query}`;
   const cached = getCached<SearchResult[]>(cacheKey);
   if (cached) return cached;
 
   try {
     const result = await yf.search(query, { quotesCount: 10, newsCount: 0 });
-    const results: SearchResult[] = (result.quotes || [])
-      .filter((q): q is Extract<typeof q, { isYahooFinance: true }> =>
-        'isYahooFinance' in q && q.isYahooFinance === true
-      )
-      .map((q) => {
-        const rawQuoteType = 'quoteType' in q ? (q as { quoteType: string }).quoteType : '';
-        return {
-          symbol: q.symbol,
-          name: q.shortname || q.longname || q.symbol,
-          type: mapQuoteType(rawQuoteType),
-          exchange: q.exchange || '',
-          sector: q.sector,
-          quoteType: rawQuoteType || undefined,
-        };
+    const quotes = result.quotes || [];
+    const results: SearchResult[] = [];
+
+    for (const q of quotes) {
+      const isYF = 'isYahooFinance' in q && q.isYahooFinance === true;
+      const rawQuoteType = 'quoteType' in q ? String((q as Record<string, unknown>).quoteType || '') : '';
+      const isIndex = rawQuoteType === 'INDEX';
+
+      if (!isYF && !isIndex) continue;
+
+      results.push({
+        symbol: String(q.symbol || ''),
+        name: String(('shortname' in q ? q.shortname : '') || ('longname' in q ? q.longname : '') || q.symbol || ''),
+        type: mapQuoteType(rawQuoteType),
+        exchange: String(q.exchange || ''),
+        sector: 'sector' in q ? String((q as Record<string, unknown>).sector || '') : undefined,
+        quoteType: rawQuoteType || undefined,
       });
+    }
 
     setCache(cacheKey, results, 10 * 60 * 1000);
     return results;
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Yahoo search error:', error);
     return [];
   }
 }

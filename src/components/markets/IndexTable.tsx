@@ -193,7 +193,7 @@ export function IndexTable() {
           <InstrumentSearch
             onSelect={handleAddIndex}
             existingSymbols={allSymbols}
-            filterFn={(r) => r.quoteType === 'INDEX' || r.symbol.startsWith('^')}
+            searchMode="index"
             placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>
