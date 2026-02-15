@@ -39,6 +39,7 @@ export function Header() {
   const navLinks = [
     { href: '/', label: t('header.dashboard') },
     { href: '/news', label: t('header.news') },
+    { href: '/markets', label: t('header.markets') },
     { href: '/calendar', label: t('header.calendar') },
   ];
 

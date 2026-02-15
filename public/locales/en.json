@@ -6,6 +6,7 @@
     "dashboard": "Dashboard",
     "news": "News",
     "calendar": "Calendar",
+    "markets": "Markets",
     "createPortfolio": "New Portfolio",
     "language": "CZ",
     "theme": "Theme"
@@ -47,7 +48,8 @@
     "period5y": "5 Years",
     "period1y": "1 Year",
     "period1mo": "Month",
-    "period1w": "Week"
+    "period1w": "Week",
+    "suggestedIndexes": "Suggested indexes"
   },
   "portfolio": {
     "create": "Create",
@@ -279,6 +281,23 @@
     "tip_roa": "Return on Assets — net income / total assets. Measures how efficiently assets are used. >5% is generally good.",
     "tip_fcf": "Cash from operations minus capital expenditures. Positive FCF means the company generates cash after investments.",
     "tip_debtEquity": "Total debt / shareholders' equity. Higher ratio means more leverage. Below 1 is generally conservative."
+  },
+  "markets": {
+    "title": "Markets",
+    "dailyMovements": "Daily Movements",
+    "indexPerformance": "Index Performance",
+    "addIndex": "Add index",
+    "enableIndex": "Enable/disable indexes",
+    "fearGreedIndex": "Fear & Greed Index",
+    "extremeFear": "Extreme Fear",
+    "fear": "Fear",
+    "neutral": "Neutral",
+    "greed": "Greed",
+    "extremeGreed": "Extreme Greed",
+    "winnersLosers": "Winners & Losers",
+    "topGainers": "Top Gainers",
+    "topLosers": "Top Losers",
+    "marketCap": "Market Cap"
   },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",

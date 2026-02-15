@@ -6,6 +6,7 @@
     "dashboard": "Dashboard",
     "news": "Zprávy",
     "calendar": "Kalendář",
+    "markets": "Trhy",
     "createPortfolio": "Nové portfolio",
     "language": "EN",
     "theme": "Režim"
@@ -47,7 +48,8 @@
     "period5y": "5 let",
     "period1y": "1 rok",
     "period1mo": "Měsíc",
-    "period1w": "Týden"
+    "period1w": "Týden",
+    "suggestedIndexes": "Doporučené indexy"
   },
   "portfolio": {
     "create": "Vytvořit",
@@ -279,6 +281,23 @@
     "tip_roa": "Návratnost aktiv — čistý zisk / celková aktiva. Měří efektivitu využití aktiv. >5 % je obecně dobré.",
     "tip_fcf": "Provozní cash flow minus investiční výdaje. Kladný FCF znamená, že firma generuje hotovost po investicích.",
     "tip_debtEquity": "Celkový dluh / vlastní kapitál. Vyšší poměr = větší zadluženost. Pod 1 je obecně konzervativní."
+  },
+  "markets": {
+    "title": "Trhy",
+    "dailyMovements": "Denní pohyby",
+    "indexPerformance": "Výkonnost indexů",
+    "addIndex": "Přidat index",
+    "enableIndex": "Zapnout/vypnout indexy",
+    "fearGreedIndex": "Index strachu a chamtivosti",
+    "extremeFear": "Extrémní strach",
+    "fear": "Strach",
+    "neutral": "Neutrální",
+    "greed": "Chamtivost",
+    "extremeGreed": "Extrémní chamtivost",
+    "winnersLosers": "Vítězové a poražení",
+    "topGainers": "Nejvíce rostoucí",
+    "topLosers": "Nejvíce klesající",
+    "marketCap": "Tržní kapitalizace"
   },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",
