@@ -19,37 +19,68 @@ interface IndexProvider {
   name: string;
   initials: string;
   color: string;
+  logoUrl?: string;
 }
 
 const INDEX_PROVIDER_MAP: Record<string, IndexProvider> = {
-  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444' },
-  '^GSPTSE': { name: 'S&P', initials: 'S&P', color: '#EF4444' },
-  '^IXIC': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9' },
-  '^NDX': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9' },
-  'URTH': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
-  'EEM': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
-  'ACWI': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
-  'MCHI': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
-  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8' },
-  '^DJT': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8' },
-  '^FTSE': { name: 'FTSE', initials: 'FT', color: '#DC2626' },
-  '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1' },
-  '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B' },
-  '^HSI': { name: 'Hang Seng', initials: 'HS', color: '#10B981' },
-  '^STOXX50E': { name: 'STOXX', initials: 'SX', color: '#1D4ED8' },
-  '^FCHI': { name: 'CAC', initials: 'CA', color: '#3B82F6' },
-  '^RUT': { name: 'Russell', initials: 'RS', color: '#8B5CF6' },
-  '^VIX': { name: 'CBOE', initials: 'VX', color: '#EF4444' },
+  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
+  '^GSPTSE': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
+  '^IXIC': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' },
+  '^NDX': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' },
+  'URTH': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
+  'EEM': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
+  'ACWI': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
+  'MCHI': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
+  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
+  '^DJT': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
+  '^FTSE': { name: 'FTSE', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nikkei.com&size=128' },
+  '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
+  '^HSI': { name: 'Hang Seng', initials: 'HS', color: '#10B981', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hsi.com.hk&size=128' },
+  '^STOXX50E': { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' },
+  '^FCHI': { name: 'Euronext', initials: 'CA', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://euronext.com&size=128' },
+  '^RUT': { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  '^VIX': { name: 'CBOE', initials: 'VX', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://cboe.com&size=128' },
+};
+
+/** Translation key mapping for index descriptions */
+const INDEX_DESC_KEY: Record<string, string> = {
+  '^GSPC': 'markets.descGspc',
+  '^IXIC': 'markets.descIxic',
+  'URTH': 'markets.descUrth',
+  'EEM': 'markets.descEem',
+  'ACWI': 'markets.descAcwi',
+  '^DJI': 'markets.descDji',
+  '^FTSE': 'markets.descFtse',
+  '^N225': 'markets.descN225',
+  '^GDAXI': 'markets.descGdaxi',
+  '^HSI': 'markets.descHsi',
+  '^STOXX50E': 'markets.descStoxx',
+  '^FCHI': 'markets.descFchi',
+  '^RUT': 'markets.descRut',
+  '^VIX': 'markets.descVix',
 };
 
 function IndexProviderLogo({ symbol }: { symbol: string }) {
   const provider = INDEX_PROVIDER_MAP[symbol];
   const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
   const color = provider?.color || '#6B7280';
+  const [imgError, setImgError] = useState(false);
+
+  if (provider?.logoUrl && !imgError) {
+    return (
+      <img
+        src={provider.logoUrl}
+        alt={provider.name}
+        className="h-8 w-8 rounded-full object-cover shrink-0"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
 
   return (
     <div
-      className="h-7 w-7 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+      className="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold shrink-0"
       style={{ backgroundColor: color, fontSize: '9px', letterSpacing: '-0.3px' }}
       title={provider?.name || symbol}
     >
@@ -72,10 +103,8 @@ export function IndexTable() {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
 
-  // All symbols: default MARKET_INDEXES + custom ones
   const allSymbols = [...getDefaultSymbols(), ...customSymbols];
 
-  // Load custom symbols from DB or localStorage
   useEffect(() => {
     (async () => {
       if (user) {
@@ -87,7 +116,6 @@ export function IndexTable() {
           }
         } catch {}
       }
-      // Fallback to localStorage
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -98,7 +126,6 @@ export function IndexTable() {
     })();
   }, [user]);
 
-  // Save custom symbols
   const saveCustomSymbols = useCallback(async (symbols: string[]) => {
     setCustomSymbols(symbols);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(symbols));
@@ -109,7 +136,6 @@ export function IndexTable() {
     }
   }, [user]);
 
-  // Fetch quotes
   useEffect(() => {
     if (allSymbols.length === 0) return;
     setIsLoading(true);
@@ -167,7 +193,7 @@ export function IndexTable() {
           <InstrumentSearch
             onSelect={handleAddIndex}
             existingSymbols={allSymbols}
-            filterFn={(r) => r.quoteType === 'INDEX'}
+            filterFn={(r) => r.quoteType === 'INDEX' || r.symbol.startsWith('^')}
             placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>
@@ -196,6 +222,8 @@ export function IndexTable() {
                 const q = quotes.find((qu) => qu.symbol === symbol);
                 const known = knownIndex(symbol);
                 const displayName = known?.shortName || q?.name || symbol;
+                const descKey = INDEX_DESC_KEY[symbol];
+                const description = descKey ? t(descKey) : '';
                 const custom = isCustom(symbol);
 
                 return (
@@ -205,15 +233,17 @@ export function IndexTable() {
                     className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer transition-colors"
                   >
                     <td className="px-4 sm:px-6 py-3">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         <IndexProviderLogo symbol={symbol} />
-                        <div>
-                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm text-gray-900 dark:text-white">
                             {displayName}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {symbol}{INDEX_PROVIDER_MAP[symbol] ? ` · ${INDEX_PROVIDER_MAP[symbol].name}` : ''}
-                          </div>
+                          {description && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px]">
+                              {description}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
