@@ -17,16 +17,20 @@ export async function GET(request: NextRequest) {
   try {
     const query = q.trim();
 
-    // Local DB first (instant, 290k+ instruments), Yahoo Finance as supplement
-    const [localResults, yahooResults] = await Promise.all([
-      Promise.resolve(searchLocalDB(query, mode || undefined, typeFilter)),
-      searchYahooFinance(query),
-    ]);
+    // Local DB search (instant, 290k+ instruments)
+    const localResults = searchLocalDB(query, mode || undefined, typeFilter);
+
+    // In index mode, local DB (91k indices) is sufficient - skip Yahoo Finance
+    if (mode === 'index') {
+      return NextResponse.json(localResults.slice(0, 20));
+    }
+
+    // For general search, supplement with Yahoo Finance
+    const yahooResults = await searchYahooFinance(query);
 
     const seen = new Set<string>();
     const merged = [];
 
-    // Local results first (reliable, instant)
     for (const r of localResults) {
       if (!seen.has(r.symbol)) {
         seen.add(r.symbol);
@@ -34,12 +38,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Yahoo Finance results as supplement (may have fresher data)
     for (const r of yahooResults) {
       if (seen.has(r.symbol)) continue;
-      // In index mode, only add INDEX/^ results from Yahoo
-      if (mode === 'index' && r.quoteType !== 'INDEX' && !r.symbol.startsWith('^')) continue;
-      // Apply type filter to Yahoo results too
       if (typeFilter) {
         const yahooType = r.quoteType === 'INDEX' ? 'index' : r.type;
         if (yahooType !== typeFilter) continue;
