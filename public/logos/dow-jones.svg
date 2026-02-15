@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="8" fill="#1565C0"/>
-  <text x="64" y="96" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="96" fill="#FFFFFF">D</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 120" fill="#4A9CC7">
+  <!-- D letter with cutout interior (even-odd) -->
+  <path fill-rule="evenodd" d="
+    M 4,4 H 52 C 90,4 106,28 106,60 C 106,92 90,116 52,116 H 4 Z
+    M 20,20 H 48 C 74,20 88,38 88,60 C 88,82 74,100 48,100 H 20 Z
+  "/>
+  <!-- J vertical stem -->
+  <rect x="44" y="26" width="14" height="48"/>
+  <!-- J descender hook -->
+  <path d="M 44,68 H 58 V 82 C 58,98 32,102 24,90 L 34,84 C 36,90 44,90 44,84 Z"/>
 </svg>
