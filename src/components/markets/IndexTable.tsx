@@ -29,7 +29,7 @@ const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
   { prefix: 'FTSE', provider: { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
   { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: '/logos/sp-global.svg' } },
   { prefix: 'NASDAQ', provider: { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' } },
-  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: '/logos/dow-jones.svg' } },
+  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://dowjones.com&size=128' } },
   { prefix: 'Russell', provider: { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
   { prefix: 'EURO STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
   { prefix: 'STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
@@ -39,7 +39,7 @@ const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
 /** Fallback map for tickers without a matching name prefix */
 const TICKER_PROVIDER_MAP: Record<string, IndexProvider> = {
   '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: '/logos/sp-global.svg' },
-  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: '/logos/dow-jones.svg' },
+  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://dowjones.com&size=128' },
   '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nikkei.com&size=128' },
   '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
   '^MDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
