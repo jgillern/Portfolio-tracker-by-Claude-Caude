@@ -1,0 +1,105 @@
+Název a poskytovatel Indexu,Vysvětlení indexu,Ticker
+MSCI ACWI,Celý svět - Rozvinuté i rozvojové,ACWI
+MSCI ACWI ex-US,Celý svět bez USA,ACWX
+MSCI World,Svět - Pouze rozvinuté trhy,URTH
+MSCI World ex-USA,Rozvinuté trhy bez USA,TOK
+MSCI EAFE,"Evropa, Australasie, Dálný východ",EFA
+MSCI Emerging Markets,Rozvojové trhy - Široký,EEM
+MSCI Frontier Markets,Hraniční/Nové trhy,FM
+MSCI BRIC,"Brazílie, Rusko, Indie, Čína",BKF
+MSCI EM Asia,Rozvojové trhy Asie,EEMA
+MSCI EM Latin America,Rozvojové trhy Latinské Ameriky,ILF
+MSCI EM EMEA,"Rozvojové trhy Evropy, Blízkého východu, Afriky",EZA
+MSCI Europe,Evropa - Rozvinuté trhy,IEUR
+MSCI EMU,Evropská hospodářská a měnová unie - Eurozóna,EZU
+MSCI Pacific ex-Japan,Pacifik bez Japonska,EPP
+MSCI North America,Severní Amerika,ITOT
+MSCI EAFE Small Cap,Malé firmy - Rozvinuté trhy mimo USA,SCZ
+MSCI EAFE Value,Hodnotové akcie - Rozvinuté trhy mimo USA,EFV
+MSCI EAFE Growth,Růstové akcie - Rozvinuté trhy mimo USA,EFG
+MSCI Emerging Markets Small Cap,Malé firmy - Rozvojové trhy,EEMS
+MSCI Emerging Markets Minimum Volatility,EM s nízkou kolísavostí,EEMV
+MSCI World Minimum Volatility,Svět s nízkou kolísavostí,ACWV
+MSCI USA,Spojené státy,EUSA
+MSCI Japan,Japonsko,EWJ
+MSCI United Kingdom,Velká Británie,EWU
+MSCI Germany,Německo,EWG
+MSCI France,Francie,EWQ
+MSCI Switzerland,Švýcarsko,EWL
+MSCI Australia,Austrálie,EWA
+MSCI Canada,Kanada,EWC
+MSCI Italy,Itálie,EWI
+MSCI Spain,Španělsko,EWP
+MSCI Netherlands,Nizozemsko,EWN
+MSCI Sweden,Švédsko,EWD
+MSCI China,Čína,MCHI
+MSCI India,Indie,INDA
+MSCI Taiwan,Tchaj-wan,EWT
+MSCI South Korea,Jižní Korea,EWY
+MSCI Brazil,Brazílie,EWZ
+MSCI Mexico,Mexiko,EWW
+MSCI South Africa,Jižní Afrika,EZA
+MSCI Saudi Arabia,Saúdská Arábie,KSA
+FTSE Global All Cap,Celý svět - Všechny velikosti firem,VT
+FTSE All-World ex-US,Celý svět bez USA,VEU
+FTSE Developed Markets,Rozvinuté trhy,VEA
+FTSE Emerging Markets,Rozvojové trhy,VWO
+FTSE Europe,Evropa,VGK
+FTSE Pacific,Pacifik,VPL
+FTSE All-World High Dividend Yield,Svět - Vysoká dividenda,VYM
+FTSE International High Dividend Yield,Svět bez USA - Dividenda,VYMI
+FTSE Global All Cap ex US Small Cap,Svět bez USA - Malé firmy,VSS
+FTSE EPRA Nareit Global Real Estate,Svět - Nemovitosti/REITs,VNQI
+FTSE EPRA Nareit US Real Estate,USA - Nemovitosti/REITs,VNQ
+S&P 500,USA - Velké firmy,^GSPC
+S&P 500 Equal Weight,USA - Rovnoměrně vážený,RSP
+NASDAQ Composite,USA - Technologie a širší trh,^IXIC
+NASDAQ 100,USA - Top 100 nefinančních,^NDX
+Dow Jones Industrial Average,USA - 30 Blue Chips,^DJI
+Russell 3000,"USA - Celý trh, 3000 firem",^RUA
+Russell 2000,USA - Malé firmy,^RUT
+Russell 1000,USA - Velké firmy,^RUI
+Russell Microcap,USA - Mikro firmy,IWC
+S&P MidCap 400,USA - Střední firmy,^MID
+S&P SmallCap 600,USA - Malé firmy,^SML
+S&P 500 Informační technologie,Technology,XLK
+S&P 500 Zdravotnictví,Health Care,XLV
+S&P 500 Finance,Financials,XLF
+S&P 500 Zbytná spotřeba,Consumer Discretionary,XLY
+S&P 500 Běžná spotřeba,Consumer Staples,XLP
+S&P 500 Průmysl,Industrials,XLI
+S&P 500 Energetika,Energy,XLE
+S&P 500 Utility,Utilities,XLU
+S&P 500 Komunikace,Communication Services,XLC
+S&P 500 Materiály,Materials,XLB
+S&P 500 Nemovitosti,Real Estate,XLRE
+S&P 500 Dividend Aristocrats,Dividendoví aristokraté,NOBL
+US Momentum Factor,USA - Růstové/Momentum akcie,MTUM
+US Quality Factor,USA - Kvalitní akcie s vysokou marží,QUAL
+US Value Factor,USA - Podhodnocené akcie,VLUE
+Vanguard Dividend Appreciation,USA - Růst dividend,VIG
+Indxx Global Robotics & AI,Umělá inteligence a Robotika,BOTZ
+Nasdaq CTA Cybersecurity,Kybernetická bezpečnost,CIBR
+ISE Cloud Computing,Cloudové služby,SKYY
+MVIS US Listed Semiconductor,Polovodiče a čipy - VanEck,SMH
+ICE Semiconductor,Polovodiče a čipy - iShares,SOXX
+ARK Genomic Revolution,Biotechnologie a Genomika,ARKG
+Solactive Global Lithium,Baterie a Těžba lithia,LIT
+S&P Global Clean Energy,Čistá energie a Solár,ICLN
+Solactive Global Uranium,Uran a Jaderná energie,URA
+Amplify Transformational Data Sharing,Blockchain a Krypto ekosystém,BLOK
+ARK Space Exploration,Průzkum vesmíru a Letectví,ARKX
+MVIS Global Video Gaming & eSports,E-sport a Videohry,ESPO
+S&P Global Water,Vodohospodářství,CGW
+Indxx Global Agriculture,Zemědělství a Agrotech,VEGI
+EURO STOXX 50,Eurozóna - Blue Chips,^STOXX50E
+STOXX Europe 600,Široký evropský trh,^STOXX
+DAX 40,Německo,^GDAXI
+MDAX,Německo - Střední firmy,^MDAXI
+FTSE 100,Velká Británie,^FTSE
+FTSE 250,Velká Británie - Střední firmy,^FTMC
+FTSE All-Share,Velká Británie - Široký trh,^FTAS
+CAC 40,Francie,^FCHI
+SMI,Švýcarsko,^SSMI
+IBEX 35,Španělsko,^IBEX
+AEX,Nizozemsko,^AEX
