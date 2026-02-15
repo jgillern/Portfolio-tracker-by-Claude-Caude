@@ -102,7 +102,8 @@
     "placeholder": "按名称或代码搜索...",
     "noResults": "未找到结果。",
     "add": "添加",
-    "searching": "搜索中..."
+    "searching": "搜索中...",
+    "allTypes": "全部"
   },
   "news": {
     "title": "财经新闻",
@@ -150,7 +151,8 @@
     "etf": "ETF",
     "crypto": "加密货币",
     "bond": "债券",
-    "commodity": "商品"
+    "commodity": "商品",
+    "index": "指数"
   },
   "metrics": {
     "title": "投资组合评级",
