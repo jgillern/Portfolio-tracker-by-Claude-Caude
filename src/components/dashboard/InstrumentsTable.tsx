@@ -65,20 +65,9 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
 
-  if (!activePortfolio) return null;
-  const { instruments } = activePortfolio;
+  const instruments = activePortfolio?.instruments ?? [];
   const symbols = instruments.map((i) => i.symbol);
-
-  if (instruments.length === 0) {
-    return (
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-center text-gray-500 dark:text-gray-400">
-        <p>{t('dashboard.noInstruments')}</p>
-        <p className="text-sm mt-1">{t('dashboard.addSome')}</p>
-      </div>
-    );
-  }
-
-  const showWeights = hasCustomWeights(activePortfolio);
+  const showWeights = activePortfolio ? hasCustomWeights(activePortfolio) : false;
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -96,7 +85,6 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
     return quote[key] ?? 0;
   };
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const sortedInstruments = useMemo(() => {
     const arr = [...instruments];
 
@@ -129,6 +117,17 @@ export function InstrumentsTable({ quotes, isLoading }: Props) {
 
     return arr;
   }, [instruments, sortKey, sortDir, quotes, showWeights]);
+
+  if (!activePortfolio) return null;
+
+  if (instruments.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-center text-gray-500 dark:text-gray-400">
+        <p>{t('dashboard.noInstruments')}</p>
+        <p className="text-sm mt-1">{t('dashboard.addSome')}</p>
+      </div>
+    );
+  }
 
   const thSortable = (key: SortKey, label: string, className: string) => (
     <th
