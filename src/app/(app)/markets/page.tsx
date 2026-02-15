@@ -6,6 +6,7 @@ import { DailyMovements } from '@/components/markets/DailyMovements';
 import { MarketsChart } from '@/components/markets/MarketsChart';
 import { FearGreedIndex } from '@/components/markets/FearGreedIndex';
 import { WinnersLosers } from '@/components/markets/WinnersLosers';
+import { IndexTable } from '@/components/markets/IndexTable';
 
 export default function MarketsPage() {
   const { t } = useLanguage();
@@ -18,6 +19,7 @@ export default function MarketsPage() {
 
       <DailyMovements />
       <MarketsChart />
+      <IndexTable />
       <FearGreedIndex />
       <WinnersLosers />
     </div>

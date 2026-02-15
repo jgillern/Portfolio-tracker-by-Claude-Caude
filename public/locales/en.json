@@ -297,7 +297,17 @@
     "winnersLosers": "Winners & Losers",
     "topGainers": "Top Gainers",
     "topLosers": "Top Losers",
-    "marketCap": "Market Cap"
+    "marketCap": "Market Cap",
+    "searchIndex": "Search index or ETF...",
+    "period24h": "24H",
+    "period1w": "1W",
+    "period1m": "1M",
+    "periodYtd": "YTD",
+    "indexOverview": "Index Overview",
+    "addCustomIndex": "Add index",
+    "removeIndex": "Remove",
+    "noDescription": "No description available.",
+    "searchIndexPlaceholder": "Search for an index..."
   },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",

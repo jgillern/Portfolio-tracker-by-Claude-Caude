@@ -280,7 +280,17 @@
     "winnersLosers": "Ялагч ба ялагдагч",
     "topGainers": "Хамгийн их өссөн",
     "topLosers": "Хамгийн их буурсан",
-    "marketCap": "Зах зээлийн үнэлгээ"
+    "marketCap": "Зах зээлийн үнэлгээ",
+    "searchIndex": "Индекс эсвэл ETF хайх...",
+    "period24h": "24Ц",
+    "period1w": "1Д",
+    "period1m": "1С",
+    "periodYtd": "YTD",
+    "indexOverview": "Индексийн тойм",
+    "addCustomIndex": "Индекс нэмэх",
+    "removeIndex": "Устгах",
+    "noDescription": "Тайлбар байхгүй.",
+    "searchIndexPlaceholder": "Индекс хайх..."
   },
   "errors": {
     "fetchFailed": "Өгөгдөл ачаалж чадсангүй. Дахин оролдоно уу.",

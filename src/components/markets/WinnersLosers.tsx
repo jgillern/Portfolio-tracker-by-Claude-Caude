@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { Spinner } from '@/components/ui/Spinner';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { InstrumentProfileModal } from '@/components/dashboard/InstrumentProfileModal';
+import type { Instrument } from '@/types/portfolio';
+import type { Quote } from '@/types/market';
 
 interface Mover {
   symbol: string;
@@ -15,6 +18,8 @@ interface Mover {
   marketCapChange: number | null;
 }
 
+type MoverPeriod = '24h' | '1w' | '1m' | 'ytd';
+
 function fmtBigNum(v: number | null): string {
   if (v == null) return '—';
   const abs = Math.abs(v);
@@ -25,22 +30,54 @@ function fmtBigNum(v: number | null): string {
   return v.toLocaleString('en-US');
 }
 
+const PERIOD_OPTIONS: { key: MoverPeriod; labelKey: string }[] = [
+  { key: '24h', labelKey: 'markets.period24h' },
+  { key: '1w', labelKey: 'markets.period1w' },
+  { key: '1m', labelKey: 'markets.period1m' },
+  { key: 'ytd', labelKey: 'markets.periodYtd' },
+];
+
 export function WinnersLosers() {
   const { t } = useLanguage();
   const [mode, setMode] = useState<'percent' | 'value'>('percent');
+  const [period, setPeriod] = useState<MoverPeriod>('24h');
   const [data, setData] = useState<{ gainers: Mover[]; losers: Mover[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`/api/movers?mode=${mode}`)
+    fetch(`/api/movers?mode=${mode}&period=${period}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.gainers) setData(d);
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, [mode]);
+  }, [mode, period]);
+
+  const handleMoverClick = (mover: Mover) => {
+    const instrument: Instrument = {
+      symbol: mover.symbol,
+      name: mover.name,
+      type: 'stock',
+      addedAt: new Date().toISOString(),
+    };
+    const quote: Quote = {
+      symbol: mover.symbol,
+      name: mover.name,
+      price: mover.price,
+      currency: 'USD',
+      change24h: mover.changePercent,
+      change1w: 0,
+      change1m: 0,
+      change1y: 0,
+      changeYtd: 0,
+    };
+    setSelectedInstrument(instrument);
+    setSelectedQuote(quote);
+  };
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6">
@@ -48,29 +85,49 @@ export function WinnersLosers() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('markets.winnersLosers')}
         </h2>
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
-          <button
-            onClick={() => setMode('percent')}
-            className={cn(
-              'px-3 py-1.5 text-xs font-medium transition-colors',
-              mode === 'percent'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            )}
-          >
-            %
-          </button>
-          <button
-            onClick={() => setMode('value')}
-            className={cn(
-              'px-3 py-1.5 text-xs font-medium transition-colors',
-              mode === 'value'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            )}
-          >
-            {t('markets.marketCap')}
-          </button>
+        <div className="flex items-center gap-2">
+          {/* Period switcher */}
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setPeriod(opt.key)}
+                className={cn(
+                  'px-2.5 py-1.5 text-xs font-medium transition-colors',
+                  period === opt.key
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                )}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
+          {/* Mode switcher */}
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+            <button
+              onClick={() => setMode('percent')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium transition-colors',
+                mode === 'percent'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              )}
+            >
+              %
+            </button>
+            <button
+              onClick={() => setMode('value')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium transition-colors',
+                mode === 'value'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              )}
+            >
+              {t('markets.marketCap')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -92,7 +149,7 @@ export function WinnersLosers() {
             </h3>
             <div className="space-y-1">
               {data.gainers.map((m, idx) => (
-                <MoverRow key={m.symbol} mover={m} rank={idx + 1} mode={mode} isGainer />
+                <MoverRow key={m.symbol} mover={m} rank={idx + 1} mode={mode} isGainer onClick={() => handleMoverClick(m)} />
               ))}
             </div>
           </div>
@@ -107,19 +164,29 @@ export function WinnersLosers() {
             </h3>
             <div className="space-y-1">
               {data.losers.map((m, idx) => (
-                <MoverRow key={m.symbol} mover={m} rank={idx + 1} mode={mode} isGainer={false} />
+                <MoverRow key={m.symbol} mover={m} rank={idx + 1} mode={mode} isGainer={false} onClick={() => handleMoverClick(m)} />
               ))}
             </div>
           </div>
         </div>
       )}
+
+      <InstrumentProfileModal
+        isOpen={selectedInstrument !== null}
+        onClose={() => { setSelectedInstrument(null); setSelectedQuote(null); }}
+        instrument={selectedInstrument}
+        quote={selectedQuote}
+      />
     </div>
   );
 }
 
-function MoverRow({ mover, rank, mode, isGainer }: { mover: Mover; rank: number; mode: 'percent' | 'value'; isGainer: boolean }) {
+function MoverRow({ mover, rank, mode, isGainer, onClick }: { mover: Mover; rank: number; mode: 'percent' | 'value'; isGainer: boolean; onClick: () => void }) {
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer text-left"
+    >
       <span className="text-xs font-bold text-gray-400 w-5 text-right">{rank}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -148,6 +215,6 @@ function MoverRow({ mover, rank, mode, isGainer }: { mover: Mover; rank: number;
           </span>
         )}
       </div>
-    </div>
+    </button>
   );
 }

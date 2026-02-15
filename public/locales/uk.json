@@ -280,7 +280,17 @@
     "winnersLosers": "Переможці та аутсайдери",
     "topGainers": "Найбільше зростання",
     "topLosers": "Найбільше падіння",
-    "marketCap": "Ринкова капіталізація"
+    "marketCap": "Ринкова капіталізація",
+    "searchIndex": "Шукати індекс або ETF...",
+    "period24h": "24Г",
+    "period1w": "1Т",
+    "period1m": "1М",
+    "periodYtd": "YTD",
+    "indexOverview": "Огляд індексу",
+    "addCustomIndex": "Додати індекс",
+    "removeIndex": "Видалити",
+    "noDescription": "Опис недоступний.",
+    "searchIndexPlaceholder": "Шукати індекс..."
   },
   "errors": {
     "fetchFailed": "Не вдалося завантажити дані. Спробуйте ще раз.",

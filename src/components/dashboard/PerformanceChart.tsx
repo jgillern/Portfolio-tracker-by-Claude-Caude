@@ -229,7 +229,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COMPARISON_COLORS[idx % COMPARISON_COLORS.length] }} />
-              <span>{instrument.symbol}</span>
+              <span>{COMPARISON_INDEXES.find(i => i.symbol === instrument.symbol)?.shortName || instrument.name}</span>
               <button
                 onClick={() => handleRemoveComparison(instrument.symbol)}
                 className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -323,7 +323,14 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 }}
                 labelFormatter={(label) => formatTime(Number(label))}
                 formatter={(value: any, name?: string) => {
-                  const displayName = name === 'portfolio' ? t('dashboard.portfolio') : (name || '');
+                  let displayName: string;
+                  if (name === 'portfolio') {
+                    displayName = t('dashboard.portfolio');
+                  } else {
+                    const idx = COMPARISON_INDEXES.find(i => i.symbol === name);
+                    const ci = comparisonInstruments.find(i => i.symbol === name);
+                    displayName = idx?.shortName || ci?.name || name || '';
+                  }
                   const v = Number(value);
                   return [`${v >= 0 ? '+' : ''}${v.toFixed(2)}%`, displayName];
                 }}
