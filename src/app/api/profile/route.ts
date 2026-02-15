@@ -69,6 +69,21 @@ function formatSectorName(raw: string): string {
   return raw.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
+/** Map pure index symbols to their ETF trackers for holdings/sector data */
+const INDEX_TO_ETF_TRACKER: Record<string, string> = {
+  '^GSPC': 'SPY',
+  '^IXIC': 'QQQ',
+  '^DJI': 'DIA',
+  '^FTSE': 'ISF.L',
+  '^N225': 'EWJ',
+  '^GDAXI': 'EWG',
+  '^HSI': 'EWH',
+  '^STOXX50E': 'FEZ',
+  '^FCHI': 'EWQ',
+  '^RUT': 'IWM',
+  '^GSPTSE': 'XIC.TO',
+};
+
 export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get('symbol');
   const lang = request.nextUrl.searchParams.get('lang') || 'en';
@@ -247,10 +262,21 @@ export async function GET(request: NextRequest) {
     result.analystTrend = analystTrend;
 
     // Top holdings (for ETFs / index funds)
-    const topHoldingsData = (summary as Record<string, unknown>).topHoldings as {
+    // If the symbol is a pure index with no topHoldings, try its ETF tracker
+    let topHoldingsData = (summary as Record<string, unknown>).topHoldings as {
       holdings?: { symbol: string; holdingName: string; holdingPercent: number }[];
       sectorWeightings?: Record<string, number>[];
     } | undefined;
+
+    if ((!topHoldingsData?.holdings || topHoldingsData.holdings.length === 0) && INDEX_TO_ETF_TRACKER[symbol]) {
+      try {
+        const etfSymbol = INDEX_TO_ETF_TRACKER[symbol];
+        const etfSummary = await yf.quoteSummary(etfSymbol, { modules: ['topHoldings'] });
+        topHoldingsData = (etfSummary as Record<string, unknown>).topHoldings as typeof topHoldingsData;
+      } catch {
+        // ETF tracker lookup failed
+      }
+    }
 
     if (topHoldingsData?.holdings && topHoldingsData.holdings.length > 0) {
       const holdingsRaw = topHoldingsData.holdings.slice(0, 10).map(h => ({

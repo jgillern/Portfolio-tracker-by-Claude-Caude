@@ -104,6 +104,21 @@ function countryFlag(country: string): string {
   );
 }
 
+/* ---------- Tooltip wrapper (same pattern as InstrumentProfileModal) ---------- */
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex ml-1 cursor-help">
+      <svg className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+      </svg>
+      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 rounded-lg bg-gray-900 dark:bg-gray-700 text-white text-[11px] leading-snug px-3 py-2.5 shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-50">
+        {text}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
+      </span>
+    </span>
+  );
+}
+
 export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
   const { t, locale } = useLanguage();
   const [profile, setProfile] = useState<IndexProfile | null>(null);
@@ -156,6 +171,8 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
     { label: 'YTD', value: quote?.changeYtd },
   ];
 
+  const sectorChartHeight = th?.sectorWeightings ? Math.max(180, th.sectorWeightings.length * 22) : 180;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
       <div
@@ -195,7 +212,6 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
                     </span>
                   )}
                 </div>
-                {/* Website link */}
                 {profile?.website && (
                   <a
                     href={profile.website}
@@ -330,14 +346,30 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
               </div>
             </div>
 
-            {/* Key stats grid */}
+            {/* Key stats grid with tooltips */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('profile.keyStatistics')}</h3>
               <div className="grid grid-cols-2 gap-3">
-                <StatCard label={t('profile.sma50')} value={ks?.fiftyDayAverage != null ? formatCurrency(ks.fiftyDayAverage, currency) : '—'} />
-                <StatCard label={t('profile.sma200')} value={ks?.twoHundredDayAverage != null ? formatCurrency(ks.twoHundredDayAverage, currency) : '—'} />
-                <StatCard label={t('profile.volume')} value={fmtBigNum(ks?.averageVolume)} />
-                <StatCard label="24h" value={quote?.change24h != null ? `${quote.change24h >= 0 ? '+' : ''}${quote.change24h.toFixed(2)}%` : '—'} />
+                <StatCard
+                  label={t('profile.sma50')}
+                  value={ks?.fiftyDayAverage != null ? formatCurrency(ks.fiftyDayAverage, currency) : '—'}
+                  tooltip={t('profile.tip_sma50')}
+                />
+                <StatCard
+                  label={t('profile.sma200')}
+                  value={ks?.twoHundredDayAverage != null ? formatCurrency(ks.twoHundredDayAverage, currency) : '—'}
+                  tooltip={t('profile.tip_sma200')}
+                />
+                <StatCard
+                  label={t('profile.volume')}
+                  value={fmtBigNum(ks?.averageVolume)}
+                  tooltip={t('profile.tip_volume')}
+                />
+                <StatCard
+                  label="24h"
+                  value={quote?.change24h != null ? `${quote.change24h >= 0 ? '+' : ''}${quote.change24h.toFixed(2)}%` : '—'}
+                  tooltip={t('markets.tip_24h')}
+                />
               </div>
             </div>
 
@@ -376,11 +408,11 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
               </div>
             )}
 
-            {/* Sector Breakdown */}
+            {/* Sector Breakdown - dynamic height, all labels forced visible */}
             {th && th.sectorWeightings.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('markets.sectorBreakdown')}</h3>
-                <div className="h-44">
+                <div style={{ height: sectorChartHeight }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={th.sectorWeightings.map(s => ({ ...s, pct: s.weight * 100 }))}
@@ -392,9 +424,10 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
                         type="category"
                         dataKey="sector"
                         tick={{ fontSize: 11, fill: '#9CA3AF' }}
-                        width={120}
+                        width={140}
                         axisLine={false}
                         tickLine={false}
+                        interval={0}
                       />
                       <Tooltip
                         contentStyle={{
@@ -420,7 +453,10 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
             {/* Country Breakdown */}
             {th && th.countryBreakdown.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('markets.countryBreakdown')}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{t('markets.countryBreakdown')}</h3>
+                  <span className="text-[10px] text-gray-400">{t('markets.basedOnTop10')}</span>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {th.countryBreakdown.map((c) => (
                     <div key={c.country} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
@@ -456,10 +492,13 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, tooltip }: { label: string; value: string; tooltip?: string }) {
   return (
     <div className="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-      <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+        {label}
+        {tooltip && <InfoTooltip text={tooltip} />}
+      </div>
       <div className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{value}</div>
     </div>
   );
