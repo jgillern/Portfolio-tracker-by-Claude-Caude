@@ -1,8 +1,9 @@
 import clsx, { ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import { hasCustomWeights, Portfolio } from '@/types/portfolio';
 
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }
 
 export function formatPercent(value: number): string {
