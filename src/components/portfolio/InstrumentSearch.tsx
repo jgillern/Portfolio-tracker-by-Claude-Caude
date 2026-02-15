@@ -92,6 +92,9 @@ export function InstrumentSearch({ onSelect, existingSymbols, filterFn, placehol
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
+                {result.featured && (
+                  <span className="text-amber-500 text-sm" title="Major index">&#9733;</span>
+                )}
                 <span className="font-medium text-sm text-gray-900 dark:text-white">
                   {result.symbol}
                 </span>
