@@ -82,14 +82,13 @@ function getDBsForType(typeFilter: SearchTypeFilter): string[] {
 
 import { FEATURED_INDICES } from '@/lib/indexConstants';
 
-/** Check if an index symbol is likely available on Yahoo Finance */
+/** Check if an index symbol is verified to have Yahoo Finance data */
 function isYahooAvailableIndex(symbol: string): boolean {
-  // Featured indices are hand-curated and verified to work
-  if (FEATURED_INDICES.has(symbol)) return true;
-  // Yahoo-native index symbols (^PREFIX format) — 62k+ entries, reliable
-  if (symbol.startsWith('^')) return true;
-  // All other indices (fund NAVs, tracking products, iNAV) are unreliable
-  return false;
+  // Only hand-curated indices are guaranteed to have data.
+  // The 62k+ ^-prefix symbols from FinanceDatabase are NOT reliable —
+  // many (e.g. ^SGIXWAT) return no data from Yahoo Finance.
+  // Yahoo Finance search supplement covers additional valid indices.
+  return FEATURED_INDICES.has(symbol);
 }
 
 /** Check if all query tokens appear in the text (token-based matching) */

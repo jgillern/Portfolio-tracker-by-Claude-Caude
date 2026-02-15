@@ -122,10 +122,34 @@ export function MarketsChart() {
     });
   };
 
-  const handleAddCustom = (result: { symbol: string; name: string }) => {
+  const [validating, setValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleAddCustom = async (result: { symbol: string; name: string }) => {
     if (customIndexes.some((c) => c.symbol === result.symbol)) return;
-    setCustomIndexes([...customIndexes, { symbol: result.symbol, name: result.name }]);
-    setShowSearch(false);
+
+    // Validate that Yahoo Finance has data for this symbol
+    setValidating(true);
+    setValidationError(null);
+    try {
+      const res = await fetch(`/api/quote?symbols=${encodeURIComponent(result.symbol)}`);
+      if (res.ok) {
+        const quotes = await res.json();
+        if (Array.isArray(quotes) && quotes.length > 0) {
+          setCustomIndexes([...customIndexes, { symbol: result.symbol, name: result.name }]);
+          setShowSearch(false);
+          setValidationError(null);
+        } else {
+          setValidationError(t('markets.noDataAvailable'));
+        }
+      } else {
+        setValidationError(t('markets.noDataAvailable'));
+      }
+    } catch {
+      setValidationError(t('markets.noDataAvailable'));
+    } finally {
+      setValidating(false);
+    }
   };
 
   const handleRemoveCustom = (symbol: string) => {
@@ -258,6 +282,17 @@ export function MarketsChart() {
       {/* Search */}
       {showSearch && (
         <div className="mb-4">
+          {validating && (
+            <div className="mb-2 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+              <Spinner className="h-4 w-4" />
+              {t('markets.validatingIndex')}
+            </div>
+          )}
+          {validationError && (
+            <div className="mb-2 text-sm text-red-600 dark:text-red-400">
+              {validationError}
+            </div>
+          )}
           <InstrumentSearch
             onSelect={handleAddCustom}
             existingSymbols={existingSymbols}

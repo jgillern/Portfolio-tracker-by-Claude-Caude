@@ -293,6 +293,7 @@
     "removeIndex": "Видалити",
     "noData": "немає даних",
     "noDataAvailable": "Для цього індексу немає даних",
+    "validatingIndex": "Перевірка доступності даних...",
     "noDescription": "Опис недоступний.",
     "searchIndexPlaceholder": "Шукати індекс...",
     "officialWebsite": "Офіційний сайт",

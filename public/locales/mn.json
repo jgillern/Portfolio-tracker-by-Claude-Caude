@@ -293,6 +293,7 @@
     "removeIndex": "Устгах",
     "noData": "мэдээлэл алга",
     "noDataAvailable": "Энэ индексийн мэдээлэл алга",
+    "validatingIndex": "Өгөгдлийн боломжийг шалгаж байна...",
     "noDescription": "Тайлбар байхгүй.",
     "searchIndexPlaceholder": "Индекс хайх...",
     "officialWebsite": "Албан ёсны вэб",
