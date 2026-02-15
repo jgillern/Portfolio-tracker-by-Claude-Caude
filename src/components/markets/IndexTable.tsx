@@ -92,15 +92,23 @@ function IndexProviderLogo({ symbol }: { symbol: string }) {
   const provider = resolveProvider(symbol);
   const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
   const color = provider?.color || '#6B7280';
-  const [imgError, setImgError] = useState(false);
+  // Try: 1) /api/logo proxy (apple-touch-icon cascade), 2) static logoUrl, 3) initials
+  const [fallback, setFallback] = useState(0);
 
-  if (provider?.logoUrl && !imgError) {
+  const src =
+    fallback === 0
+      ? `/api/logo?symbol=${encodeURIComponent(symbol)}&type=stock`
+      : fallback === 1 && provider?.logoUrl
+        ? provider.logoUrl
+        : null;
+
+  if (src) {
     return (
       <img
-        src={provider.logoUrl}
-        alt={provider.name}
+        src={src}
+        alt={provider?.name || symbol}
         className="h-8 w-8 rounded-full object-cover shrink-0"
-        onError={() => setImgError(true)}
+        onError={() => setFallback((f) => f + 1)}
       />
     );
   }
