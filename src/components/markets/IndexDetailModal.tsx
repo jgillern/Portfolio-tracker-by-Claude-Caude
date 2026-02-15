@@ -16,6 +16,7 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn, formatCurrency } from '@/lib/utils';
+import { getIndexByTicker } from '@/config/indexes';
 import type { Quote, TimePeriod, ChartDataPoint } from '@/types/market';
 
 interface Props {
@@ -154,8 +155,9 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
 
   const price = quote?.price ?? 0;
   const currency = quote?.currency || profile?.currency || 'USD';
-  const name = profile?.name || quote?.name || symbol;
-  const desc = profile?.localizedDescription || profile?.description;
+  const predefinedIndex = symbol ? getIndexByTicker(symbol) : undefined;
+  const name = predefinedIndex?.name || profile?.name || quote?.name || symbol;
+  const desc = predefinedIndex?.description || profile?.localizedDescription || profile?.description;
   const ks = profile?.keyStats;
   const th = profile?.topHoldings;
 

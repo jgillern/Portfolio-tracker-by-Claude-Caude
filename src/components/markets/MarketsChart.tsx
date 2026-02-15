@@ -17,6 +17,7 @@ import { TimePeriodSelector } from '@/components/dashboard/TimePeriodSelector';
 import { Spinner } from '@/components/ui/Spinner';
 import { InstrumentSearch } from '@/components/portfolio/InstrumentSearch';
 import { MARKET_INDEXES, DEFAULT_ENABLED_INDEXES } from '@/lib/indexConstants';
+import { getIndexByTicker } from '@/config/indexes';
 import { cn } from '@/lib/utils';
 
 const DATE_LOCALE_MAP: Record<string, string> = {
@@ -194,6 +195,8 @@ export function MarketsChart() {
   const getName = (symbol: string) => {
     const idx = MARKET_INDEXES.find((i) => i.symbol === symbol);
     if (idx) return idx.shortName;
+    const predefined = getIndexByTicker(symbol);
+    if (predefined) return predefined.name;
     const custom = customIndexes.find((c) => c.symbol === symbol);
     return custom?.name || symbol;
   };

@@ -11,6 +11,7 @@ import { InstrumentSearch } from '@/components/portfolio/InstrumentSearch';
 import { IndexDetailModal } from './IndexDetailModal';
 import { useAuth } from '@/context/AuthContext';
 import { getPreferences, updatePreferences } from '@/lib/supabase/database';
+import { getIndexByTicker } from '@/config/indexes';
 
 const STORAGE_KEY = 'market-index-table-symbols';
 
@@ -43,23 +44,6 @@ const INDEX_PROVIDER_MAP: Record<string, IndexProvider> = {
   '^VIX': { name: 'CBOE', initials: 'VX', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://cboe.com&size=128' },
 };
 
-/** Translation key mapping for index descriptions */
-const INDEX_DESC_KEY: Record<string, string> = {
-  '^GSPC': 'markets.descGspc',
-  '^IXIC': 'markets.descIxic',
-  'URTH': 'markets.descUrth',
-  'EEM': 'markets.descEem',
-  'ACWI': 'markets.descAcwi',
-  '^DJI': 'markets.descDji',
-  '^FTSE': 'markets.descFtse',
-  '^N225': 'markets.descN225',
-  '^GDAXI': 'markets.descGdaxi',
-  '^HSI': 'markets.descHsi',
-  '^STOXX50E': 'markets.descStoxx',
-  '^FCHI': 'markets.descFchi',
-  '^RUT': 'markets.descRut',
-  '^VIX': 'markets.descVix',
-};
 
 function IndexProviderLogo({ symbol }: { symbol: string }) {
   const provider = INDEX_PROVIDER_MAP[symbol];
@@ -221,9 +205,9 @@ export function IndexTable() {
               {allSymbols.map((symbol) => {
                 const q = quotes.find((qu) => qu.symbol === symbol);
                 const known = knownIndex(symbol);
-                const displayName = known?.shortName || q?.name || symbol;
-                const descKey = INDEX_DESC_KEY[symbol];
-                const description = descKey ? t(descKey) : '';
+                const predefinedIndex = getIndexByTicker(symbol);
+                const displayName = known?.shortName || predefinedIndex?.name || q?.name || symbol;
+                const description = predefinedIndex?.description || '';
                 const custom = isCustom(symbol);
 
                 return (
