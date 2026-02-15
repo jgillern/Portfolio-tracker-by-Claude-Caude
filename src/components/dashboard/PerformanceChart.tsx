@@ -185,11 +185,22 @@ export function PerformanceChart({ refreshSignal }: Props) {
       dataMap.set(d.timestamp, { time: d.timestamp, portfolio: d.value - 100 });
     });
 
+    // Trim comparison data to portfolio time range so longer-history instruments
+    // (e.g. S&P 500 from 1985) don't stretch the chart beyond the portfolio start
+    const portfolioStart = portfolioData[0].timestamp;
+
     // Add comparison data (convert from index-100 to percentage change)
     Object.entries(comparisonData).forEach(([symbol, data]) => {
-      data.forEach((d) => {
+      // Find data points within portfolio range, re-normalize from portfolio start
+      const trimmed = data.filter((d) => d.timestamp >= portfolioStart);
+      if (trimmed.length === 0) return;
+
+      // Re-normalize: the first point after trim becomes the new base (0%)
+      const baseValue = trimmed[0].value;
+
+      trimmed.forEach((d) => {
         const existing = dataMap.get(d.timestamp) || { time: d.timestamp };
-        existing[symbol] = d.value - 100;
+        existing[symbol] = baseValue > 0 ? ((d.value / baseValue) * 100) - 100 : 0;
         dataMap.set(d.timestamp, existing);
       });
     });
