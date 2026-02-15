@@ -280,7 +280,17 @@
     "winnersLosers": "涨跌排行",
     "topGainers": "涨幅最大",
     "topLosers": "跌幅最大",
-    "marketCap": "市值变动"
+    "marketCap": "市值",
+    "searchIndex": "搜索指数或ETF...",
+    "period24h": "24小时",
+    "period1w": "1周",
+    "period1m": "1月",
+    "periodYtd": "年初至今",
+    "indexOverview": "指数概览",
+    "addCustomIndex": "添加指数",
+    "removeIndex": "删除",
+    "noDescription": "暂无描述。",
+    "searchIndexPlaceholder": "搜索指数..."
   },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",

@@ -6,6 +6,7 @@ export interface SearchResult {
   type: InstrumentType;
   exchange: string;
   sector?: string;
+  quoteType?: string;
 }
 
 export interface ApiError {

@@ -297,7 +297,17 @@
     "winnersLosers": "Vítězové a poražení",
     "topGainers": "Nejvíce rostoucí",
     "topLosers": "Nejvíce klesající",
-    "marketCap": "Tržní kapitalizace"
+    "marketCap": "Tržní kapitalizace",
+    "searchIndex": "Hledat index nebo ETF...",
+    "period24h": "24H",
+    "period1w": "1T",
+    "period1m": "1M",
+    "periodYtd": "YTD",
+    "indexOverview": "Přehled indexu",
+    "addCustomIndex": "Přidat index",
+    "removeIndex": "Odebrat",
+    "noDescription": "Popis není k dispozici.",
+    "searchIndexPlaceholder": "Hledat index..."
   },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",

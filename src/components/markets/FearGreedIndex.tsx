@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 import { useLanguage } from '@/context/LanguageContext';
 import { Spinner } from '@/components/ui/Spinner';
-import { cn } from '@/lib/utils';
 
 interface FearGreedData {
   current: { value: number; rating: string; timestamp: number };
@@ -20,11 +19,11 @@ interface FearGreedData {
 }
 
 function getRatingColor(value: number): string {
-  if (value <= 25) return '#EF4444'; // Extreme Fear - red
-  if (value <= 45) return '#F97316'; // Fear - orange
-  if (value <= 55) return '#EAB308'; // Neutral - yellow
-  if (value <= 75) return '#84CC16'; // Greed - lime
-  return '#22C55E'; // Extreme Greed - green
+  if (value <= 25) return '#EF4444';
+  if (value <= 45) return '#F97316';
+  if (value <= 55) return '#EAB308';
+  if (value <= 75) return '#84CC16';
+  return '#22C55E';
 }
 
 function getRatingLabel(value: number, t: (k: string) => string): string {
@@ -35,69 +34,139 @@ function getRatingLabel(value: number, t: (k: string) => string): string {
   return t('markets.extremeGreed');
 }
 
-/** Semi-circle gauge for Fear & Greed */
+/** Redesigned semi-circle gauge with smooth gradient */
 function FearGreedGauge({ value }: { value: number }) {
   const { t } = useLanguage();
   const color = getRatingColor(value);
   const label = getRatingLabel(value, t);
 
-  // Gauge angle: 0=left (Extreme Fear) to 180=right (Extreme Greed)
-  const angle = (value / 100) * 180;
+  // Gauge geometry: center at (100,110), radius 85, semi-circle from 180° to 0°
+  const cx = 100;
+  const cy = 110;
+  const r = 85;
+  const trackWidth = 18;
+
+  // Needle angle: 0=left (180°) to 100=right (0°)
+  const angle = 180 - (value / 100) * 180;
   const rad = (angle * Math.PI) / 180;
-  // Needle tip on arc (center 100,100, radius 80)
-  const nx = 100 - 80 * Math.cos(rad);
-  const ny = 100 - 80 * Math.sin(rad);
+  const needleLen = r - 20;
+  const nx = cx + needleLen * Math.cos(rad);
+  const ny = cy - needleLen * Math.sin(rad);
 
   return (
-    <div className="flex flex-col items-center">
-      <svg viewBox="0 0 200 120" className="w-full max-w-[280px]">
-        {/* Background arc segments */}
-        <path d="M 20 100 A 80 80 0 0 1 56 36" fill="none" stroke="#EF4444" strokeWidth="14" strokeLinecap="round" opacity={0.2} />
-        <path d="M 56 36 A 80 80 0 0 1 100 20" fill="none" stroke="#F97316" strokeWidth="14" strokeLinecap="round" opacity={0.2} />
-        <path d="M 100 20 A 80 80 0 0 1 144 36" fill="none" stroke="#EAB308" strokeWidth="14" strokeLinecap="round" opacity={0.2} />
-        <path d="M 144 36 A 80 80 0 0 1 180 100" fill="none" stroke="#22C55E" strokeWidth="14" strokeLinecap="round" opacity={0.2} />
+    <div className="flex flex-col items-center w-full max-w-[320px]">
+      <svg viewBox="0 0 200 140" className="w-full">
+        <defs>
+          {/* Smooth gradient from red (fear) to green (greed) */}
+          <linearGradient id="gaugeGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#EF4444" />
+            <stop offset="25%" stopColor="#F97316" />
+            <stop offset="45%" stopColor="#EAB308" />
+            <stop offset="55%" stopColor="#EAB308" />
+            <stop offset="75%" stopColor="#84CC16" />
+            <stop offset="100%" stopColor="#22C55E" />
+          </linearGradient>
+          {/* Shadow for needle */}
+          <filter id="needleShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.3" />
+          </filter>
+          {/* Glow for active dot */}
+          <filter id="dotGlow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-        {/* Active arc up to value */}
-        {value > 0 && (
-          <path
-            d={describeArc(100, 100, 80, 180, 180 - angle)}
-            fill="none"
-            stroke={color}
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-        )}
+        {/* Background track (muted) */}
+        <path
+          d={describeArc(cx, cy, r, 180, 0)}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth={trackWidth}
+          strokeLinecap="round"
+          className="dark:stroke-gray-700"
+        />
+
+        {/* Colored gradient track */}
+        <path
+          d={describeArc(cx, cy, r, 180, 0)}
+          fill="none"
+          stroke="url(#gaugeGradient)"
+          strokeWidth={trackWidth}
+          strokeLinecap="round"
+          opacity={0.85}
+        />
+
+        {/* Tick marks */}
+        {[0, 25, 50, 75, 100].map((tick) => {
+          const tickAngle = 180 - (tick / 100) * 180;
+          const tickRad = (tickAngle * Math.PI) / 180;
+          const inner = r - trackWidth / 2 - 2;
+          const outer = r + trackWidth / 2 + 2;
+          return (
+            <line
+              key={tick}
+              x1={cx + inner * Math.cos(tickRad)}
+              y1={cy - inner * Math.sin(tickRad)}
+              x2={cx + outer * Math.cos(tickRad)}
+              y2={cy - outer * Math.sin(tickRad)}
+              stroke="#9CA3AF"
+              strokeWidth="1.5"
+              opacity={0.5}
+            />
+          );
+        })}
 
         {/* Needle */}
-        <line x1="100" y1="100" x2={nx} y2={ny} stroke={color} strokeWidth="3" strokeLinecap="round" />
-        <circle cx="100" cy="100" r="6" fill={color} />
-        <circle cx="100" cy="100" r="3" fill="white" />
+        <line
+          x1={cx}
+          y1={cy}
+          x2={nx}
+          y2={ny}
+          stroke="#1F2937"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          filter="url(#needleShadow)"
+          className="dark:stroke-gray-200"
+        />
+        {/* Center hub */}
+        <circle cx={cx} cy={cy} r="7" fill="#1F2937" className="dark:fill-gray-200" />
+        <circle cx={cx} cy={cy} r="3.5" fill="white" className="dark:fill-gray-800" />
 
-        {/* Value text */}
-        <text x="100" y="90" textAnchor="middle" className="text-3xl font-black" fill={color} fontSize="28">
-          {value}
-        </text>
-
-        {/* Labels */}
-        <text x="20" y="115" textAnchor="middle" fontSize="8" fill="#9CA3AF">{t('markets.fear')}</text>
-        <text x="180" y="115" textAnchor="middle" fontSize="8" fill="#9CA3AF">{t('markets.greed')}</text>
+        {/* Side labels */}
+        <text x="12" y={cy + 18} textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#EF4444" opacity={0.7}>0</text>
+        <text x="188" y={cy + 18} textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#22C55E" opacity={0.7}>100</text>
       </svg>
-      <div className="mt-1 text-center">
-        <div className="text-sm font-bold" style={{ color }}>{label}</div>
+
+      {/* Value + label below the gauge */}
+      <div className="flex flex-col items-center -mt-4">
+        <div className="text-4xl font-black tracking-tight" style={{ color }}>
+          {value}
+        </div>
+        <div
+          className="text-sm font-bold mt-0.5 px-3 py-0.5 rounded-full"
+          style={{ color, backgroundColor: `${color}18` }}
+        >
+          {label}
+        </div>
       </div>
     </div>
   );
 }
 
-function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number): string {
+function describeArc(cx: number, cy: number, radius: number, startAngle: number, endAngle: number): string {
   const startRad = (startAngle * Math.PI) / 180;
   const endRad = (endAngle * Math.PI) / 180;
-  const sx = x - radius * Math.cos(startRad);
-  const sy = y - radius * Math.sin(startRad);
-  const ex = x - radius * Math.cos(endRad);
-  const ey = y - radius * Math.sin(endRad);
+  const sx = cx + radius * Math.cos(startRad);
+  const sy = cy - radius * Math.sin(startRad);
+  const ex = cx + radius * Math.cos(endRad);
+  const ey = cy - radius * Math.sin(endRad);
   const largeArc = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
-  return `M ${sx} ${sy} A ${radius} ${radius} 0 ${largeArc} 0 ${ex} ${ey}`;
+  const sweep = endAngle < startAngle ? 1 : 0;
+  return `M ${sx} ${sy} A ${radius} ${radius} 0 ${largeArc} ${sweep} ${ex} ${ey}`;
 }
 
 export function FearGreedIndex() {
@@ -117,7 +186,6 @@ export function FearGreedIndex() {
 
   const dateLocale = locale === 'cs' ? 'cs-CZ' : locale === 'sk' ? 'sk-SK' : 'en-US';
 
-  // Filter history to last year
   const yearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
   const historyData = (data?.history ?? [])
     .filter((d) => d.x >= yearAgo)
@@ -142,14 +210,24 @@ export function FearGreedIndex() {
             <FearGreedGauge value={data.current.value} />
           </div>
 
-          {/* History chart */}
+          {/* History chart with fear-greed gradient */}
           <div className="h-48 sm:h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={historyData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                 <defs>
-                  <linearGradient id="fgGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  <linearGradient id="fgHistoryGradient" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4} />
+                    <stop offset="25%" stopColor="#F97316" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="#EAB308" stopOpacity={0.2} />
+                    <stop offset="75%" stopColor="#84CC16" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#22C55E" stopOpacity={0.4} />
+                  </linearGradient>
+                  <linearGradient id="fgStrokeGradient" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#EF4444" />
+                    <stop offset="25%" stopColor="#F97316" />
+                    <stop offset="50%" stopColor="#EAB308" />
+                    <stop offset="75%" stopColor="#84CC16" />
+                    <stop offset="100%" stopColor="#22C55E" />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.15} vertical={false} />
@@ -170,14 +248,14 @@ export function FearGreedIndex() {
                   width={30}
                 />
                 <ReferenceLine y={50} stroke="#6B7280" strokeDasharray="3 3" opacity={0.4} />
-                <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="2 4" opacity={0.3} />
-                <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="2 4" opacity={0.3} />
+                <ReferenceLine y={25} stroke="#EF4444" strokeDasharray="2 4" opacity={0.2} />
+                <ReferenceLine y={75} stroke="#22C55E" strokeDasharray="2 4" opacity={0.2} />
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#3B82F6"
+                  stroke="url(#fgStrokeGradient)"
                   strokeWidth={2}
-                  fill="url(#fgGradient)"
+                  fill="url(#fgHistoryGradient)"
                   dot={false}
                 />
               </AreaChart>

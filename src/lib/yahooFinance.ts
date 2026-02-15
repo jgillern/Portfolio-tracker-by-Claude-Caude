@@ -52,13 +52,17 @@ export async function searchInstruments(query: string): Promise<SearchResult[]> 
       .filter((q): q is Extract<typeof q, { isYahooFinance: true }> =>
         'isYahooFinance' in q && q.isYahooFinance === true
       )
-      .map((q) => ({
-        symbol: q.symbol,
-        name: q.shortname || q.longname || q.symbol,
-        type: mapQuoteType('quoteType' in q ? (q as { quoteType: string }).quoteType : ''),
-        exchange: q.exchange || '',
-        sector: q.sector,
-      }));
+      .map((q) => {
+        const rawQuoteType = 'quoteType' in q ? (q as { quoteType: string }).quoteType : '';
+        return {
+          symbol: q.symbol,
+          name: q.shortname || q.longname || q.symbol,
+          type: mapQuoteType(rawQuoteType),
+          exchange: q.exchange || '',
+          sector: q.sector,
+          quoteType: rawQuoteType || undefined,
+        };
+      });
 
     setCache(cacheKey, results, 10 * 60 * 1000);
     return results;

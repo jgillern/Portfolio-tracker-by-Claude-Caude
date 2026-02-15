@@ -10,14 +10,18 @@ import { Badge } from '@/components/ui/Badge';
 interface Props {
   onSelect: (result: SearchResult) => void;
   existingSymbols: string[];
+  filterFn?: (result: SearchResult) => boolean;
+  placeholder?: string;
 }
 
-export function InstrumentSearch({ onSelect, existingSymbols }: Props) {
+export function InstrumentSearch({ onSelect, existingSymbols, filterFn, placeholder }: Props) {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const { results, isLoading } = useSearch(query);
 
-  const filteredResults = results.filter((r) => !existingSymbols.includes(r.symbol));
+  const filteredResults = results
+    .filter((r) => !existingSymbols.includes(r.symbol))
+    .filter((r) => (filterFn ? filterFn(r) : true));
 
   return (
     <div className="space-y-2">
@@ -25,7 +29,7 @@ export function InstrumentSearch({ onSelect, existingSymbols }: Props) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('search.placeholder')}
+        placeholder={placeholder || t('search.placeholder')}
         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         autoFocus
       />

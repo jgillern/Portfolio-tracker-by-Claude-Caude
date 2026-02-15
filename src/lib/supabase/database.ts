@@ -49,7 +49,7 @@ export async function getPreferences(userId: string): Promise<UserPreferences | 
 
 export async function updatePreferences(
   userId: string,
-  updates: Partial<Pick<UserPreferences, 'language' | 'theme' | 'dashboard_order'>>
+  updates: Partial<Pick<UserPreferences, 'language' | 'theme' | 'dashboard_order' | 'market_indexes'>>
 ): Promise<void> {
   await supabase().from('user_preferences').update(updates).eq('id', userId);
 }

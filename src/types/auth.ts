@@ -12,6 +12,7 @@ export interface UserPreferences {
   language: string;
   theme: string;
   dashboard_order: string[];
+  market_indexes: string[];
   updated_at: string;
 }
 
