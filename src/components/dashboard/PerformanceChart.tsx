@@ -122,16 +122,52 @@ export function PerformanceChart({ refreshSignal }: Props) {
     }
   }, [refreshSignal, refetch]);
 
-  const handleAddComparison = (result: any) => {
+  const [validating, setValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleAddComparison = async (result: any) => {
     if (comparisonInstruments.some(i => i.symbol === result.symbol)) {
       return;
     }
-    setComparisonInstruments([...comparisonInstruments, {
-      symbol: result.symbol,
-      name: result.name,
-      type: result.type,
-    }]);
-    setShowSearch(false);
+
+    // Pre-built comparison indexes are known to work — skip validation
+    const isPrebuilt = COMPARISON_INDEXES.some(idx => idx.symbol === result.symbol);
+    if (isPrebuilt) {
+      setComparisonInstruments([...comparisonInstruments, {
+        symbol: result.symbol,
+        name: result.name,
+        type: result.type,
+      }]);
+      setShowSearch(false);
+      return;
+    }
+
+    // Validate that Yahoo Finance has data for this symbol
+    setValidating(true);
+    setValidationError(null);
+    try {
+      const res = await fetch(`/api/quote?symbols=${encodeURIComponent(result.symbol)}`);
+      if (res.ok) {
+        const quotes = await res.json();
+        if (Array.isArray(quotes) && quotes.length > 0) {
+          setComparisonInstruments([...comparisonInstruments, {
+            symbol: result.symbol,
+            name: result.name,
+            type: result.type,
+          }]);
+          setShowSearch(false);
+          setValidationError(null);
+        } else {
+          setValidationError(t('markets.noDataAvailable'));
+        }
+      } else {
+        setValidationError(t('markets.noDataAvailable'));
+      }
+    } catch {
+      setValidationError(t('markets.noDataAvailable'));
+    } finally {
+      setValidating(false);
+    }
   };
 
   const handleRemoveComparison = (symbol: string) => {
@@ -287,6 +323,17 @@ export function PerformanceChart({ refreshSignal }: Props) {
       {/* Search dropdown + index suggestions */}
       {showSearch && (
         <div className="mb-4 space-y-3">
+          {validating && (
+            <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+              <Spinner className="h-4 w-4" />
+              {t('markets.validatingIndex')}
+            </div>
+          )}
+          {validationError && (
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {validationError}
+            </div>
+          )}
           {/* Recommended indexes */}
           {(() => {
             const existingSet = new Set([...symbols, ...comparisonInstruments.map(i => i.symbol)]);

@@ -310,6 +310,7 @@
     "removeIndex": "Remove",
     "noData": "no data",
     "noDataAvailable": "No data available for this index",
+    "validatingIndex": "Verifying data availability...",
     "noDescription": "No description available.",
     "searchIndexPlaceholder": "Search for an index...",
     "officialWebsite": "Official website",

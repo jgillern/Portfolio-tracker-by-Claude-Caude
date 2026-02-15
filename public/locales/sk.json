@@ -293,6 +293,7 @@
     "removeIndex": "Odstrániť",
     "noData": "bez dát",
     "noDataAvailable": "Pre tento index nie sú dostupné dáta",
+    "validatingIndex": "Overujem dostupnosť dát...",
     "noDescription": "Popis nie je k dispozícii.",
     "searchIndexPlaceholder": "Hľadať index...",
     "officialWebsite": "Oficiálna stránka",

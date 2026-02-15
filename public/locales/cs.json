@@ -310,6 +310,7 @@
     "removeIndex": "Odebrat",
     "noData": "bez dat",
     "noDataAvailable": "Pro tento index nejsou dostupná data",
+    "validatingIndex": "Ověřuji dostupnost dat...",
     "noDescription": "Popis není k dispozici.",
     "searchIndexPlaceholder": "Hledat index...",
     "officialWebsite": "Oficiální web",
