@@ -307,7 +307,11 @@
     "addCustomIndex": "Přidat index",
     "removeIndex": "Odebrat",
     "noDescription": "Popis není k dispozici.",
-    "searchIndexPlaceholder": "Hledat index..."
+    "searchIndexPlaceholder": "Hledat index...",
+    "officialWebsite": "Oficiální web",
+    "topHoldings": "Top 10 složení",
+    "sectorBreakdown": "Sektorové rozložení",
+    "countryBreakdown": "Rozložení podle zemí"
   },
   "errors": {
     "fetchFailed": "Nepodařilo se načíst data. Zkuste to znovu.",

@@ -290,7 +290,11 @@
     "addCustomIndex": "Pridať index",
     "removeIndex": "Odstrániť",
     "noDescription": "Popis nie je k dispozícii.",
-    "searchIndexPlaceholder": "Hľadať index..."
+    "searchIndexPlaceholder": "Hľadať index...",
+    "officialWebsite": "Oficiálna stránka",
+    "topHoldings": "Top 10 zloženie",
+    "sectorBreakdown": "Sektorové rozloženie",
+    "countryBreakdown": "Rozloženie podľa krajín"
   },
   "errors": {
     "fetchFailed": "Nepodarilo sa načítať dáta. Skúste to znova.",

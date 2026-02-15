@@ -9,6 +9,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  BarChart,
+  Bar,
+  Cell,
 } from 'recharts';
 import { useLanguage } from '@/context/LanguageContext';
 import { Spinner } from '@/components/ui/Spinner';
@@ -22,11 +25,29 @@ interface Props {
   quote: Quote | null;
 }
 
+interface Holding {
+  symbol: string;
+  name: string;
+  weight: number;
+  country: string | null;
+}
+
+interface SectorWeight {
+  sector: string;
+  weight: number;
+}
+
+interface CountryWeight {
+  country: string;
+  weight: number;
+}
+
 interface IndexProfile {
   symbol: string;
   name: string;
   exchange: string;
   currency: string;
+  website: string | null;
   description: string | null;
   localizedDescription: string | null;
   keyStats: {
@@ -35,6 +56,12 @@ interface IndexProfile {
     fiftyDayAverage: number | null;
     twoHundredDayAverage: number | null;
     averageVolume: number | null;
+  };
+  topHoldings?: {
+    holdings: Holding[];
+    sectorWeightings: SectorWeight[];
+    countryBreakdown: CountryWeight[];
+    totalTop10Weight: number;
   };
 }
 
@@ -45,6 +72,21 @@ const CHART_PERIODS: { key: TimePeriod; label: string }[] = [
   { key: 'max', label: 'MAX' },
 ];
 
+const SECTOR_COLORS = [
+  '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+  '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16',
+  '#0EA5E9', '#A855F7',
+];
+
+const COUNTRY_CODE_MAP: Record<string, string> = {
+  'United States': 'US', 'United Kingdom': 'GB', 'Germany': 'DE', 'France': 'FR',
+  'Japan': 'JP', 'China': 'CN', 'Canada': 'CA', 'Australia': 'AU', 'Switzerland': 'CH',
+  'Netherlands': 'NL', 'South Korea': 'KR', 'Sweden': 'SE', 'Ireland': 'IE', 'India': 'IN',
+  'Brazil': 'BR', 'Taiwan': 'TW', 'Spain': 'ES', 'Italy': 'IT', 'Denmark': 'DK',
+  'Norway': 'NO', 'Finland': 'FI', 'Belgium': 'BE', 'Singapore': 'SG', 'Hong Kong': 'HK',
+  'Israel': 'IL', 'Luxembourg': 'LU', 'Czech Republic': 'CZ', 'Czechia': 'CZ',
+};
+
 function fmtBigNum(v: number | null | undefined): string {
   if (v == null) return '—';
   const abs = Math.abs(v);
@@ -53,6 +95,13 @@ function fmtBigNum(v: number | null | undefined): string {
   if (abs >= 1e6) return `${(v / 1e6).toFixed(2)}M`;
   if (abs >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
   return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+function countryFlag(country: string): string {
+  const code = COUNTRY_CODE_MAP[country] || country.substring(0, 2).toUpperCase();
+  return code.toUpperCase().replace(/./g, (c) =>
+    String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0))
+  );
 }
 
 export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
@@ -78,7 +127,7 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
   useEffect(() => {
     if (!isOpen || !symbol) return;
     setChartLoading(true);
-    fetch(`/api/chart?symbols=${encodeURIComponent(symbol)}&period=${chartPeriod}`)
+    fetch(`/api/chart?symbols=${encodeURIComponent(symbol)}&range=${chartPeriod}`)
       .then((r) => r.json())
       .then((d) => setChartData(Array.isArray(d) ? d : []))
       .catch(() => setChartData([]))
@@ -92,6 +141,7 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
   const name = profile?.name || quote?.name || symbol;
   const desc = profile?.localizedDescription || profile?.description;
   const ks = profile?.keyStats;
+  const th = profile?.topHoldings;
 
   const fiftyTwoHigh = ks?.fiftyTwoWeekHigh;
   const fiftyTwoLow = ks?.fiftyTwoWeekLow;
@@ -132,19 +182,34 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
                     <p className="text-sm text-gray-500">{symbol} · {profile?.exchange}</p>
                   </div>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 flex items-baseline gap-2">
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(price, currency)}
                   </span>
                   {quote?.change24h != null && (
                     <span className={cn(
-                      'ml-2 text-sm font-semibold',
+                      'text-sm font-semibold',
                       quote.change24h >= 0 ? 'text-green-600' : 'text-red-600'
                     )}>
                       {quote.change24h >= 0 ? '+' : ''}{quote.change24h.toFixed(2)}%
                     </span>
                   )}
                 </div>
+                {/* Website link */}
+                {profile?.website && (
+                  <a
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    {t('markets.officialWebsite')}
+                  </a>
+                )}
               </div>
               <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -188,32 +253,6 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
                 </div>
               </div>
             )}
-
-            {/* Description */}
-            {desc && (
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('profile.about')}</h3>
-                <p className={cn('text-sm text-gray-600 dark:text-gray-400 leading-relaxed', !showMore && 'line-clamp-3')}>
-                  {desc}
-                </p>
-                {desc.length > 200 && (
-                  <button onClick={() => setShowMore(!showMore)} className="text-xs text-blue-600 hover:underline mt-1">
-                    {showMore ? t('profile.showLess') : t('profile.showMore')}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Key stats grid */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('profile.keyStatistics')}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard label={t('profile.sma50')} value={ks?.fiftyDayAverage != null ? formatCurrency(ks.fiftyDayAverage, currency) : '—'} />
-                <StatCard label={t('profile.sma200')} value={ks?.twoHundredDayAverage != null ? formatCurrency(ks.twoHundredDayAverage, currency) : '—'} />
-                <StatCard label={t('profile.volume')} value={fmtBigNum(ks?.averageVolume)} />
-                <StatCard label="24h" value={quote?.change24h != null ? `${quote.change24h >= 0 ? '+' : ''}${quote.change24h.toFixed(2)}%` : '—'} />
-              </div>
-            </div>
 
             {/* Chart */}
             <div>
@@ -290,6 +329,126 @@ export function IndexDetailModal({ isOpen, onClose, symbol, quote }: Props) {
                 )}
               </div>
             </div>
+
+            {/* Key stats grid */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('profile.keyStatistics')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard label={t('profile.sma50')} value={ks?.fiftyDayAverage != null ? formatCurrency(ks.fiftyDayAverage, currency) : '—'} />
+                <StatCard label={t('profile.sma200')} value={ks?.twoHundredDayAverage != null ? formatCurrency(ks.twoHundredDayAverage, currency) : '—'} />
+                <StatCard label={t('profile.volume')} value={fmtBigNum(ks?.averageVolume)} />
+                <StatCard label="24h" value={quote?.change24h != null ? `${quote.change24h >= 0 ? '+' : ''}${quote.change24h.toFixed(2)}%` : '—'} />
+              </div>
+            </div>
+
+            {/* Top 10 Holdings */}
+            {th && th.holdings.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{t('markets.topHoldings')}</h3>
+                  {th.totalTop10Weight > 0 && (
+                    <span className="text-xs text-gray-500">
+                      Top 10: {(th.totalTop10Weight * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  {th.holdings.map((h, i) => (
+                    <div key={h.symbol || i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                      <span className="text-xs text-gray-400 w-5 text-right">{i + 1}.</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{h.name}</span>
+                          {h.symbol && (
+                            <span className="text-xs text-gray-400 shrink-0">{h.symbol}</span>
+                          )}
+                        </div>
+                        {h.country && (
+                          <span className="text-xs text-gray-500">{countryFlag(h.country)} {h.country}</span>
+                        )}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white shrink-0">
+                        {(h.weight * 100).toFixed(2)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sector Breakdown */}
+            {th && th.sectorWeightings.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('markets.sectorBreakdown')}</h3>
+                <div className="h-44">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={th.sectorWeightings.map(s => ({ ...s, pct: s.weight * 100 }))}
+                      layout="vertical"
+                      margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
+                    >
+                      <XAxis type="number" hide />
+                      <YAxis
+                        type="category"
+                        dataKey="sector"
+                        tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                        width={120}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(17,24,39,0.9)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          color: '#fff',
+                        }}
+                        formatter={(value: any) => [`${Number(value).toFixed(2)}%`, '']}
+                      />
+                      <Bar dataKey="pct" radius={[0, 4, 4, 0]} barSize={14}>
+                        {th.sectorWeightings.map((_, i) => (
+                          <Cell key={i} fill={SECTOR_COLORS[i % SECTOR_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* Country Breakdown */}
+            {th && th.countryBreakdown.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{t('markets.countryBreakdown')}</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {th.countryBreakdown.map((c) => (
+                    <div key={c.country} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                      <span className="text-base">{countryFlag(c.country)}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">{c.country}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {(c.weight * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {desc && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('profile.about')}</h3>
+                <p className={cn('text-sm text-gray-600 dark:text-gray-400 leading-relaxed', !showMore && 'line-clamp-3')}>
+                  {desc}
+                </p>
+                {desc.length > 200 && (
+                  <button onClick={() => setShowMore(!showMore)} className="text-xs text-blue-600 hover:underline mt-1">
+                    {showMore ? t('profile.showLess') : t('profile.showMore')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

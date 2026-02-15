@@ -224,8 +224,8 @@ export function MarketsChart() {
           <InstrumentSearch
             onSelect={handleAddCustom}
             existingSymbols={existingSymbols}
-            filterFn={(r) => r.quoteType === 'INDEX' || r.quoteType === 'ETF'}
-            placeholder={t('markets.searchIndex')}
+            filterFn={(r) => r.quoteType === 'INDEX'}
+            placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>
       )}
