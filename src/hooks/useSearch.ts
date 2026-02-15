@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { SearchResult } from '@/types/api';
 
-export function useSearch(query: string, mode?: 'index') {
+export type SearchTypeFilter = 'stock' | 'etf' | 'crypto' | 'index';
+
+export function useSearch(query: string, mode?: 'index', typeFilter?: SearchTypeFilter) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -25,6 +27,7 @@ export function useSearch(query: string, mode?: 'index') {
       try {
         const params = new URLSearchParams({ q: query.trim() });
         if (mode) params.set('mode', mode);
+        if (typeFilter) params.set('type', typeFilter);
         const res = await fetch(`/api/search?${params}`);
         if (!res.ok) throw new Error('Search failed');
         const data = await res.json();
@@ -39,7 +42,7 @@ export function useSearch(query: string, mode?: 'index') {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [query, mode]);
+  }, [query, mode, typeFilter]);
 
   return { results, isLoading };
 }

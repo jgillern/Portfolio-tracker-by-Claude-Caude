@@ -66,7 +66,7 @@ export function AddInstrumentModal({ isOpen, onClose }: Props) {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={t('portfolio.addInstrument')}>
       <div className="space-y-4">
-        <InstrumentSearch onSelect={handleSelect} existingSymbols={existingSymbols} />
+        <InstrumentSearch onSelect={handleSelect} existingSymbols={existingSymbols} availableTypes={['stock', 'etf', 'crypto']} />
 
         {selected && (
           <>

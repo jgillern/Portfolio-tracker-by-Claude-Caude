@@ -283,6 +283,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
           <InstrumentSearch
             onSelect={handleAddComparison}
             existingSymbols={[...symbols, ...comparisonInstruments.map(i => i.symbol)]}
+            availableTypes={['index', 'stock', 'etf', 'crypto']}
           />
         </div>
       )}

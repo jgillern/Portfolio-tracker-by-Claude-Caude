@@ -59,6 +59,8 @@ function loadDB(name: string): DBEntry[] {
   return _dbs[name];
 }
 
+export type SearchTypeFilter = 'stock' | 'etf' | 'crypto' | 'index';
+
 function dbTypeToInstrumentType(t: string): InstrumentType {
   switch (t) {
     case 'equity': return 'stock';
@@ -68,14 +70,30 @@ function dbTypeToInstrumentType(t: string): InstrumentType {
   }
 }
 
-/** Search local instrument databases. mode='index' searches only indices, otherwise all. */
-export function searchLocalDB(query: string, mode?: 'index'): SearchResult[] {
+/** Map search type filter to DB name(s) */
+function getDBsForType(typeFilter: SearchTypeFilter): string[] {
+  switch (typeFilter) {
+    case 'stock': return ['equities'];
+    case 'etf': return ['etfs'];
+    case 'crypto': return ['cryptos'];
+    case 'index': return ['indices'];
+  }
+}
+
+/** Search local instrument databases. mode='index' searches only indices, otherwise all. typeFilter narrows to a single type. */
+export function searchLocalDB(query: string, mode?: 'index', typeFilter?: SearchTypeFilter): SearchResult[] {
   const q = query.toLowerCase().trim();
   if (!q || q.length < 2) return [];
 
-  const databases = mode === 'index'
-    ? [loadDB('indices')]
-    : [loadDB('equities'), loadDB('etfs'), loadDB('cryptos'), loadDB('indices')];
+  let dbNames: string[];
+  if (typeFilter) {
+    dbNames = getDBsForType(typeFilter);
+  } else if (mode === 'index') {
+    dbNames = ['indices'];
+  } else {
+    dbNames = ['equities', 'etfs', 'cryptos', 'indices'];
+  }
+  const databases = dbNames.map(loadDB);
 
   const results: SearchResult[] = [];
   const seen = new Set<string>();
