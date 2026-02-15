@@ -82,6 +82,16 @@ function getDBsForType(typeFilter: SearchTypeFilter): string[] {
 
 import { FEATURED_INDICES } from '@/lib/indexConstants';
 
+/** Check if an index symbol is likely available on Yahoo Finance */
+function isYahooAvailableIndex(symbol: string): boolean {
+  // Featured indices are hand-curated and verified to work
+  if (FEATURED_INDICES.has(symbol)) return true;
+  // Yahoo-native index symbols (^PREFIX format) — 62k+ entries, reliable
+  if (symbol.startsWith('^')) return true;
+  // All other indices (fund NAVs, tracking products, iNAV) are unreliable
+  return false;
+}
+
 /** Check if all query tokens appear in the text (token-based matching) */
 function tokensMatch(tokens: string[], text: string): boolean {
   for (const token of tokens) {
@@ -116,6 +126,10 @@ export function searchLocalDB(query: string, mode?: 'index', typeFilter?: Search
   for (const db of databases) {
     for (const entry of db) {
       if (seen.has(entry.s)) continue;
+
+      // In index mode, skip indices unlikely to have Yahoo Finance data
+      if (isFeaturedMode && !isYahooAvailableIndex(entry.s)) continue;
+
       const symLower = entry.s.toLowerCase();
       const nameLower = entry.n.toLowerCase();
 

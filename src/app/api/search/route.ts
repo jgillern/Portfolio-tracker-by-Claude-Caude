@@ -20,9 +20,20 @@ export async function GET(request: NextRequest) {
     // Local DB search (instant, 290k+ instruments)
     const localResults = searchLocalDB(query, mode || undefined, typeFilter);
 
-    // In index mode, local DB (91k indices) is sufficient - skip Yahoo Finance
+    // In index mode, supplement local results with Yahoo Finance (strict INDEX filter)
+    // Yahoo Finance results are guaranteed to have data since Yahoo only returns known symbols
     if (mode === 'index') {
-      return NextResponse.json(localResults.slice(0, 20));
+      const yahooResults = await searchYahooFinance(query);
+      const seen = new Set(localResults.map(r => r.symbol));
+      const merged = [...localResults];
+      for (const r of yahooResults) {
+        if (seen.has(r.symbol)) continue;
+        // Only include Yahoo results that are actual indices
+        if (r.quoteType !== 'INDEX') continue;
+        seen.add(r.symbol);
+        merged.push(r);
+      }
+      return NextResponse.json(merged.slice(0, 20));
     }
 
     // For general search, supplement with Yahoo Finance
