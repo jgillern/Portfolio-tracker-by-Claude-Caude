@@ -193,7 +193,7 @@ export function IndexTable() {
           <InstrumentSearch
             onSelect={handleAddIndex}
             existingSymbols={allSymbols}
-            filterFn={() => true}
+            searchMode="index"
             placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>

@@ -224,7 +224,7 @@ export function MarketsChart() {
           <InstrumentSearch
             onSelect={handleAddCustom}
             existingSymbols={existingSymbols}
-            filterFn={() => true}
+            searchMode="index"
             placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>

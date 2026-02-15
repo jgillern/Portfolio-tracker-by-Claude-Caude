@@ -342,15 +342,19 @@ export async function GET(request: NextRequest) {
     }
 
     if (topHoldingsData?.holdings && topHoldingsData.holdings.length > 0) {
-      const holdingsRaw = topHoldingsData.holdings.slice(0, 10).map(h => ({
+      // Use ALL available holdings for country breakdown, not just top 10
+      const allHoldings = topHoldingsData.holdings.map(h => ({
         symbol: h.symbol || '',
         name: h.holdingName || h.symbol || '',
         weight: h.holdingPercent ?? 0,
         country: null as string | null,
       }));
 
-      // Lookup countries for each holding in parallel
-      const holdingSymbols = holdingsRaw.filter(h => h.symbol).map(h => h.symbol);
+      // Top 10 for display
+      const displayHoldings = allHoldings.slice(0, 10);
+
+      // Lookup countries for ALL holdings in parallel
+      const holdingSymbols = allHoldings.filter(h => h.symbol).map(h => h.symbol);
       if (holdingSymbols.length > 0) {
         const countryResults = await Promise.allSettled(
           holdingSymbols.map(async (sym) => {
@@ -364,8 +368,9 @@ export async function GET(request: NextRequest) {
         );
         for (const cr of countryResults) {
           if (cr.status === 'fulfilled' && cr.value.country) {
-            const h = holdingsRaw.find(h => h.symbol === cr.value.symbol);
-            if (h) h.country = cr.value.country;
+            for (const h of allHoldings) {
+              if (h.symbol === cr.value.symbol) h.country = cr.value.country;
+            }
           }
         }
       }
@@ -384,29 +389,31 @@ export async function GET(request: NextRequest) {
         sectorWeightings.sort((a, b) => b.weight - a.weight);
       }
 
-      // Country breakdown — prefer hardcoded allocations, fall back to holdings lookup
-      let countryBreakdown: { country: string; weight: number }[];
-      const hardcodedCountries = INDEX_COUNTRY_ALLOCATIONS[symbol] || INDEX_COUNTRY_ALLOCATIONS[INDEX_TO_ETF_TRACKER[symbol] || ''];
-      if (hardcodedCountries && hardcodedCountries.length > 0) {
-        countryBreakdown = hardcodedCountries;
-      } else {
-        const countryMap = new Map<string, number>();
-        for (const h of holdingsRaw) {
-          if (h.country && h.weight > 0) {
-            countryMap.set(h.country, (countryMap.get(h.country) || 0) + h.weight);
-          }
+      // Country breakdown from ALL holdings
+      const countryMap = new Map<string, number>();
+      for (const h of allHoldings) {
+        if (h.country && h.weight > 0) {
+          countryMap.set(h.country, (countryMap.get(h.country) || 0) + h.weight);
         }
-        countryBreakdown = Array.from(countryMap.entries())
-          .map(([country, weight]) => ({ country, weight }))
-          .sort((a, b) => b.weight - a.weight);
+      }
+      let countryBreakdown = Array.from(countryMap.entries())
+        .map(([country, weight]) => ({ country, weight }))
+        .sort((a, b) => b.weight - a.weight);
+
+      // If dynamic lookup returned only 1 country or no data, use hardcoded as fallback
+      let countrySource: 'index' | 'holdings' = 'holdings';
+      const hardcodedCountries = INDEX_COUNTRY_ALLOCATIONS[symbol] || INDEX_COUNTRY_ALLOCATIONS[INDEX_TO_ETF_TRACKER[symbol] || ''];
+      if (countryBreakdown.length <= 1 && hardcodedCountries && hardcodedCountries.length > 1) {
+        countryBreakdown = hardcodedCountries;
+        countrySource = 'index';
       }
 
       result.topHoldings = {
-        holdings: holdingsRaw,
+        holdings: displayHoldings,
         sectorWeightings,
         countryBreakdown,
-        totalTop10Weight: holdingsRaw.reduce((sum, h) => sum + h.weight, 0),
-        countrySource: hardcodedCountries ? 'index' : 'holdings',
+        totalTop10Weight: displayHoldings.reduce((sum, h) => sum + h.weight, 0),
+        countrySource,
       };
     }
 

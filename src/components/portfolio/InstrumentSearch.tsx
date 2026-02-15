@@ -12,12 +12,13 @@ interface Props {
   existingSymbols: string[];
   filterFn?: (result: SearchResult) => boolean;
   placeholder?: string;
+  searchMode?: 'index';
 }
 
-export function InstrumentSearch({ onSelect, existingSymbols, filterFn, placeholder }: Props) {
+export function InstrumentSearch({ onSelect, existingSymbols, filterFn, placeholder, searchMode }: Props) {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
-  const { results, isLoading } = useSearch(query);
+  const { results, isLoading } = useSearch(query, searchMode);
 
   const filteredResults = results
     .filter((r) => !existingSymbols.includes(r.symbol))

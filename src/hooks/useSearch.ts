@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { SearchResult } from '@/types/api';
 
-export function useSearch(query: string) {
+export function useSearch(query: string, mode?: 'index') {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,7 +23,9 @@ export function useSearch(query: string) {
 
     timeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const params = new URLSearchParams({ q: query.trim() });
+        if (mode) params.set('mode', mode);
+        const res = await fetch(`/api/search?${params}`);
         if (!res.ok) throw new Error('Search failed');
         const data = await res.json();
         setResults(data);
@@ -37,7 +39,7 @@ export function useSearch(query: string) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [query]);
+  }, [query, mode]);
 
   return { results, isLoading };
 }
