@@ -61,34 +61,56 @@ export function PerformanceChart({ refreshSignal }: Props) {
   // Fetch comparison data
   const [comparisonData, setComparisonData] = useState<Record<string, ChartDataPoint[]>>({});
   const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [failedComparisons, setFailedComparisons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (comparisonInstruments.length === 0) {
       setComparisonData({});
+      setFailedComparisons(new Set());
       return;
     }
+
+    const controller = new AbortController();
 
     const fetchComparisonData = async () => {
       setComparisonLoading(true);
       const results: Record<string, ChartDataPoint[]> = {};
+      const failed = new Set<string>();
 
-      for (const instrument of comparisonInstruments) {
-        try {
-          const res = await fetch(`/api/chart?symbols=${instrument.symbol}&range=${period}`);
-          if (res.ok) {
-            const data = await res.json();
-            results[instrument.symbol] = data;
+      await Promise.allSettled(
+        comparisonInstruments.map(async (instrument) => {
+          try {
+            const res = await fetch(
+              `/api/chart?symbols=${encodeURIComponent(instrument.symbol)}&range=${period}`,
+              { signal: controller.signal }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data) && data.length > 0) {
+                results[instrument.symbol] = data;
+              } else {
+                failed.add(instrument.symbol);
+              }
+            } else {
+              failed.add(instrument.symbol);
+            }
+          } catch (err) {
+            if ((err as Error).name !== 'AbortError') {
+              failed.add(instrument.symbol);
+            }
           }
-        } catch (err) {
-          console.error(`Failed to fetch data for ${instrument.symbol}`, err);
-        }
-      }
+        })
+      );
 
-      setComparisonData(results);
-      setComparisonLoading(false);
+      if (!controller.signal.aborted) {
+        setComparisonData(results);
+        setFailedComparisons(failed);
+        setComparisonLoading(false);
+      }
     };
 
     fetchComparisonData();
+    return () => controller.abort();
   }, [comparisonInstruments, period]);
 
   // Refetch chart when refreshSignal changes (manual refresh from parent)
@@ -223,13 +245,20 @@ export function PerformanceChart({ refreshSignal }: Props) {
               {t('dashboard.portfolio')}
             </div>
           )}
-          {comparisonInstruments.map((instrument, idx) => (
+          {comparisonInstruments.map((instrument, idx) => {
+            const hasFailed = failedComparisons.has(instrument.symbol);
+            return (
             <div
               key={instrument.symbol}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${
+                hasFailed
+                  ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }`}
             >
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COMPARISON_COLORS[idx % COMPARISON_COLORS.length] }} />
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: hasFailed ? '#9CA3AF' : COMPARISON_COLORS[idx % COMPARISON_COLORS.length] }} />
               <span>{COMPARISON_INDEXES.find(i => i.symbol === instrument.symbol)?.shortName || instrument.name}</span>
+              {hasFailed && <span className="text-xs opacity-70">({t('markets.noData')})</span>}
               <button
                 onClick={() => handleRemoveComparison(instrument.symbol)}
                 className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -239,7 +268,8 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 </svg>
               </button>
             </div>
-          ))}
+          );
+          })}
           {comparisonInstruments.length < 5 && (
             <button
               onClick={() => setShowSearch(!showSearch)}
@@ -346,7 +376,7 @@ export function PerformanceChart({ refreshSignal }: Props) {
                 activeDot={{ r: 4 }}
                 connectNulls={true}
               />
-              {comparisonInstruments.map((instrument, idx) => (
+              {comparisonInstruments.filter((i) => comparisonData[i.symbol]?.length > 0).map((instrument, idx) => (
                 <Line
                   key={instrument.symbol}
                   type="monotone"

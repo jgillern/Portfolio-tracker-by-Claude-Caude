@@ -57,32 +57,57 @@ export function MarketsChart() {
     return [...syms, ...customIndexes.map((c) => c.symbol)];
   }, [enabledIndexes, customIndexes]);
 
+  // Track symbols that failed to load data
+  const [failedSymbols, setFailedSymbols] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (activeSymbols.length === 0) {
       setChartData({});
+      setFailedSymbols(new Set());
       return;
     }
+
+    const controller = new AbortController();
 
     const fetchData = async () => {
       setIsLoading(true);
       const results: Record<string, ChartDataPoint[]> = {};
+      const failed = new Set<string>();
 
       await Promise.allSettled(
         activeSymbols.map(async (symbol) => {
           try {
-            const res = await fetch(`/api/chart?symbols=${symbol}&range=${period}`);
+            const res = await fetch(
+              `/api/chart?symbols=${encodeURIComponent(symbol)}&range=${period}`,
+              { signal: controller.signal }
+            );
             if (res.ok) {
-              results[symbol] = await res.json();
+              const data = await res.json();
+              if (Array.isArray(data) && data.length > 0) {
+                results[symbol] = data;
+              } else {
+                failed.add(symbol);
+              }
+            } else {
+              failed.add(symbol);
             }
-          } catch {}
+          } catch (err) {
+            if ((err as Error).name !== 'AbortError') {
+              failed.add(symbol);
+            }
+          }
         })
       );
 
-      setChartData(results);
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setChartData(results);
+        setFailedSymbols(failed);
+        setIsLoading(false);
+      }
     };
 
     fetchData();
+    return () => controller.abort();
   }, [activeSymbols.join(','), period]);
 
   const toggleIndex = (symbol: string) => {
@@ -188,23 +213,35 @@ export function MarketsChart() {
         })}
 
         {/* Custom indexes */}
-        {customIndexes.map((ci) => (
-          <div
-            key={ci.symbol}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getColor(ci.symbol) }} />
-            <span>{ci.symbol}</span>
-            <button
-              onClick={() => handleRemoveCustom(ci.symbol)}
-              className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+        {customIndexes.map((ci) => {
+          const hasFailed = failedSymbols.has(ci.symbol);
+          return (
+            <div
+              key={ci.symbol}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium',
+                hasFailed
+                  ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              )}
+              title={hasFailed ? t('markets.noDataAvailable') : ci.name}
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        ))}
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: hasFailed ? '#9CA3AF' : getColor(ci.symbol) }} />
+              <span>{ci.symbol}</span>
+              {hasFailed && (
+                <span className="text-xs opacity-70">({t('markets.noData')})</span>
+              )}
+              <button
+                onClick={() => handleRemoveCustom(ci.symbol)}
+                className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          );
+        })}
 
         {/* Add custom index */}
         <button
@@ -273,7 +310,7 @@ export function MarketsChart() {
                 }}
               />
               <ReferenceLine y={0} stroke="#6B7280" strokeDasharray="3 3" opacity={0.5} />
-              {activeSymbols.map((symbol) => (
+              {activeSymbols.filter((s) => chartData[s]?.length > 0).map((symbol) => (
                 <Line
                   key={symbol}
                   type="monotone"

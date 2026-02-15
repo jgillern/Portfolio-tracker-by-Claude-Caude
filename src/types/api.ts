@@ -7,6 +7,7 @@ export interface SearchResult {
   exchange: string;
   sector?: string;
   quoteType?: string;
+  featured?: boolean;
 }
 
 export interface ApiError {

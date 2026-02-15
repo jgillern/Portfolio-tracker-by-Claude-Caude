@@ -291,6 +291,8 @@
     "indexOverview": "Индексийн тойм",
     "addCustomIndex": "Индекс нэмэх",
     "removeIndex": "Устгах",
+    "noData": "мэдээлэл алга",
+    "noDataAvailable": "Энэ индексийн мэдээлэл алга",
     "noDescription": "Тайлбар байхгүй.",
     "searchIndexPlaceholder": "Индекс хайх...",
     "officialWebsite": "Албан ёсны вэб",

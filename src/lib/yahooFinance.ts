@@ -80,6 +80,26 @@ function getDBsForType(typeFilter: SearchTypeFilter): string[] {
   }
 }
 
+import { FEATURED_INDICES } from '@/lib/indexConstants';
+
+/** Check if an index symbol is likely available on Yahoo Finance */
+function isYahooAvailableIndex(symbol: string): boolean {
+  // Featured indices are hand-curated and verified to work
+  if (FEATURED_INDICES.has(symbol)) return true;
+  // Yahoo-native index symbols (^PREFIX format) — 62k+ entries, reliable
+  if (symbol.startsWith('^')) return true;
+  // All other indices (fund NAVs, tracking products, iNAV) are unreliable
+  return false;
+}
+
+/** Check if all query tokens appear in the text (token-based matching) */
+function tokensMatch(tokens: string[], text: string): boolean {
+  for (const token of tokens) {
+    if (!text.includes(token)) return false;
+  }
+  return true;
+}
+
 /** Search local instrument databases. mode='index' searches only indices, otherwise all. typeFilter narrows to a single type. */
 export function searchLocalDB(query: string, mode?: 'index', typeFilter?: SearchTypeFilter): SearchResult[] {
   const q = query.toLowerCase().trim();
@@ -95,52 +115,75 @@ export function searchLocalDB(query: string, mode?: 'index', typeFilter?: Search
   }
   const databases = dbNames.map(loadDB);
 
-  const results: SearchResult[] = [];
+  const tokens = q.split(/\s+/).filter(t => t.length > 0);
+  const isMultiWord = tokens.length > 1;
+  const isFeaturedMode = mode === 'index';
+
+  // Collect candidates with scoring
+  const candidates: { entry: DBEntry; score: number }[] = [];
   const seen = new Set<string>();
 
-  // Exact symbol matches first (higher priority)
   for (const db of databases) {
     for (const entry of db) {
-      if (results.length >= 20) break;
-      if (entry.s.toLowerCase() === q && !seen.has(entry.s)) {
-        seen.add(entry.s);
-        results.push({
-          symbol: entry.s,
-          name: entry.n,
-          type: dbTypeToInstrumentType(entry.t),
-          exchange: entry.e,
-          sector: entry.sec,
-          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
-        });
-      }
-    }
-    if (results.length >= 20) break;
-  }
-
-  // Then partial matches on symbol and name
-  for (const db of databases) {
-    for (const entry of db) {
-      if (results.length >= 20) break;
       if (seen.has(entry.s)) continue;
-      if (
-        entry.s.toLowerCase().includes(q) ||
-        entry.n.toLowerCase().includes(q)
-      ) {
-        seen.add(entry.s);
-        results.push({
-          symbol: entry.s,
-          name: entry.n,
-          type: dbTypeToInstrumentType(entry.t),
-          exchange: entry.e,
-          sector: entry.sec,
-          quoteType: entry.t === 'index' ? 'INDEX' : undefined,
-        });
+
+      // In index mode, skip indices unlikely to have Yahoo Finance data
+      if (isFeaturedMode && !isYahooAvailableIndex(entry.s)) continue;
+
+      const symLower = entry.s.toLowerCase();
+      const nameLower = entry.n.toLowerCase();
+
+      let score = 0;
+
+      // Exact symbol match (highest priority)
+      if (symLower === q) {
+        score = 100;
       }
+      // Symbol starts with query
+      else if (symLower.startsWith(q)) {
+        score = 50;
+      }
+      // Exact substring match in name (single token or full phrase)
+      else if (nameLower.includes(q)) {
+        score = 30;
+      }
+      // Token-based: all tokens appear in name or symbol (multi-word queries)
+      else if (isMultiWord && tokensMatch(tokens, nameLower + ' ' + symLower)) {
+        score = 20;
+      }
+      // Symbol contains query
+      else if (symLower.includes(q)) {
+        score = 15;
+      }
+      else {
+        continue;
+      }
+
+      // Featured indices get a significant boost in index mode
+      if (isFeaturedMode && FEATURED_INDICES.has(entry.s)) {
+        score += 200;
+      }
+
+      seen.add(entry.s);
+      candidates.push({ entry, score });
     }
-    if (results.length >= 20) break;
   }
 
-  return results;
+  // Sort by score descending, then by name length (prefer shorter/more relevant)
+  candidates.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.entry.n.length - b.entry.n.length;
+  });
+
+  return candidates.slice(0, 20).map(({ entry }) => ({
+    symbol: entry.s,
+    name: entry.n,
+    type: dbTypeToInstrumentType(entry.t),
+    exchange: entry.e,
+    sector: entry.sec,
+    quoteType: entry.t === 'index' ? 'INDEX' : undefined,
+    featured: FEATURED_INDICES.has(entry.s) || undefined,
+  }));
 }
 
 /** Yahoo Finance search as supplement (slower, may fail) */
