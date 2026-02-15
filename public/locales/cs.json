@@ -271,7 +271,7 @@
     "tip_volume": "Průměrný denní objem obchodů. Vyšší objem znamená lepší likviditu.",
     "tip_sma50": "50denní klouzavý průměr — krátkodobý cenový trend. Cena nad SMA50 naznačuje růstový impuls.",
     "tip_sma200": "200denní klouzavý průměr — dlouhodobý cenový trend. Cena nad SMA200 naznačuje dlouhodobý růstový trend.",
-    "tip_revenue": "Celkové příjmy z prodeje před náklady. Také označované jako „top-line".",
+    "tip_revenue": "Celkové příjmy z prodeje před náklady. Také označované jako top-line.",
     "tip_revenueGrowth": "Meziroční procentní změna tržeb. Kladný růst značí expandující podnikání.",
     "tip_grossMargin": "Tržby minus náklady na prodané zboží, jako % tržeb. Vyšší marže = efektivnější výroba.",
     "tip_profitMargin": "Čistý zisk jako % tržeb. Ukazuje, kolik z každé koruny tržeb se stane ziskem.",
