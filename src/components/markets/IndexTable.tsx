@@ -112,7 +112,7 @@ function IndexProviderLogo({ symbol }: { symbol: string }) {
       <img
         src={src}
         alt={provider?.name || symbol}
-        className={cn("h-8 w-8 shrink-0 object-cover", isLocalLogo ? "rounded-md" : "rounded-full")}
+        className={cn("h-8 w-8 shrink-0", isLocalLogo ? "object-contain" : "object-cover rounded-full")}
         onError={() => setFallback((f) => f + 1)}
       />
     );
