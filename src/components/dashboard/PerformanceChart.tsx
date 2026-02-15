@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { InstrumentSearch } from '@/components/portfolio/InstrumentSearch';
 import { getPortfolioWeights } from '@/lib/utils';
 import { InstrumentType } from '@/types/portfolio';
+import { COMPARISON_INDEXES } from '@/lib/indexConstants';
 
 const DATE_LOCALE_MAP: Record<string, string> = {
   en: 'en-US',
@@ -253,9 +254,32 @@ export function PerformanceChart({ refreshSignal }: Props) {
         </div>
       )}
 
-      {/* Search dropdown */}
+      {/* Search dropdown + index suggestions */}
       {showSearch && (
-        <div className="mb-4 relative">
+        <div className="mb-4 space-y-3">
+          {/* Recommended indexes */}
+          {(() => {
+            const existingSet = new Set([...symbols, ...comparisonInstruments.map(i => i.symbol)]);
+            const available = COMPARISON_INDEXES.filter(idx => !existingSet.has(idx.symbol));
+            if (available.length === 0) return null;
+            return (
+              <div>
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{t('dashboard.suggestedIndexes')}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {available.map((idx) => (
+                    <button
+                      key={idx.symbol}
+                      onClick={() => handleAddComparison({ symbol: idx.symbol, name: idx.name, type: 'etf' as InstrumentType, exchange: '' })}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                      {idx.shortName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           <InstrumentSearch
             onSelect={handleAddComparison}
             existingSymbols={[...symbols, ...comparisonInstruments.map(i => i.symbol)]}

@@ -6,6 +6,7 @@
     "dashboard": "仪表板",
     "news": "新闻",
     "calendar": "日历",
+    "markets": "市场",
     "createPortfolio": "新建组合",
     "language": "ZH",
     "theme": "主题"
@@ -47,7 +48,8 @@
     "period5y": "5年",
     "period1y": "1年",
     "period1mo": "月",
-    "period1w": "周"
+    "period1w": "周",
+    "suggestedIndexes": "推荐指数"
   },
   "portfolio": {
     "create": "创建",
@@ -262,6 +264,23 @@
     "tip_roa": "总资产收益率 — 净利润/总资产。衡量资产使用效率。>5%通常被认为良好。",
     "tip_fcf": "经营活动现金流减去资本支出。正FCF意味着公司在投资后仍能产生现金。",
     "tip_debtEquity": "总负债/股东权益。比率越高意味着杠杆越大。低于1通常被认为是保守的。"
+  },
+  "markets": {
+    "title": "市场",
+    "dailyMovements": "每日走势",
+    "indexPerformance": "指数表现",
+    "addIndex": "添加指数",
+    "enableIndex": "启用/禁用指数",
+    "fearGreedIndex": "恐惧与贪婪指数",
+    "extremeFear": "极度恐惧",
+    "fear": "恐惧",
+    "neutral": "中性",
+    "greed": "贪婪",
+    "extremeGreed": "极度贪婪",
+    "winnersLosers": "涨跌排行",
+    "topGainers": "涨幅最大",
+    "topLosers": "跌幅最大",
+    "marketCap": "市值变动"
   },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",
