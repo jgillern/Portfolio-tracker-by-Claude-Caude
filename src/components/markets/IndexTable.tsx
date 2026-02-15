@@ -27,9 +27,9 @@ interface IndexProvider {
 const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
   { prefix: 'MSCI', provider: { name: 'MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' } },
   { prefix: 'FTSE', provider: { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
-  { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444' } },
+  { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' } },
   { prefix: 'NASDAQ', provider: { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' } },
-  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8' } },
+  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' } },
   { prefix: 'Russell', provider: { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
   { prefix: 'EURO STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
   { prefix: 'STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
@@ -92,15 +92,23 @@ function IndexProviderLogo({ symbol }: { symbol: string }) {
   const provider = resolveProvider(symbol);
   const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
   const color = provider?.color || '#6B7280';
-  const [imgError, setImgError] = useState(false);
+  // Try: 1) /api/logo proxy (apple-touch-icon cascade), 2) static logoUrl, 3) initials
+  const [fallback, setFallback] = useState(0);
 
-  if (provider?.logoUrl && !imgError) {
+  const src =
+    fallback === 0
+      ? `/api/logo?symbol=${encodeURIComponent(symbol)}&type=stock`
+      : fallback === 1 && provider?.logoUrl
+        ? provider.logoUrl
+        : null;
+
+  if (src) {
     return (
       <img
-        src={provider.logoUrl}
-        alt={provider.name}
+        src={src}
+        alt={provider?.name || symbol}
         className="h-8 w-8 rounded-full object-cover shrink-0"
-        onError={() => setImgError(true)}
+        onError={() => setFallback((f) => f + 1)}
       />
     );
   }
