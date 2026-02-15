@@ -23,30 +23,73 @@ interface IndexProvider {
   logoUrl?: string;
 }
 
-const INDEX_PROVIDER_MAP: Record<string, IndexProvider> = {
-  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
-  '^GSPTSE': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
-  '^IXIC': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' },
-  '^NDX': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' },
-  'URTH': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
-  'EEM': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
-  'ACWI': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
-  'MCHI': { name: 'iShares / MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' },
-  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
-  '^DJT': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
-  '^FTSE': { name: 'FTSE', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+/** Provider branding resolved by index name prefix or ticker */
+const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
+  { prefix: 'MSCI', provider: { name: 'MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' } },
+  { prefix: 'FTSE', provider: { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
+  { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' } },
+  { prefix: 'NASDAQ', provider: { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' } },
+  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' } },
+  { prefix: 'Russell', provider: { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
+  { prefix: 'EURO STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
+  { prefix: 'STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
+  { prefix: 'Vanguard', provider: { name: 'Vanguard', initials: 'VG', color: '#991B1B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://vanguard.com&size=128' } },
+];
+
+/** Fallback map for tickers without a matching name prefix */
+const TICKER_PROVIDER_MAP: Record<string, IndexProvider> = {
   '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nikkei.com&size=128' },
   '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
+  '^MDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
   '^HSI': { name: 'Hang Seng', initials: 'HS', color: '#10B981', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hsi.com.hk&size=128' },
-  '^STOXX50E': { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' },
   '^FCHI': { name: 'Euronext', initials: 'CA', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://euronext.com&size=128' },
-  '^RUT': { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  '^SSMI': { name: 'SIX', initials: 'SM', color: '#1E40AF', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://six-group.com&size=128' },
+  '^IBEX': { name: 'BME', initials: 'IB', color: '#CA8A04', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://bolsasymercados.es&size=128' },
+  '^AEX': { name: 'Euronext', initials: 'AE', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://euronext.com&size=128' },
   '^VIX': { name: 'CBOE', initials: 'VX', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://cboe.com&size=128' },
+  // FTSE direct indexes
+  '^FTSE': { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  '^FTMC': { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  '^FTAS': { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' },
+  // STOXX direct index
+  '^STOXX': { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' },
+  // Thematic / Specialty ETFs
+  'BOTZ': { name: 'Global X', initials: 'GX', color: '#F97316', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://globalxetfs.com&size=128' },
+  'CIBR': { name: 'First Trust', initials: 'FT', color: '#1E3A5F', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftportfolios.com&size=128' },
+  'SKYY': { name: 'First Trust', initials: 'FT', color: '#1E3A5F', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftportfolios.com&size=128' },
+  'SMH': { name: 'VanEck', initials: 'VE', color: '#0C4A6E', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://vaneck.com&size=128' },
+  'SOXX': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
+  'ARKG': { name: 'ARK Invest', initials: 'AK', color: '#FFFFFF', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ark-invest.com&size=128' },
+  'ARKX': { name: 'ARK Invest', initials: 'AK', color: '#FFFFFF', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ark-invest.com&size=128' },
+  'LIT': { name: 'Global X', initials: 'GX', color: '#F97316', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://globalxetfs.com&size=128' },
+  'ICLN': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
+  'URA': { name: 'Global X', initials: 'GX', color: '#F97316', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://globalxetfs.com&size=128' },
+  'BLOK': { name: 'Amplify', initials: 'AM', color: '#7C3AED', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://amplifyetfs.com&size=128' },
+  'ESPO': { name: 'VanEck', initials: 'VE', color: '#0C4A6E', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://vaneck.com&size=128' },
+  'CGW': { name: 'Invesco', initials: 'IV', color: '#003D79', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://invesco.com&size=128' },
+  'VEGI': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
+  // US Factor ETFs
+  'MTUM': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
+  'QUAL': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
+  'VLUE': { name: 'iShares', initials: 'iS', color: '#000000', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128' },
 };
+
+function resolveProvider(symbol: string): IndexProvider | undefined {
+  // 1. Check ticker-specific overrides first
+  if (TICKER_PROVIDER_MAP[symbol]) return TICKER_PROVIDER_MAP[symbol];
+  // 2. Look up index name from our predefined config and match by prefix
+  const idx = getIndexByTicker(symbol);
+  if (idx) {
+    for (const { prefix, provider } of PROVIDER_BY_PREFIX) {
+      if (idx.name.startsWith(prefix)) return provider;
+    }
+  }
+  return undefined;
+}
 
 
 function IndexProviderLogo({ symbol }: { symbol: string }) {
-  const provider = INDEX_PROVIDER_MAP[symbol];
+  const provider = resolveProvider(symbol);
   const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
   const color = provider?.color || '#6B7280';
   const [imgError, setImgError] = useState(false);
