@@ -159,12 +159,25 @@ export function MarketsChart() {
 
   // Merge data
   const mergedChartData = useMemo(() => {
+    const entries = Object.entries(chartData);
+    if (entries.length === 0) return [];
+
+    // Find the latest first timestamp across all series (= shortest history start)
+    const commonStart = Math.max(
+      ...entries.map(([, data]) => data[0]?.timestamp ?? 0)
+    );
+
     const dataMap = new Map<number, Record<string, number | undefined>>();
 
-    Object.entries(chartData).forEach(([symbol, data]) => {
-      data.forEach((d) => {
+    entries.forEach(([symbol, data]) => {
+      // Trim to common start and re-normalize so all lines begin at 0%
+      const trimmed = data.filter((d) => d.timestamp >= commonStart);
+      if (trimmed.length === 0) return;
+      const baseValue = trimmed[0].value;
+
+      trimmed.forEach((d) => {
         const existing = dataMap.get(d.timestamp) || { time: d.timestamp } as Record<string, number | undefined>;
-        existing[symbol] = d.value - 100;
+        existing[symbol] = baseValue > 0 ? ((d.value / baseValue) * 100) - 100 : 0;
         existing.time = d.timestamp;
         dataMap.set(d.timestamp, existing);
       });
