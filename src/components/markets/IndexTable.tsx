@@ -27,9 +27,9 @@ interface IndexProvider {
 const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
   { prefix: 'MSCI', provider: { name: 'MSCI', initials: 'MS', color: '#3B82F6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://msci.com&size=128' } },
   { prefix: 'FTSE', provider: { name: 'FTSE Russell', initials: 'FT', color: '#DC2626', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
-  { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' } },
+  { prefix: 'S&P', provider: { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: '/logos/sp-global.svg' } },
   { prefix: 'NASDAQ', provider: { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nasdaq.com&size=128' } },
-  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://dowjones.com&size=128' } },
+  { prefix: 'Dow Jones', provider: { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: '/logos/dow-jones.svg' } },
   { prefix: 'Russell', provider: { name: 'Russell', initials: 'RS', color: '#8B5CF6', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ftserussell.com&size=128' } },
   { prefix: 'EURO STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
   { prefix: 'STOXX', provider: { name: 'STOXX', initials: 'SX', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://stoxx.com&size=128' } },
@@ -38,8 +38,8 @@ const PROVIDER_BY_PREFIX: { prefix: string; provider: IndexProvider }[] = [
 
 /** Fallback map for tickers without a matching name prefix */
 const TICKER_PROVIDER_MAP: Record<string, IndexProvider> = {
-  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://spglobal.com&size=128' },
-  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://dowjones.com&size=128' },
+  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444', logoUrl: '/logos/sp-global.svg' },
+  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8', logoUrl: '/logos/dow-jones.svg' },
   '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nikkei.com&size=128' },
   '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
   '^MDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B', logoUrl: 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://deutsche-boerse.com&size=128' },
@@ -94,22 +94,25 @@ function IndexProviderLogo({ symbol }: { symbol: string }) {
   const provider = resolveProvider(symbol);
   const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
   const color = provider?.color || '#6B7280';
-  // Try: 1) /api/logo proxy (apple-touch-icon cascade), 2) static logoUrl, 3) initials
+  const isLocalLogo = provider?.logoUrl?.startsWith('/logos/');
+  // For local custom logos, use them directly; otherwise try: 1) logoUrl, 2) /api/logo proxy, 3) initials
   const [fallback, setFallback] = useState(0);
 
   const src =
-    fallback === 0
-      ? `/api/logo?symbol=${encodeURIComponent(symbol)}&type=stock`
-      : fallback === 1 && provider?.logoUrl
+    isLocalLogo
+      ? (fallback === 0 ? provider!.logoUrl! : null)
+      : fallback === 0 && provider?.logoUrl
         ? provider.logoUrl
-        : null;
+        : fallback <= 1
+          ? `/api/logo?symbol=${encodeURIComponent(symbol)}&type=stock`
+          : null;
 
   if (src) {
     return (
       <img
         src={src}
         alt={provider?.name || symbol}
-        className="h-8 w-8 rounded-full object-cover shrink-0"
+        className={cn("h-8 w-8 shrink-0 object-cover", isLocalLogo ? "rounded-md" : "rounded-full")}
         onError={() => setFallback((f) => f + 1)}
       />
     );
