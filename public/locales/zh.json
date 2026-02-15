@@ -290,7 +290,11 @@
     "addCustomIndex": "添加指数",
     "removeIndex": "删除",
     "noDescription": "暂无描述。",
-    "searchIndexPlaceholder": "搜索指数..."
+    "searchIndexPlaceholder": "搜索指数...",
+    "officialWebsite": "官方网站",
+    "topHoldings": "前十大持仓",
+    "sectorBreakdown": "行业分布",
+    "countryBreakdown": "国家分布"
   },
   "errors": {
     "fetchFailed": "数据加载失败，请重试。",

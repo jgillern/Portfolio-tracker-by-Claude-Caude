@@ -290,7 +290,11 @@
     "addCustomIndex": "Индекс нэмэх",
     "removeIndex": "Устгах",
     "noDescription": "Тайлбар байхгүй.",
-    "searchIndexPlaceholder": "Индекс хайх..."
+    "searchIndexPlaceholder": "Индекс хайх...",
+    "officialWebsite": "Албан ёсны вэб",
+    "topHoldings": "Топ 10 бүрэлдэхүүн",
+    "sectorBreakdown": "Салбарын бүтэц",
+    "countryBreakdown": "Улсын бүтэц"
   },
   "errors": {
     "fetchFailed": "Өгөгдөл ачаалж чадсангүй. Дахин оролдоно уу.",

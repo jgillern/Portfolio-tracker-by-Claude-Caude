@@ -14,6 +14,50 @@ import { getPreferences, updatePreferences } from '@/lib/supabase/database';
 
 const STORAGE_KEY = 'market-index-table-symbols';
 
+/** Known index provider branding */
+interface IndexProvider {
+  name: string;
+  initials: string;
+  color: string;
+}
+
+const INDEX_PROVIDER_MAP: Record<string, IndexProvider> = {
+  '^GSPC': { name: 'S&P', initials: 'S&P', color: '#EF4444' },
+  '^GSPTSE': { name: 'S&P', initials: 'S&P', color: '#EF4444' },
+  '^IXIC': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9' },
+  '^NDX': { name: 'NASDAQ', initials: 'NQ', color: '#0EA5E9' },
+  'URTH': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
+  'EEM': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
+  'ACWI': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
+  'MCHI': { name: 'MSCI', initials: 'MS', color: '#3B82F6' },
+  '^DJI': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8' },
+  '^DJT': { name: 'Dow Jones', initials: 'DJ', color: '#1D4ED8' },
+  '^FTSE': { name: 'FTSE', initials: 'FT', color: '#DC2626' },
+  '^N225': { name: 'Nikkei', initials: 'NK', color: '#6366F1' },
+  '^GDAXI': { name: 'DAX', initials: 'DX', color: '#F59E0B' },
+  '^HSI': { name: 'Hang Seng', initials: 'HS', color: '#10B981' },
+  '^STOXX50E': { name: 'STOXX', initials: 'SX', color: '#1D4ED8' },
+  '^FCHI': { name: 'CAC', initials: 'CA', color: '#3B82F6' },
+  '^RUT': { name: 'Russell', initials: 'RS', color: '#8B5CF6' },
+  '^VIX': { name: 'CBOE', initials: 'VX', color: '#EF4444' },
+};
+
+function IndexProviderLogo({ symbol }: { symbol: string }) {
+  const provider = INDEX_PROVIDER_MAP[symbol];
+  const initials = provider?.initials || symbol.replace('^', '').substring(0, 2).toUpperCase();
+  const color = provider?.color || '#6B7280';
+
+  return (
+    <div
+      className="h-7 w-7 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+      style={{ backgroundColor: color, fontSize: '9px', letterSpacing: '-0.3px' }}
+      title={provider?.name || symbol}
+    >
+      {initials}
+    </div>
+  );
+}
+
 function getDefaultSymbols(): string[] {
   return MARKET_INDEXES.map((i) => i.symbol);
 }
@@ -102,8 +146,8 @@ export function IndexTable() {
     customSymbols.includes(symbol);
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('markets.indexOverview')}
         </h2>
@@ -119,11 +163,11 @@ export function IndexTable() {
       </div>
 
       {showSearch && (
-        <div className="mb-4">
+        <div className="px-4 sm:px-6 pt-4">
           <InstrumentSearch
             onSelect={handleAddIndex}
             existingSymbols={allSymbols}
-            filterFn={(r) => r.quoteType === 'INDEX' || r.quoteType === 'ETF'}
+            filterFn={(r) => r.quoteType === 'INDEX'}
             placeholder={t('markets.searchIndexPlaceholder')}
           />
         </div>
@@ -135,27 +179,15 @@ export function IndexTable() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  {t('dashboard.name')}
-                </th>
-                <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  {t('dashboard.price')}
-                </th>
-                <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                  {t('dashboard.change24h')}
-                </th>
-                <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">
-                  {t('dashboard.change1w')}
-                </th>
-                <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden md:table-cell">
-                  {t('dashboard.change1m')}
-                </th>
-                <th className="text-right py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden lg:table-cell">
-                  {t('dashboard.changeYtd')}
-                </th>
+              <tr className="border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="text-left px-4 sm:px-6 py-3">{t('dashboard.name')}</th>
+                <th className="text-right px-2 py-3">{t('dashboard.price')}</th>
+                <th className="text-right px-2 py-3">{t('dashboard.change24h')}</th>
+                <th className="text-right px-2 py-3 hidden sm:table-cell">{t('dashboard.change1w')}</th>
+                <th className="text-right px-2 py-3 hidden md:table-cell">{t('dashboard.change1m')}</th>
+                <th className="text-right px-2 py-3 hidden lg:table-cell">{t('dashboard.changeYtd')}</th>
                 <th className="w-8"></th>
               </tr>
             </thead>
@@ -172,28 +204,35 @@ export function IndexTable() {
                     onClick={() => handleRowClick(symbol)}
                     className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer transition-colors"
                   >
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900 dark:text-white">{displayName}</span>
-                        <span className="text-xs text-gray-400">{symbol}</span>
+                    <td className="px-4 sm:px-6 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <IndexProviderLogo symbol={symbol} />
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            {displayName}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {symbol}{INDEX_PROVIDER_MAP[symbol] ? ` · ${INDEX_PROVIDER_MAP[symbol].name}` : ''}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-right font-medium text-gray-900 dark:text-white">
+                    <td className="px-2 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
                       {q ? q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                     </td>
-                    <td className="py-3 px-3 text-right">
+                    <td className="px-2 py-3 text-right">
                       <ChangeCell value={q?.change24h} />
                     </td>
-                    <td className="py-3 px-3 text-right hidden sm:table-cell">
+                    <td className="px-2 py-3 text-right hidden sm:table-cell">
                       <ChangeCell value={q?.change1w} />
                     </td>
-                    <td className="py-3 px-3 text-right hidden md:table-cell">
+                    <td className="px-2 py-3 text-right hidden md:table-cell">
                       <ChangeCell value={q?.change1m} />
                     </td>
-                    <td className="py-3 px-3 text-right hidden lg:table-cell">
+                    <td className="px-2 py-3 text-right hidden lg:table-cell">
                       <ChangeCell value={q?.changeYtd} />
                     </td>
-                    <td className="py-3 px-1">
+                    <td className="px-2 py-3">
                       {custom && (
                         <button
                           onClick={(e) => {

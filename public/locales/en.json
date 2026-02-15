@@ -307,7 +307,11 @@
     "addCustomIndex": "Add index",
     "removeIndex": "Remove",
     "noDescription": "No description available.",
-    "searchIndexPlaceholder": "Search for an index..."
+    "searchIndexPlaceholder": "Search for an index...",
+    "officialWebsite": "Official website",
+    "topHoldings": "Top 10 Holdings",
+    "sectorBreakdown": "Sector Breakdown",
+    "countryBreakdown": "Country Breakdown"
   },
   "errors": {
     "fetchFailed": "Failed to load data. Please try again.",
