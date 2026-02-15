@@ -41,81 +41,21 @@ function mapQuoteType(quoteType: string): InstrumentType {
   }
 }
 
-/** Comprehensive database of world indices for reliable search */
-const WORLD_INDICES: { symbol: string; name: string; exchange: string }[] = [
-  // US
-  { symbol: '^GSPC', name: 'S&P 500', exchange: 'SNP' },
-  { symbol: '^IXIC', name: 'NASDAQ Composite', exchange: 'NASDAQ' },
-  { symbol: '^DJI', name: 'Dow Jones Industrial Average', exchange: 'DJI' },
-  { symbol: '^NDX', name: 'NASDAQ 100', exchange: 'NASDAQ' },
-  { symbol: '^RUT', name: 'Russell 2000', exchange: 'WRT' },
-  { symbol: '^VIX', name: 'CBOE Volatility Index', exchange: 'CBOE' },
-  { symbol: '^GSPTSE', name: 'S&P/TSX Composite', exchange: 'TSX' },
-  { symbol: '^NYA', name: 'NYSE Composite', exchange: 'NYSE' },
-  { symbol: '^MID', name: 'S&P 400 Mid Cap', exchange: 'SNP' },
-  { symbol: '^SP600', name: 'S&P 600 Small Cap', exchange: 'SNP' },
-  // Europe
-  { symbol: '^FTSE', name: 'FTSE 100', exchange: 'LSE' },
-  { symbol: '^GDAXI', name: 'DAX', exchange: 'XETRA' },
-  { symbol: '^FCHI', name: 'CAC 40', exchange: 'Euronext Paris' },
-  { symbol: '^STOXX50E', name: 'EURO STOXX 50', exchange: 'STOXX' },
-  { symbol: '^STOXX', name: 'STOXX Europe 600', exchange: 'STOXX' },
-  { symbol: '^IBEX', name: 'IBEX 35', exchange: 'BME' },
-  { symbol: 'FTSEMIB.MI', name: 'FTSE MIB', exchange: 'Borsa Italiana' },
-  { symbol: '^AEX', name: 'AEX Amsterdam', exchange: 'Euronext Amsterdam' },
-  { symbol: '^SSMI', name: 'SMI Swiss Market Index', exchange: 'SIX' },
-  { symbol: '^BFX', name: 'BEL 20', exchange: 'Euronext Brussels' },
-  { symbol: '^ATX', name: 'ATX Vienna', exchange: 'Wiener Börse' },
-  { symbol: 'PSI20.LS', name: 'PSI 20', exchange: 'Euronext Lisbon' },
-  { symbol: '^OMXS30', name: 'OMX Stockholm 30', exchange: 'Nasdaq Stockholm' },
-  { symbol: '^OMXC25', name: 'OMX Copenhagen 25', exchange: 'Nasdaq Copenhagen' },
-  { symbol: '^OMXH25', name: 'OMX Helsinki 25', exchange: 'Nasdaq Helsinki' },
-  { symbol: '^OSEAX', name: 'Oslo All Share', exchange: 'Oslo Børs' },
-  // Asia Pacific
-  { symbol: '^N225', name: 'Nikkei 225', exchange: 'Osaka' },
-  { symbol: '^HSI', name: 'Hang Seng Index', exchange: 'HKSE' },
-  { symbol: '000001.SS', name: 'SSE Composite (Shanghai)', exchange: 'SSE' },
-  { symbol: '399001.SZ', name: 'SZSE Component (Shenzhen)', exchange: 'SZSE' },
-  { symbol: '^KS11', name: 'KOSPI', exchange: 'KRX' },
-  { symbol: '^TWII', name: 'TAIEX', exchange: 'TWSE' },
-  { symbol: '^BSESN', name: 'BSE SENSEX', exchange: 'BSE' },
-  { symbol: '^NSEI', name: 'NIFTY 50', exchange: 'NSE India' },
-  { symbol: '^AXJO', name: 'ASX 200', exchange: 'ASX' },
-  { symbol: '^NZ50', name: 'NZX 50', exchange: 'NZX' },
-  { symbol: '^STI', name: 'Straits Times Index', exchange: 'SGX' },
-  { symbol: '^JKSE', name: 'Jakarta Composite', exchange: 'IDX' },
-  { symbol: '^SET.BK', name: 'SET Index Thailand', exchange: 'SET' },
-  { symbol: '^KLSE', name: 'FTSE Bursa Malaysia KLCI', exchange: 'Bursa Malaysia' },
-  // Latin America
-  { symbol: '^BVSP', name: 'Bovespa', exchange: 'B3' },
-  { symbol: '^MXX', name: 'IPC Mexico', exchange: 'BMV' },
-  // Middle East & Africa
-  { symbol: '^TA125.TA', name: 'TA-125', exchange: 'TASE' },
-  { symbol: '^TASI.SR', name: 'Tadawul All Share', exchange: 'Tadawul' },
-  { symbol: '^J203.JO', name: 'JSE Top 40', exchange: 'JSE' },
-  // Russia / CEE
-  { symbol: '^IMOEX.ME', name: 'MOEX Russia', exchange: 'MOEX' },
-  { symbol: 'WIG20.WA', name: 'WIG 20', exchange: 'GPW' },
-  // Global ETFs tracking indices
-  { symbol: 'URTH', name: 'iShares MSCI World', exchange: 'NYSE' },
-  { symbol: 'EEM', name: 'iShares MSCI Emerging Markets', exchange: 'NYSE' },
-  { symbol: 'ACWI', name: 'iShares MSCI ACWI', exchange: 'NASDAQ' },
-  { symbol: 'VT', name: 'Vanguard Total World Stock', exchange: 'NYSE' },
-  { symbol: 'VTI', name: 'Vanguard Total Stock Market', exchange: 'NYSE' },
-  { symbol: 'VEA', name: 'Vanguard FTSE Developed Markets', exchange: 'NYSE' },
-  { symbol: 'VWO', name: 'Vanguard FTSE Emerging Markets', exchange: 'NYSE' },
-  { symbol: 'EFA', name: 'iShares MSCI EAFE', exchange: 'NYSE' },
-  { symbol: 'MCHI', name: 'iShares MSCI China', exchange: 'NASDAQ' },
-  { symbol: 'EWJ', name: 'iShares MSCI Japan', exchange: 'NYSE' },
-  { symbol: 'EWG', name: 'iShares MSCI Germany', exchange: 'NYSE' },
-  { symbol: 'EWQ', name: 'iShares MSCI France', exchange: 'NYSE' },
-  { symbol: 'FEZ', name: 'SPDR EURO STOXX 50', exchange: 'NYSE' },
-  { symbol: 'IWM', name: 'iShares Russell 2000', exchange: 'NYSE' },
-  { symbol: 'SPY', name: 'SPDR S&P 500 ETF', exchange: 'NYSE' },
-  { symbol: 'QQQ', name: 'Invesco QQQ (NASDAQ 100)', exchange: 'NASDAQ' },
-  { symbol: 'DIA', name: 'SPDR Dow Jones ETF', exchange: 'NYSE' },
-  { symbol: 'ISF.L', name: 'iShares Core FTSE 100', exchange: 'LSE' },
-];
+/**
+ * Index database from FinanceDatabase (90k+ indices).
+ * Loaded lazily on first search, cached in memory.
+ * Data sourced from: https://github.com/JerBouma/FinanceDatabase
+ */
+interface IndexEntry { s: string; n: string; e: string; c: string }
+let _indexDB: IndexEntry[] | null = null;
+
+function getIndexDB(): IndexEntry[] {
+  if (!_indexDB) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    _indexDB = require('@/data/indices.json') as IndexEntry[];
+  }
+  return _indexDB;
+}
 
 export async function searchInstruments(query: string): Promise<SearchResult[]> {
   const cacheKey = `search:${query}`;
@@ -153,25 +93,33 @@ export async function searchInstruments(query: string): Promise<SearchResult[]> 
   }
 }
 
-/** Search the local world index database (fuzzy match on name and symbol) */
+/** Search the local index database (90k+ indices from FinanceDatabase) */
 export function searchLocalIndices(query: string): SearchResult[] {
   const q = query.toLowerCase().trim();
-  if (!q) return [];
+  if (!q || q.length < 2) return [];
 
-  return WORLD_INDICES
-    .filter((idx) =>
-      idx.symbol.toLowerCase().includes(q) ||
-      idx.name.toLowerCase().includes(q) ||
-      idx.exchange.toLowerCase().includes(q)
-    )
-    .slice(0, 15)
-    .map((idx) => ({
-      symbol: idx.symbol,
-      name: idx.name,
-      type: 'stock' as InstrumentType,
-      exchange: idx.exchange,
-      quoteType: idx.symbol.startsWith('^') ? 'INDEX' : 'ETF',
-    }));
+  const db = getIndexDB();
+  const results: SearchResult[] = [];
+
+  // Exact symbol match first, then name/exchange match
+  for (const idx of db) {
+    if (results.length >= 20) break;
+    if (
+      idx.s.toLowerCase().includes(q) ||
+      idx.n.toLowerCase().includes(q) ||
+      idx.e.toLowerCase().includes(q)
+    ) {
+      results.push({
+        symbol: idx.s,
+        name: idx.n,
+        type: 'stock' as InstrumentType,
+        exchange: idx.e,
+        quoteType: 'INDEX',
+      });
+    }
+  }
+
+  return results;
 }
 
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
