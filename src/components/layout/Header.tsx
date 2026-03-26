@@ -41,6 +41,7 @@ export function Header() {
     { href: '/news', label: t('header.news') },
     { href: '/calendar', label: t('header.calendar') },
     { href: '/markets', label: t('header.markets') },
+    { href: '/etoro', label: t('header.etoro') },
   ];
 
   const fullName = profile
