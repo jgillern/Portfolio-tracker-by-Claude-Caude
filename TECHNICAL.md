@@ -172,6 +172,54 @@ interface SignInData {
 }
 ```
 
+### `src/types/etoro.ts`
+
+Definuje struktury pro eToro veřejná portfolia.
+
+```typescript
+interface EToroUser {
+  username: string;          // eToro username
+  fullName: string;          // Celé jméno tradera
+  avatarUrl: string;         // URL profilového obrázku
+  copiers: number;           // Počet copierů
+  gainPct: number;           // Celkový výnos v %
+  riskScore: number;         // Risk score (1-10)
+  isPro: boolean;            // Popular Investor status
+  country: string;           // ISO kód země
+}
+
+interface EToroPosition {
+  instrumentId: number;      // eToro ID instrumentu
+  instrumentName: string;    // Název instrumentu
+  ticker: string;            // eToro ticker symbol
+  yahooSymbol: string | null; // Namapovaný Yahoo Finance symbol
+  direction: 'buy' | 'sell'; // Směr pozice (long/short)
+  invested: number;          // Investovaná částka
+  currentValue: number;      // Aktuální hodnota
+  pnl: number;               // Zisk/ztráta absolutně
+  pnlPct: number;            // Zisk/ztráta v %
+  allocationPct: number;     // Podíl na portfoliu v %
+  type: 'stock' | 'etf' | 'crypto' | 'commodity' | 'currency';
+}
+
+interface EToroStats {
+  yearlyReturns: Record<string, number>; // { "2024": 15.2, ... }
+  winRatio: number;          // Poměr úspěšných obchodů v %
+  profitableWeeks: number;   // Podíl profitabilních týdnů v %
+  riskScore: number;         // Risk score (1-10)
+  maxDailyDrawdown: number;  // Max denní propad v %
+  maxWeeklyDrawdown: number; // Max týdenní propad v %
+  totalTrades: number;       // Celkový počet obchodů
+  copiers: number;           // Počet copierů
+}
+
+interface EToroPortfolioData {
+  profile: EToroUser;        // Profil tradera
+  positions: EToroPosition[]; // Pozice v portfoliu
+  stats: EToroStats;         // Statistiky tradera
+}
+```
+
 ---
 
 ## Databázové schéma
@@ -328,6 +376,7 @@ Server-side wrapper nad knihovnou `yahoo-finance2` (v3) s integrací Finnhub API
 | Proměnná | Povinná | Popis |
 |---|---|---|
 | `FINNHUB_API_KEY` | Ne | API klíč pro Finnhub (zprávy). Bez něj se používá pouze Yahoo Finance. |
+| `ETORO_API_KEY` | Ne | API klíč pro eToro (veřejná portfolia). Bez něj sekce eToro nefunguje. |
 
 | Funkce | Podpis | Cache TTL |
 |---|---|---|
@@ -388,6 +437,42 @@ Vrací surové byty obrázku (ne URL). Server-side proxy stahuje loga z webu fir
 2. Každou řadu normalizuje na base = 100 (první bod)
 3. Vypočte vážený průměr napříč řadami (custom váhy nebo rovné)
 4. **MAX period:** Nejprve načte celou historii (od 1970, měsíční interval), najde společné počáteční datum, pak renormalizuje od tohoto data
+
+### `src/lib/etoro/client.ts`
+
+Server-side eToro API klient. Využívá dvě API:
+1. **Discovery API** (`api.etoro.com`) — vyhledávání traderů, informace o uživatelích
+2. **Public API** (`public-api.etoro.com/api/v1`) — portfolio pozice, instrument metadata
+
+**Env proměnné:**
+| Proměnná | Povinná | Popis |
+|---|---|---|
+| `ETORO_API_KEY` | Ano | Subscription key z api-portal.etoro.com |
+
+**Autentizace:**
+- Discovery API: `Ocp-Apim-Subscription-Key` header
+- Public API: `x-api-key` + `x-user-key` headers (obě nastaveny na stejný klíč)
+
+| Funkce | Podpis | Cache TTL |
+|---|---|---|
+| `searchTraders` | `(query: string) => Promise<EToroUser[]>` | 5 min |
+| `fetchPortfolio` | `(username: string) => Promise<EToroPortfolioData \| null>` | 10 min |
+
+**Postup `fetchPortfolio`:**
+1. Resolve username → user info (jméno, avatar, země, copiers, gain, risk score)
+2. Fetch portfolio pozice přes Public API
+3. Fetch instrument metadata (24h cache) pro mapování instrumentId → ticker a typ
+4. Namapovat eToro ticker na Yahoo Finance symbol přes `mapEToroTickerToYahoo()`
+5. Vrátit `EToroPortfolioData` (profil + pozice + statistiky)
+
+**Symbol mapping (`mapEToroTickerToYahoo`):**
+- Akcie: přímá shoda, odstranění exchange suffixu (`.TA`, `.L`)
+- Krypto: `BTCUSD` → `BTC-USD` (regex pattern: 3-4 znaky + `USD`)
+- Forex: `EURUSD` → `EURUSD=X`
+- Komodity: lookup tabulka (`GOLD` → `GC=F`, `OIL` → `CL=F`, `SILVER` → `SI=F` atd.)
+- Fallback: `null`
+
+**Cachování:** In-memory `Map` s TTL expirací (stejný pattern jako `yahooFinance.ts`). Instrument metadata se cachují 24 hodin.
 
 ---
 
@@ -612,6 +697,24 @@ useDashboardOrder()
 
 Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `localStorage["portfolio-tracker-dashboard-order"]` a synchronizuje s Supabase. Výchozí pořadí: `keyStats`, `performance`, `instruments`, `sectorAllocation`, `typeAllocation`, `countryAllocation`, `metrics`. Při načtení sloučí uložené pořadí s výchozím (přidá nové sekce, odebere smazané).
 
+### `src/hooks/useEToroSearch.ts`
+
+```typescript
+useEToroSearch(query: string)
+→ { results: EToroUser[], isLoading: boolean }
+```
+
+Debounced vyhledávání eToro traderů (400 ms) přes `/api/etoro/search`. Při prázdném dotazu vrací `[]`.
+
+### `src/hooks/useEToroPortfolio.ts`
+
+```typescript
+useEToroPortfolio()
+→ { data: EToroPortfolioData | null, isLoading: boolean, error: string | null, fetchPortfolio: (username: string) => void, clear: () => void }
+```
+
+Hook pro načtení portfolia eToro tradera. `fetchPortfolio(username)` spustí fetch, `clear()` resetuje stav (návrat na vyhledávání).
+
 ---
 
 ## Komponenty
@@ -687,6 +790,28 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 |---|---|---|
 | `CalendarFeed` | — | Seznam nadcházejících a nedávných událostí (earnings, dividendy) pro instrumenty v portfoliu. Barevné ikony dle typu, počet dní do události. |
 
+### Markets (`src/components/markets/`)
+
+| Komponenta | Props | Popis |
+|---|---|---|
+| `DailyMovements` | — | Přehled denních změn hlavních indexů (S&P 500, NASDAQ, DAX atd.) s barevně kódovanými hodnotami za 24h, 1W, 1M, YTD. |
+| `MarketsChart` | — | Interaktivní Recharts graf s porovnáním výkonnosti indexů. Přepínání období (1W, 1M, 3M, 1Y). Více indexů na jednom grafu. |
+| `IndexTable` | — | Tabulka indexů s možností přidání/odebrání vlastních indexů. Vyhledávání přes InstrumentSearch. |
+| `FearGreedIndex` | — | Vizuální ukazatel tržního sentimentu (Extreme Fear → Extreme Greed) s číselnou hodnotou a barevným gradientem. |
+| `WinnersLosers` | — | Top gainers a losers z instrumentů v portfoliu za 24h. Dvě tabulky vedle sebe. |
+| `IndexDetailModal` | `isOpen`, `onClose`, `symbol`, `name` | Modální detail indexu/ETF: popis, top 10 holdingů, sektorové a geografické rozložení. Načítá data přes Yahoo Finance API. |
+
+### eToro (`src/components/etoro/`)
+
+| Komponenta | Props | Popis |
+|---|---|---|
+| `EToroSearch` | `onSelect: (EToroUser) => void` | Vyhledávací pole s debounced autocomplete (useEToroSearch hook). Dropdown výsledky zobrazují avatar, jméno, username, gain%, copiers a Popular Investor badge. |
+| `EToroProfileCard` | `profile: EToroUser`, `onBack: () => void` | Karta profilu tradera: avatar, celé jméno, username, země, celkový výnos, risk score (barevný gauge 1-10), počet copierů, Popular Investor badge. Tlačítko "Back" pro návrat na vyhledávání. |
+| `EToroPositionsTable` | `positions: EToroPosition[]` | Tabulka pozic seřazených dle alokace. Sloupce: název + ticker, typ (badge), alokace (horizontální bar), investováno, aktuální hodnota, P&L (barevně kódované). SHORT badge pro sell pozice. |
+| `EToroStatsCards` | `stats: EToroStats` | 6 statistik v mřížce: Risk Score (barevný), Copiers, Win Ratio, Profitable Weeks, Max Drawdown, Total Trades. Plus sekce s ročními výnosy (bar chart). |
+| `EToroAllocation` | `positions: EToroPosition[]` | Alokace portfolia dle typu instrumentu (horizontální stacked bar + legenda). Pod tím: top 10 pozic jako horizontální bar chart s ticker labely. |
+| `EToroMetrics` | `positions: EToroPosition[]` | Finanční metriky portfolia (6 gauge metrik). Filtruje pozice s platným `yahooSymbol`, vypočte váhy z `allocationPct`. Reuse: `useMetrics` hook + `MetricGauge` komponenta z dashboardu. |
+
 ---
 
 ## Stránky
@@ -727,13 +852,27 @@ Spravuje pořadí sekcí dashboardu s drag-and-drop. Ukládá pořadí do `local
 - Potvrzovací dialog pro smazání portfolia
 - Empty state s tlačítkem pro vytvoření portfolia pokud žádné neexistuje
 
-### `src/app/news/page.tsx` — Zprávy
+### `src/app/(app)/news/page.tsx` — Zprávy
 
 - Wrapper renderující `NewsFeed` komponentu
 
-### `src/app/calendar/page.tsx` — Kalendář událostí
+### `src/app/(app)/calendar/page.tsx` — Kalendář událostí
 
 - Wrapper renderující `CalendarFeed` komponentu
+
+### `src/app/(app)/markets/page.tsx` — Trhy
+
+- Přehled trhů s indexy, sentimentem a denními pohyby
+- Sekce: `DailyMovements`, `MarketsChart`, `IndexTable`, `FearGreedIndex`, `WinnersLosers`
+- Možnost přidání vlastních indexů/ETF
+- Modal s detailem indexu (top holdings, sektory, země)
+
+### `src/app/(app)/etoro/page.tsx` — eToro veřejná portfolia
+
+- Vyhledávání veřejných portfolií traderů na eToro
+- Stavový automat: Search → Loading → Portfolio data (nebo Error)
+- Zobrazí: `EToroSearch` → `EToroProfileCard` + `EToroStatsCards` + `EToroAllocation` + `EToroPositionsTable` + `EToroMetrics`
+- Tlačítko "Back" pro návrat na vyhledávání (`clear()` z `useEToroPortfolio`)
 
 ---
 
@@ -777,12 +916,15 @@ Soubory: `public/locales/{en,cs,sk,uk,zh,mn}.json`
   "import":     { ... }     // CSV import — pokyny, chybové hlášky, výsledky
   "auth":       { ... }     // Autentizace — přihlášení, registrace, chyby
   "settings":   { ... }     // Nastavení — osobní údaje, personalizace, heslo, avatary, skiny
+  "markets":    { ... }     // Trhy — indexy, Fear & Greed, Winners & Losers
+  "etoro":      { ... }     // eToro — vyhledávání traderů, profil, pozice, statistiky
   "search":     { ... }     // Vyhledávání instrumentů
   "news":       { ... }     // Sekce zpráv
   "calendar":   { ... }     // Kalendář událostí
   "periods":    { ... }     // Časová období (1D, 1T, 1M...)
   "types":      { ... }     // Typy instrumentů
   "metrics":    { ... }     // Finanční metriky portfolia (názvy + tooltips)
+  "profile":    { ... }     // Profil instrumentu — statistiky, financials, analyst ratings
   "errors":     { ... }     // Chybové hlášky
 }
 ```

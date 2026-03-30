@@ -96,6 +96,25 @@ Online portfolio tracker pro sledování výkonnosti investičních portfolií. 
 - U earnings: odhad EPS a rozsah (pokud dostupné)
 - Počet dní do/od události, barevné ikony dle typu
 
+### Trhy (Markets)
+- Samostatná sekce s přehledem trhů
+- **Denní pohyby** — přehled změn hlavních indexů za 24h, 1W, 1M, YTD
+- **Výkonnost indexů** — interaktivní graf s porovnáním indexů (S&P 500, NASDAQ, DAX, FTSE 100...)
+- **Přidání vlastních indexů** — vyhledávání a přidání libovolného indexu/ETF k porovnání
+- **Fear & Greed Index** — aktuální sentiment trhu s vizuálním ukazatelem
+- **Winners & Losers** — top gainers a losers z portfolia instrumentů
+- **Detail indexu** — modal s popisem, top 10 holdingů, sektorovým a geografickým rozložením
+
+### eToro veřejná portfolia
+- Samostatná sekce pro prohlížení veřejných portfolií traderů na eToro
+- **Vyhledávání traderů** — vyhledání eToro uživatele podle username
+- **Profil tradera** — avatar, jméno, země, počet copierů, risk score, celkový výnos, Popular Investor badge
+- **Tabulka pozic** — přehled všech pozic s alokací, investovanou částkou, aktuální hodnotou a P&L
+- **Statistiky** — risk score, win ratio, profitabilní týdny, max drawdown, celkový počet obchodů, roční výnosy
+- **Alokace** — rozdělení portfolia podle typu instrumentu (akcie, ETF, krypto, komodity) + top 10 pozic
+- **Finanční metriky** — 6 metrik (Sharpe, Beta, Alpha, Sortino, Treynor, Calmar) vypočtených z Yahoo Finance dat
+- Vyžaduje `ETORO_API_KEY` z [api-portal.etoro.com](https://api-portal.etoro.com)
+
 ### Lokalizace
 - 6 jazyků: angličtina, čeština, slovenština, ukrajinština, čínština, mongolština
 - **Výchozí jazyk: čeština** — nový návštěvník bez uloženého nastavení uvidí stránku česky
@@ -200,7 +219,9 @@ src/
 │   │   ├── layout.tsx            # Auth + Portfolio providers + Header
 │   │   ├── page.tsx              # Dashboard (hlavní stránka)
 │   │   ├── news/page.tsx         # Stránka se zprávami
-│   │   └── calendar/page.tsx     # Stránka s kalendářem událostí
+│   │   ├── calendar/page.tsx     # Stránka s kalendářem událostí
+│   │   ├── markets/page.tsx      # Stránka s přehledem trhů
+│   │   └── etoro/page.tsx        # eToro veřejná portfolia
 │   └── api/                      # Serverové API routes
 │       ├── auth/signout/route.ts # POST /api/auth/signout (server-side session cleanup)
 │       ├── search/route.ts       # GET /api/search?q=...
@@ -210,12 +231,17 @@ src/
 │       ├── calendar/route.ts     # GET /api/calendar?symbols=...
 │       ├── logo/route.ts         # GET /api/logo?symbol=...&type=... (image proxy)
 │       ├── countries/route.ts    # GET /api/countries?symbols=...
-│       └── metrics/route.ts      # GET /api/metrics?symbols=...&weights=...
+│       ├── metrics/route.ts      # GET /api/metrics?symbols=...&weights=...
+│       └── etoro/                # eToro API proxy routes
+│           ├── search/route.ts   # GET /api/etoro/search?q=...
+│           └── portfolio/route.ts # GET /api/etoro/portfolio?username=...
 ├── components/
 │   ├── ui/                       # Znovupoužitelné UI primitiva (Button, Modal, Badge, InstrumentLogo...)
 │   ├── layout/                   # Header, navigace
 │   ├── portfolio/                # Správa portfolií (modaly, vyhledávání, CSV import)
 │   ├── dashboard/                # Graf, tabulky, alokace, metriky, drag-and-drop, refresh
+│   ├── markets/                  # Přehled trhů (indexy, Fear & Greed, Winners & Losers)
+│   ├── etoro/                    # eToro veřejná portfolia (vyhledávání, profil, pozice, metriky)
 │   ├── settings/                 # Nastavení (SettingsModal, FunAvatars)
 │   ├── login/                    # Přihlašovací stránka (BusinessmanAvatars)
 │   ├── news/                     # Zprávy
@@ -223,7 +249,8 @@ src/
 ├── hooks/                        # Custom React hooks
 ├── context/                      # React Context providers (Auth, Portfolio, Language, Theme)
 ├── lib/                          # Utility funkce a integrace
-│   └── supabase/                 # Supabase klientské soubory (client, server, middleware, database, migration)
+│   ├── supabase/                 # Supabase klientské soubory (client, server, middleware, database, migration)
+│   └── etoro/                    # eToro API klient a symbol mapper (server-side)
 ├── middleware.ts                  # Next.js middleware — ochrana routes + session refresh
 ├── types/                        # TypeScript definice typů (vč. auth.ts)
 └── config/                       # Konfigurace a konstanty
@@ -250,9 +277,12 @@ Vytvořte soubor `.env.local` v kořenu projektu:
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 FINNHUB_API_KEY=your-finnhub-api-key          # volitelné — zapne Finnhub jako druhý zdroj zpráv
+ETORO_API_KEY=your-etoro-api-key              # volitelné — zapne sekci eToro veřejných portfolií
 ```
 
 **Finnhub API klíč** je volitelný — bez něj aplikace používá pouze Yahoo Finance jako zdroj zpráv. Pro získání klíče se zaregistrujte na [finnhub.io](https://finnhub.io/register) (free tier postačuje).
+
+**eToro API klíč** je volitelný — bez něj sekce eToro nebude funkční. Pro získání klíče se zaregistrujte na [api-portal.etoro.com](https://api-portal.etoro.com).
 
 ### 3. Vytvořte databázové tabulky
 V Supabase Dashboard → SQL Editor spusťte SQL schema (viz `TECHNICAL.md` sekce "Databázové schéma").

@@ -1,6 +1,6 @@
 # API dokumentace
 
-Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-side proxy pro Yahoo Finance + Finnhub, finanční metriky a loga) a 1 autentizační. Běží na straně serveru (Next.js API Routes).
+Portfolio Tracker poskytuje 11 interních API endpointů — 8 datových (server-side proxy pro Yahoo Finance + Finnhub, finanční metriky a loga), 2 eToro proxy endpointy a 1 autentizační. Běží na straně serveru (Next.js API Routes).
 
 ---
 
@@ -16,8 +16,10 @@ Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-
 8. [GET /api/logo](#get-apilogo)
 9. [GET /api/countries](#get-apicountries)
 10. [GET /api/metrics](#get-apimetrics)
-11. [Cachování](#cachování)
-12. [Chybové odpovědi](#chybové-odpovědi)
+11. [GET /api/etoro/search](#get-apietorosearch)
+12. [GET /api/etoro/portfolio](#get-apietoroportfolio)
+13. [Cachování](#cachování)
+14. [Chybové odpovědi](#chybové-odpovědi)
 
 ---
 
@@ -34,6 +36,8 @@ Portfolio Tracker poskytuje 9 interních API endpointů — 8 datových (server-
 | `GET /api/logo` | Logo instrumentu (server-side image proxy) | 7 dní |
 | `GET /api/countries` | Země původu instrumentů | 24 h |
 | `GET /api/metrics` | Finanční metriky portfolia (Sharpe, Beta, Calmar...) | 10 min |
+| `GET /api/etoro/search` | Vyhledávání eToro traderů | 5 min |
+| `GET /api/etoro/portfolio` | Portfolio eToro tradera (pozice, statistiky) | 10 min |
 
 ---
 
@@ -514,6 +518,168 @@ GET /api/metrics?symbols={symbol1},{symbol2}&weights={w1},{w2}
 
 ---
 
+## GET /api/etoro/search
+
+Vyhledá eToro tradery podle username nebo jména. Server-side proxy pro eToro Discovery API.
+
+### Request
+
+```
+GET /api/etoro/search?q={query}
+```
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `q` | string | Ano | Hledaný text (username nebo jméno tradera) |
+
+### Response — 200 OK
+
+```json
+[
+  {
+    "username": "yoniasia",
+    "fullName": "Yoni Assia",
+    "avatarUrl": "https://etoro-cdn.etorostatic.com/avatars/...",
+    "copiers": 15432,
+    "gainPct": 42.5,
+    "riskScore": 4,
+    "isPro": true,
+    "country": "IL"
+  }
+]
+```
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `username` | string | eToro username |
+| `fullName` | string | Celé jméno tradera |
+| `avatarUrl` | string | URL profilového obrázku |
+| `copiers` | number | Počet copierů |
+| `gainPct` | number | Celkový výnos v % |
+| `riskScore` | number | Risk score (1-10) |
+| `isPro` | boolean | Popular Investor status |
+| `country` | string | ISO kód země |
+
+### Poznámky
+
+- Prázdný `q` vrací prázdné pole `[]`
+- Vyžaduje env proměnnou `ETORO_API_KEY`
+- Při chybě vrací 502 s `{ error: "Failed to search eToro traders" }`
+- Cache TTL: 5 minut
+
+---
+
+## GET /api/etoro/portfolio
+
+Vrátí kompletní portfolio eToro tradera — profil, pozice a statistiky. Server-side proxy pro eToro Discovery + Public API.
+
+### Request
+
+```
+GET /api/etoro/portfolio?username={username}
+```
+
+| Parametr | Typ | Povinný | Popis |
+|---|---|---|---|
+| `username` | string | Ano | eToro username tradera |
+
+### Response — 200 OK
+
+```json
+{
+  "profile": {
+    "username": "yoniasia",
+    "fullName": "Yoni Assia",
+    "avatarUrl": "...",
+    "copiers": 15432,
+    "gainPct": 42.5,
+    "riskScore": 4,
+    "isPro": true,
+    "country": "IL"
+  },
+  "positions": [
+    {
+      "instrumentId": 1001,
+      "instrumentName": "Apple Inc.",
+      "ticker": "AAPL",
+      "yahooSymbol": "AAPL",
+      "direction": "buy",
+      "invested": 5000,
+      "currentValue": 6200,
+      "pnl": 1200,
+      "pnlPct": 24.0,
+      "allocationPct": 15.5,
+      "type": "stock"
+    }
+  ],
+  "stats": {
+    "yearlyReturns": { "2024": 15.2, "2023": 8.1 },
+    "winRatio": 65.3,
+    "profitableWeeks": 58.2,
+    "riskScore": 4,
+    "maxDailyDrawdown": -3.2,
+    "maxWeeklyDrawdown": -8.5,
+    "totalTrades": 342,
+    "copiers": 15432
+  }
+}
+```
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `profile` | EToroUser | Profil tradera (viz `/api/etoro/search`) |
+| `positions` | EToroPosition[] | Pozice v portfoliu |
+| `stats` | EToroStats | Statistiky tradera |
+
+**EToroPosition:**
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `instrumentId` | number | eToro ID instrumentu |
+| `instrumentName` | string | Název instrumentu |
+| `ticker` | string | eToro ticker symbol |
+| `yahooSymbol` | string \| null | Namapovaný Yahoo Finance symbol (pro metriky) |
+| `direction` | `'buy' \| 'sell'` | Směr pozice (long/short) |
+| `invested` | number | Investovaná částka |
+| `currentValue` | number | Aktuální hodnota |
+| `pnl` | number | Zisk/ztráta v absolutní hodnotě |
+| `pnlPct` | number | Zisk/ztráta v % |
+| `allocationPct` | number | Podíl na portfoliu v % |
+| `type` | string | Typ instrumentu (stock, etf, crypto, commodity, currency) |
+
+**EToroStats:**
+
+| Pole | Typ | Popis |
+|---|---|---|
+| `yearlyReturns` | Record<string, number> | Roční výnosy (klíč = rok, hodnota = %) |
+| `winRatio` | number | Poměr úspěšných obchodů v % |
+| `profitableWeeks` | number | Podíl profitabilních týdnů v % |
+| `riskScore` | number | Risk score (1-10) |
+| `maxDailyDrawdown` | number | Maximální denní propad v % |
+| `maxWeeklyDrawdown` | number | Maximální týdenní propad v % |
+| `totalTrades` | number | Celkový počet obchodů |
+| `copiers` | number | Počet copierů |
+
+### Symbol mapping
+
+eToro používá vlastní ticker systém. Mapování na Yahoo Finance symboly:
+- **Akcie:** přímá shoda (`AAPL` → `AAPL`), odstraní se exchange suffix (`.TA`, `.L`)
+- **Krypto:** `BTCUSD` → `BTC-USD` (vloží se `-` před `USD`)
+- **Forex:** `EURUSD` → `EURUSD=X` (přidá se `=X` suffix)
+- **Komodity:** lookup tabulka (`GOLD` → `GC=F`, `OIL` → `CL=F`)
+- **Fallback:** `null` pokud symbol nelze namapovat
+
+### Poznámky
+
+- Vyžaduje env proměnnou `ETORO_API_KEY`
+- Vrací 400 pokud chybí `username` parametr
+- Vrací 404 pokud portfolio nebylo nalezeno
+- Vrací 502 při chybě komunikace s eToro API
+- Cache TTL: 10 minut
+- Instrument metadata se cachují 24 hodin (nemění se často)
+
+---
+
 ## Cachování
 
 Všechny endpointy využívají server-side in-memory cache.
@@ -534,6 +700,9 @@ Request → Cache hit?
 | `/api/logo` | 7 dní | `logo-img:{symbol}` (+ HTTP Cache-Control 7 dní) |
 | `/api/countries` | 24 h | `countries:{symbol}` |
 | `/api/metrics` | 10 min | `metrics:{symbols}:{weights}` |
+| `/api/etoro/search` | 5 min | `etoro-search:{query}` |
+| `/api/etoro/portfolio` | 10 min | `etoro-portfolio:{username}` |
+| eToro instrument metadata | 24 h | `etoro-instruments` |
 
 **Omezení cache:**
 - In-memory — neprežije restart serveru

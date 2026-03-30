@@ -58,11 +58,14 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 │  │  /api/chart     /api/news                │    │
 │  │  /api/calendar  /api/logo (image proxy)  │    │
 │  │  /api/countries /api/metrics             │    │
+│  │  /api/etoro/search  /api/etoro/portfolio │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
 │  │     lib/yahooFinance.ts                   │    │
 │  │  (yahoo-finance2 + Finnhub + cache)     │    │
+│  │     lib/etoro/client.ts                   │    │
+│  │  (eToro Discovery + Public API + cache) │    │
 │  └────────────────┬─────────────────────────┘    │
 │                   │                              │
 │  ┌────────────────┴─────────────────────────┐    │
@@ -80,6 +83,13 @@ Tento dokument popisuje celkovou architekturu aplikace Portfolio Tracker — vrs
 ┌──────────────────────────────────────────────────┐
 │              Finnhub API (volitelný)              │
 │  (zprávy — vyžaduje FINNHUB_API_KEY)            │
+└──────────────────────────────────────────────────┘
+                        │
+┌──────────────────────────────────────────────────┐
+│              eToro API (volitelný)                │
+│  Discovery (api.etoro.com) — vyhledávání traderů│
+│  Public (public-api.etoro.com) — portfolia      │
+│  (vyžaduje ETORO_API_KEY)                       │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -272,7 +282,7 @@ RootLayout (ThemeProvider → LanguageProvider)
 │
 └── AppLayout (AuthProvider → PortfolioProvider)
     ├── Header
-    │   ├── Logo + navigační linky (Dashboard, Zprávy, Kalendář)
+    │   ├── Logo + navigační linky (Dashboard, Zprávy, Kalendář, Trhy, eToro)
     │   ├── PortfolioSwitcher (dropdown + "Přidat nové portfolio")
     │   ├── LanguageToggle
     │   ├── ThemeToggle
@@ -321,6 +331,22 @@ RootLayout (ThemeProvider → LanguageProvider)
     │       ├── NewsCard × N (thumbnail → Clearbit logo → SVG fallback)
     │       └── "Zobrazit další" tlačítko (stránkování po 20)
     │
+    ├── MarketsPage (/markets)
+    │   ├── DailyMovements (přehled denních změn indexů)
+    │   ├── MarketsChart (interaktivní graf indexů)
+    │   ├── IndexTable (tabulka indexů s přidáním vlastních)
+    │   ├── FearGreedIndex (sentiment trhu)
+    │   ├── WinnersLosers (top gainers/losers z portfolia)
+    │   └── IndexDetailModal (detail indexu: popis, holdings, sektory, země)
+    │
+    ├── EToroPage (/etoro)
+    │   ├── EToroSearch (vyhledávání traderů s dropdown výsledky)
+    │   ├── EToroProfileCard (profil tradera: avatar, jméno, risk score, copiers)
+    │   ├── EToroStatsCards (6 statistik + roční výnosy)
+    │   ├── EToroAllocation (alokace dle typu + top 10 pozic)
+    │   ├── EToroPositionsTable (tabulka pozic s P&L)
+    │   └── EToroMetrics (6 gauge metrik — reuse MetricGauge + useMetrics)
+    │
     └── CalendarPage (/calendar)
         └── CalendarFeed
             └── EventCard × N (earnings, dividendy)
@@ -342,6 +368,9 @@ RootLayout (ThemeProvider → LanguageProvider)
 | `/api/logo` | 7 dní | `logo-img:{symbol}` |
 | `/api/countries` | 24 h | `countries:{symbol}` |
 | `/api/metrics` | 10 min | `metrics:{symbols}:{weights}` |
+| `/api/etoro/search` | 5 min | `etoro-search:{query}` |
+| `/api/etoro/portfolio` | 10 min | `etoro-portfolio:{username}` |
+| eToro instrument metadata | 24 h | `etoro-instruments` |
 
 **HTTP cache (logo):**
 - `/api/logo` vrací odpovědi s hlavičkou `Cache-Control: public, max-age=604800, immutable` — prohlížeč cachuje obrázky 7 dní
