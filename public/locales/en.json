@@ -347,6 +347,8 @@
     "metrics": "Portfolio Metrics",
     "allocation": "Allocation",
     "noResults": "No traders found. Try a different username.",
+    "loadProfile": "Load Profile",
+    "searchHint": "Enter an exact eToro username and press Enter, or select from suggestions below.",
     "noPositions": "No positions data available for this trader.",
     "loading": "Loading portfolio...",
     "tryAgain": "Back to search",

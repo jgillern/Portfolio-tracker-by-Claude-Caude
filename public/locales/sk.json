@@ -330,6 +330,8 @@
     "metrics": "Metriky portfólia",
     "allocation": "Alokácia",
     "noResults": "Žiadni traderi nenájdení. Skúste iné meno.",
+    "loadProfile": "Načítať profil",
+    "searchHint": "Zadajte presné eToro používateľské meno a stlačte Enter, alebo vyberte z návrhov nižšie.",
     "noPositions": "Údaje o pozíciách nie sú pre tohto tradera dostupné.",
     "loading": "Načítavam portfólio...",
     "tryAgain": "Späť na vyhľadávanie",

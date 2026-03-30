@@ -330,6 +330,8 @@
     "metrics": "投资组合指标",
     "allocation": "配置",
     "noResults": "未找到交易者。请尝试其他用户名。",
+    "loadProfile": "加载资料",
+    "searchHint": "输入准确的eToro用户名并按回车，或从下方建议中选择。",
     "noPositions": "该交易者无可用持仓数据。",
     "loading": "正在加载投资组合...",
     "tryAgain": "返回搜索",

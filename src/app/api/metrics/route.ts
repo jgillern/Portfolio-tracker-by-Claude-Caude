@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPortfolioMetrics } from '@/lib/yahooFinance';
+import { captureError } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     const metrics = await getPortfolioMetrics(symbols, weights);
     return NextResponse.json(metrics);
   } catch (error) {
-    console.error('Metrics API error:', error);
+    captureError('Metrics API', error);
     return NextResponse.json({ error: 'Failed to calculate metrics' }, { status: 500 });
   }
 }

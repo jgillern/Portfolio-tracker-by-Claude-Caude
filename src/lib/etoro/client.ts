@@ -84,22 +84,55 @@ export async function searchTraders(
   page = 1,
   pageSize = 20
 ): Promise<EToroUser[]> {
-  // The Discovery API search does not have a text search param —
-  // it filters by metrics. For username/text lookup we use the user-info endpoint.
-  // If the query looks like a username (no spaces), try exact user lookup first.
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  // Strategy: try text-based search via the user search endpoint first,
-  // then fall back to discovery API for broader results.
+  // Strategy 1: Try Discovery API with UserNames filter (exact username match).
+  // The eToro Discovery API does NOT support fuzzy/text search —
+  // it only filters by metrics and exact UserNames.
+  try {
+    const discoveryResult = await cached(
+      `discover-user:${trimmed.toLowerCase()}`,
+      5 * 60_000,
+      async () => {
+        const params = new URLSearchParams({
+          Period: 'OneYearAgo',
+          Page: '1',
+          PageSize: '5',
+          Sort: '-Copiers',
+          UserNames: trimmed,
+        });
+
+        const res = await fetch(
+          `${DISCOVERY_BASE}/Discover/V1/Search?${params}`,
+          { headers: discoveryHeaders() }
+        );
+
+        if (!res.ok) {
+          console.warn(`[eToro] Discovery search returned ${res.status}`);
+          return [];
+        }
+
+        const data: DiscoverSearchResult = await res.json();
+        return (data.Items ?? []).map(mapDiscoverUser);
+      }
+    );
+    if (discoveryResult.length > 0) return discoveryResult;
+  } catch (err) {
+    console.warn('[eToro] Discovery search failed:', err);
+  }
+
+  // Strategy 2: Try user info lookup (may have different response format).
   try {
     const users = await searchUsersByText(trimmed);
     if (users.length > 0) return users;
-  } catch {
-    // fall through to discovery
+  } catch (err) {
+    console.warn('[eToro] User info lookup failed:', err);
   }
 
-  return cached(`discover:${page}:${pageSize}`, 5 * 60_000, async () => {
+  // Strategy 3: Show top popular traders as suggestions when no match found.
+  // This way the user sees something even if their query didn't match exactly.
+  return cached(`discover-top:${page}:${pageSize}`, 5 * 60_000, async () => {
     const params = new URLSearchParams({
       Period: 'OneYearAgo',
       Page: String(page),
@@ -113,7 +146,7 @@ export async function searchTraders(
     if (!res.ok) return [];
 
     const data: DiscoverSearchResult = await res.json();
-    return data.Items.map(mapDiscoverUser);
+    return (data.Items ?? []).map(mapDiscoverUser);
   });
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNews } from '@/lib/yahooFinance';
+import { captureError } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const articles = await getNews(symbols);
     return NextResponse.json(articles);
   } catch (error) {
-    console.error('News API error:', error);
+    captureError('News API', error);
     return NextResponse.json({ error: 'Failed to fetch news' }, { status: 500 });
   }
 }
