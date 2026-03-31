@@ -338,7 +338,7 @@
   "etoro": {
     "title": "eToro Public Portfolios",
     "subtitle": "Search for eToro traders and analyze their public portfolios",
-    "searchPlaceholder": "Search by eToro username...",
+    "searchPlaceholder": "Search eToro traders...",
     "copiers": "Copiers",
     "riskScore": "Risk Score",
     "gain": "Gain",
@@ -348,7 +348,7 @@
     "allocation": "Allocation",
     "noResults": "No traders found. Try a different username.",
     "loadProfile": "Load Profile",
-    "searchHint": "Enter an exact eToro username and press Enter, or select from suggestions below.",
+    "searchHint": "Search by username or name. Press Enter to load a profile directly.",
     "noPositions": "No positions data available for this trader.",
     "loading": "Loading portfolio...",
     "tryAgain": "Back to search",

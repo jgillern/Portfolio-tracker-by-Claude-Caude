@@ -321,7 +321,7 @@
   "etoro": {
     "title": "eToro verejné portfóliá",
     "subtitle": "Vyhľadajte eToro traderov a analyzujte ich verejné portfóliá",
-    "searchPlaceholder": "Hľadať eToro používateľské meno...",
+    "searchPlaceholder": "Hľadať eToro traderov...",
     "copiers": "Kopírujúci",
     "riskScore": "Riziko",
     "gain": "Zisk",
@@ -331,7 +331,7 @@
     "allocation": "Alokácia",
     "noResults": "Žiadni traderi nenájdení. Skúste iné meno.",
     "loadProfile": "Načítať profil",
-    "searchHint": "Zadajte presné eToro používateľské meno a stlačte Enter, alebo vyberte z návrhov nižšie.",
+    "searchHint": "Hľadajte podľa mena alebo používateľského mena. Enter načíta profil priamo.",
     "noPositions": "Údaje o pozíciách nie sú pre tohto tradera dostupné.",
     "loading": "Načítavam portfólio...",
     "tryAgain": "Späť na vyhľadávanie",

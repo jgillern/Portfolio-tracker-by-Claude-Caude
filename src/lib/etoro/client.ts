@@ -57,6 +57,18 @@ function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T>
   });
 }
 
+// ── AutoComplete API (fulltext search) ─────────────────
+
+interface AutoCompleteResult {
+  Users?: Array<{
+    UserName: string;
+    FullName?: string;
+    CustomerID?: number;
+    CustomerId?: number;
+  }>;
+  Instruments?: Array<unknown>;
+}
+
 // ── Discovery API ──────────────────────────────────────
 
 interface DiscoverSearchResult {
@@ -81,15 +93,49 @@ interface DiscoverSearchResult {
 
 export async function searchTraders(
   query: string,
-  page = 1,
-  pageSize = 20
 ): Promise<EToroUser[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  // Strategy 1: Try Discovery API with UserNames filter (exact username match).
-  // The eToro Discovery API does NOT support fuzzy/text search —
-  // it only filters by metrics and exact UserNames.
+  // Strategy 1: AutoComplete endpoint — supports fulltext search by prefix.
+  // GET /System/V1/AutoComplete?Prefix=...&UserCount=10&InstrumentCount=0
+  try {
+    const autoCompleteUsers = await cached(
+      `autocomplete:${trimmed.toLowerCase()}`,
+      5 * 60_000,
+      async () => {
+        const params = new URLSearchParams({
+          Prefix: trimmed,
+          UserCount: '10',
+          InstrumentCount: '0',
+        });
+
+        const res = await fetch(
+          `${DISCOVERY_BASE}/System/V1/AutoComplete?${params}`,
+          { headers: discoveryHeaders() }
+        );
+
+        if (!res.ok) {
+          console.warn(`[eToro] AutoComplete returned ${res.status}`);
+          return [];
+        }
+
+        const data: AutoCompleteResult = await res.json();
+        const users = data.Users ?? [];
+        if (users.length === 0) return [];
+
+        // AutoComplete returns minimal data (username, maybe fullName).
+        // Enrich with Discovery data for copiers, gain, risk score etc.
+        const usernames = users.map((u) => u.UserName).join(',');
+        return enrichUsersViaDiscovery(usernames, users);
+      }
+    );
+    if (autoCompleteUsers.length > 0) return autoCompleteUsers;
+  } catch (err) {
+    console.warn('[eToro] AutoComplete search failed:', err);
+  }
+
+  // Strategy 2: Try Discovery API with exact UserNames filter.
   try {
     const discoveryResult = await cached(
       `discover-user:${trimmed.toLowerCase()}`,
@@ -108,10 +154,7 @@ export async function searchTraders(
           { headers: discoveryHeaders() }
         );
 
-        if (!res.ok) {
-          console.warn(`[eToro] Discovery search returned ${res.status}`);
-          return [];
-        }
+        if (!res.ok) return [];
 
         const data: DiscoverSearchResult = await res.json();
         return (data.Items ?? []).map(mapDiscoverUser);
@@ -122,32 +165,57 @@ export async function searchTraders(
     console.warn('[eToro] Discovery search failed:', err);
   }
 
-  // Strategy 2: Try user info lookup (may have different response format).
+  // Strategy 3: Try exact user info lookup as last resort.
   try {
     const users = await searchUsersByText(trimmed);
     if (users.length > 0) return users;
-  } catch (err) {
-    console.warn('[eToro] User info lookup failed:', err);
+  } catch {
+    // fall through
   }
 
-  // Strategy 3: Show top popular traders as suggestions when no match found.
-  // This way the user sees something even if their query didn't match exactly.
-  return cached(`discover-top:${page}:${pageSize}`, 5 * 60_000, async () => {
+  return [];
+}
+
+/** Enrich AutoComplete results with Discovery metrics (copiers, gain, risk). */
+async function enrichUsersViaDiscovery(
+  usernames: string,
+  autoCompleteUsers: AutoCompleteResult['Users'] & object,
+): Promise<EToroUser[]> {
+  try {
     const params = new URLSearchParams({
       Period: 'OneYearAgo',
-      Page: String(page),
-      PageSize: String(pageSize),
+      Page: '1',
+      PageSize: String(autoCompleteUsers.length),
       Sort: '-Copiers',
+      UserNames: usernames,
     });
 
-    const res = await fetch(`${DISCOVERY_BASE}/Discover/V1/Search?${params}`, {
-      headers: discoveryHeaders(),
-    });
-    if (!res.ok) return [];
+    const res = await fetch(
+      `${DISCOVERY_BASE}/Discover/V1/Search?${params}`,
+      { headers: discoveryHeaders() }
+    );
 
-    const data: DiscoverSearchResult = await res.json();
-    return (data.Items ?? []).map(mapDiscoverUser);
-  });
+    if (res.ok) {
+      const data: DiscoverSearchResult = await res.json();
+      if (data.Items?.length > 0) {
+        return data.Items.map(mapDiscoverUser);
+      }
+    }
+  } catch {
+    // Fall back to basic data from autocomplete
+  }
+
+  // Return basic users from AutoComplete without enrichment
+  return autoCompleteUsers.map((u) => ({
+    username: u.UserName,
+    fullName: u.FullName ?? u.UserName,
+    avatarUrl: '',
+    copiers: 0,
+    gainPct: 0,
+    riskScore: 0,
+    isPro: false,
+    country: '',
+  }));
 }
 
 async function searchUsersByText(query: string): Promise<EToroUser[]> {
