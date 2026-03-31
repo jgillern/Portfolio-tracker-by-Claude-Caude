@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getChart } from '@/lib/yahooFinance';
 import { TimePeriod } from '@/types/market';
+import { captureError } from '@/lib/logger';
 
 const VALID_PERIODS: TimePeriod[] = ['1d', '1w', '1mo', '1y', '5y', 'ytd', 'max'];
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     const data = await getChart(symbols, range, weights);
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Chart API error:', error);
+    captureError('Chart API', error);
     return NextResponse.json({ error: 'Failed to fetch chart data' }, { status: 500 });
   }
 }

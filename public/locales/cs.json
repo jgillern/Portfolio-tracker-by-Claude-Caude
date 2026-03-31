@@ -338,7 +338,7 @@
   "etoro": {
     "title": "eToro veřejná portfolia",
     "subtitle": "Vyhledejte eToro tradery a analyzujte jejich veřejná portfolia",
-    "searchPlaceholder": "Hledat eToro uživatelské jméno...",
+    "searchPlaceholder": "Hledat eToro tradery...",
     "copiers": "Kopírující",
     "riskScore": "Riziko",
     "gain": "Zisk",
@@ -347,6 +347,8 @@
     "metrics": "Metriky portfolia",
     "allocation": "Alokace",
     "noResults": "Žádní tradeři nenalezeni. Zkuste jiné jméno.",
+    "loadProfile": "Načíst profil",
+    "searchHint": "Hledejte podle uživatelského jména nebo jména. Enter načte profil přímo.",
     "noPositions": "Data o pozicích nejsou pro tohoto tradera dostupná.",
     "loading": "Načítám portfolio...",
     "tryAgain": "Zpět na vyhledávání",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getQuotes } from '@/lib/yahooFinance';
+import { captureError } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const quotes = await getQuotes(symbols);
     return NextResponse.json(quotes);
   } catch (error) {
-    console.error('Quote API error:', error);
+    captureError('Quote API', error);
     return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 });
   }
 }

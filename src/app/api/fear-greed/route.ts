@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { captureError } from '@/lib/logger';
 
 interface FearGreedDataPoint {
   x: number; // timestamp ms
@@ -57,7 +58,7 @@ export async function GET() {
     cached = { data, expiresAt: Date.now() + 30 * 60 * 1000 }; // 30 min cache
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Fear & Greed API error:', error);
+    captureError('Fear & Greed API', error);
 
     // Return fallback if cache exists but is expired
     if (cached) {

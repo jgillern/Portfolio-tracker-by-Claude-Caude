@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCalendarEvents } from '@/lib/yahooFinance';
+import { captureError } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const events = await getCalendarEvents(symbols);
     return NextResponse.json(events);
   } catch (error) {
-    console.error('Calendar API error:', error);
+    captureError('Calendar API', error);
     return NextResponse.json({ error: 'Failed to fetch calendar events' }, { status: 500 });
   }
 }

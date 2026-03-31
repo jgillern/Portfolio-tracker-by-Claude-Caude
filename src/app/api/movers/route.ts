@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import YahooFinance from 'yahoo-finance2';
 import { subDays, subMonths, startOfYear } from 'date-fns';
+import { captureError } from '@/lib/logger';
 
 const yf = new YahooFinance();
 
@@ -138,7 +139,7 @@ export async function GET(request: NextRequest) {
     const sorted = sortMovers(data, mode);
     return NextResponse.json(sorted);
   } catch (error) {
-    console.error('Movers API error:', error);
+    captureError('Movers API', error);
     const fallback = cacheMap.get(cacheKey);
     if (fallback) {
       return NextResponse.json(sortMovers(fallback.data, mode));

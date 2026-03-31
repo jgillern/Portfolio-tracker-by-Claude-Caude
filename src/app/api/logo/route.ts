@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getLogoImage } from '@/lib/yahooFinance';
 import { InstrumentType } from '@/types/portfolio';
+import { captureError } from '@/lib/logger';
 
 const VALID_TYPES: InstrumentType[] = ['stock', 'etf', 'crypto', 'bond', 'commodity'];
 
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Logo API error:', error);
+    captureError('Logo API', error);
     return new Response(null, { status: 500 });
   }
 }

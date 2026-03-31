@@ -15,38 +15,77 @@ export function EToroSearch({ onSelect }: Props) {
   const [query, setQuery] = useState('');
   const { results, isLoading } = useEToroSearch(query);
 
+  const handleDirectLoad = () => {
+    const username = query.trim();
+    if (username.length >= 2) {
+      onSelect({
+        username,
+        fullName: username,
+        avatarUrl: '',
+        copiers: 0,
+        gainPct: 0,
+        riskScore: 0,
+        isPro: false,
+        country: '',
+      });
+      setQuery('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleDirectLoad();
+    }
+  };
+
   return (
     <div className="relative">
-      <div className="relative">
-        <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('etoro.searchPlaceholder')}
+            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-shadow"
           />
-        </svg>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('etoro.searchPlaceholder')}
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-shadow"
-        />
-        {isLoading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <Spinner className="h-4 w-4" />
-          </div>
+          {isLoading && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Spinner className="h-4 w-4" />
+            </div>
+          )}
+        </div>
+        {query.trim().length >= 2 && (
+          <button
+            onClick={handleDirectLoad}
+            className="px-4 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors flex-shrink-0"
+          >
+            {t('etoro.loadProfile')}
+          </button>
         )}
       </div>
 
+      <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+        {t('etoro.searchHint')}
+      </p>
+
       {results.length > 0 && (
-        <div className="absolute z-20 mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+        <div className="absolute z-20 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
           <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
             {results.map((user) => (
               <li key={user.username}>
@@ -109,7 +148,7 @@ export function EToroSearch({ onSelect }: Props) {
       )}
 
       {query.trim().length >= 2 && !isLoading && results.length === 0 && (
-        <div className="absolute z-20 mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-4">
+        <div className="absolute z-20 mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
             {t('etoro.noResults')}
           </p>

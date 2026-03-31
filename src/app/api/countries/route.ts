@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCountries } from '@/lib/yahooFinance';
+import { captureError } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const countries = await getCountries(symbols, types);
     return NextResponse.json(countries);
   } catch (error) {
-    console.error('Countries API error:', error);
+    captureError('Countries API', error);
     return NextResponse.json({ error: 'Failed to fetch countries' }, { status: 500 });
   }
 }

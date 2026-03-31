@@ -3,6 +3,7 @@ import { searchYahooFinance } from '@/lib/yahooFinance';
 import type { SearchTypeFilter } from '@/lib/yahooFinance';
 import { searchPredefinedIndexes } from '@/config/indexes';
 import type { SearchResult } from '@/types/api';
+import { captureError } from '@/lib/logger';
 
 const VALID_TYPES = new Set(['stock', 'etf', 'crypto', 'index']);
 
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(yahooResults.slice(0, 20));
   } catch (error) {
-    console.error('Search API error:', error);
+    captureError('Search API', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }

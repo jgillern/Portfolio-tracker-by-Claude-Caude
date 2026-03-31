@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import YahooFinance from 'yahoo-finance2';
+import { captureError } from '@/lib/logger';
 
 const yf = new YahooFinance();
 
@@ -425,7 +426,7 @@ export async function GET(request: NextRequest) {
     setCache(cacheKey, result, 5 * 60 * 1000);
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Profile API error:', error);
+    captureError('Profile API', error);
     return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
   }
 }

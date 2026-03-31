@@ -321,7 +321,7 @@
   "etoro": {
     "title": "eToro 公开投资组合",
     "subtitle": "搜索 eToro 交易者并分析其公开投资组合",
-    "searchPlaceholder": "搜索 eToro 用户名...",
+    "searchPlaceholder": "搜索 eToro 交易者...",
     "copiers": "跟单者",
     "riskScore": "风险评分",
     "gain": "收益",
@@ -330,6 +330,8 @@
     "metrics": "投资组合指标",
     "allocation": "配置",
     "noResults": "未找到交易者。请尝试其他用户名。",
+    "loadProfile": "加载资料",
+    "searchHint": "按用户名或姓名搜索。按回车直接加载资料。",
     "noPositions": "该交易者无可用持仓数据。",
     "loading": "正在加载投资组合...",
     "tryAgain": "返回搜索",
